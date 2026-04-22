@@ -1,4 +1,4 @@
-import { Command } from './types';
+import type { Command } from './types';
 
 export const focaCommands: Command[] = [
   {
@@ -123,7 +123,7 @@ export const focaCommands: Command[] = [
     name: 'top',
     description: 'Display Linux processes',
     execute: async (ctx) => {
-      ctx.print('top - 12:34:56 up 1 day, 2:30,  1 user,  load average: 0.00, 0.01, 0.05\nTasks: 1 total, 1 running, 0 sleeping, 0 stopped, 0 zombie\n%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni, 100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st\nMiB Mem :   8192.0 total,   4096.0 free,   2048.0 used,   2048.0 buff/cache\n\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n 5678 student   20   0   12345   6789   1234 R   0.0   0.1   0:00.01 top');
+      ctx.print('top - 12:34:56 up 1 day, 2:30,  1 user,  load average: 0.00, 0.01, 0.05\nTasks: 1 total, 1 running, 0 sleeping, 0 stopped, 0 zombie\n%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni, 100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st\nMiB Mem :   8192.0 total,   4096.0 free,   2048.0 used,   2048.0 buff/cache\n\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n 5678 dayhoff   20   0   12345   6789   1234 R   0.0   0.1   0:00.01 top');
     }
   },
   {

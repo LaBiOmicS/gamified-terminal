@@ -1,4 +1,4 @@
-import { Command } from './types';
+import type { Command } from './types';
 
 export const basicCommands: Command[] = [
   {
@@ -129,7 +129,7 @@ export const basicCommands: Command[] = [
     name: 'whoami',
     description: 'Print effective userid',
     execute: async (ctx) => {
-      ctx.print('student');
+      ctx.print('dayhoff');
     }
   },
   {

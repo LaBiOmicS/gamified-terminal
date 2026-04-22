@@ -1,7 +1,7 @@
 import { Terminal } from '@xterm/xterm';
 import { VFSManager } from '../vfs/VFSManager';
 import { CommandRegistry } from '../commands/registry';
-import { CommandContext } from '../commands/types';
+import type { CommandContext } from '../commands/types';
 import { QuestManager } from './QuestManager';
 
 export class TerminalEngine {
@@ -33,8 +33,8 @@ export class TerminalEngine {
 
   private printPrompt() {
     const cwd = this.vfs.getCwd();
-    const shortCwd = cwd.replace('/home/student', '~');
-    this.terminal.write(`\r\n\x1b[1;32mstudent@linux-temple\x1b[0m:\x1b[1;34m${shortCwd}\x1b[0m$ `);
+    const shortCwd = cwd.replace('/home/dayhoff', '~');
+    this.terminal.write(`\r\n\x1b[1;32mdayhoff@LaBiOmicS\x1b[0m:\x1b[1;34m${shortCwd}\x1b[0m$ `);
   }
 
   private async handleData(data: string) {

@@ -1,4 +1,4 @@
-import { Command } from './types';
+import type { Command } from './types';
 import { basicCommands } from './basicCommands';
 import { focaCommands } from './focaCommands';
 

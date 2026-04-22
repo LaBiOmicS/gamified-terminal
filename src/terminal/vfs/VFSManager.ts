@@ -1,4 +1,4 @@
-import { VFSNode, VFSState, FileNode, DirectoryNode } from './types';
+import type { VFSNode, VFSState, FileNode, DirectoryNode } from './types';
 
 export class VFSManager {
   private state: VFSState;
@@ -24,15 +24,15 @@ export class VFSManager {
         '/var': this.createDirNode('var', '/'),
         '/usr': this.createDirNode('usr', '/'),
         '/root': this.createDirNode('root', '/', 'rwx------'),
-        '/home/student': this.createDirNode('student', '/home'),
+        '/home/dayhoff': this.createDirNode('dayhoff', '/home'),
       },
-      cwd: '/home/student',
+      cwd: '/home/dayhoff',
     };
     
-    // Ensure home/student is in home's children if not already
+    // Ensure home/dayhoff is in home's children if not already
     const home = this.state.nodes['/home'] as DirectoryNode;
-    if (!home.children.includes('student')) {
-      home.children.push('student');
+    if (!home.children.includes('dayhoff')) {
+      home.children.push('dayhoff');
     }
   }
 
@@ -42,8 +42,8 @@ export class VFSManager {
       type: 'directory',
       parent,
       permissions,
-      owner: name === 'root' ? 'root' : 'student',
-      group: name === 'root' ? 'root' : 'student',
+      owner: name === 'root' ? 'root' : 'dayhoff',
+      group: name === 'root' ? 'root' : 'dayhoff',
       createdAt: Date.now(),
       modifiedAt: Date.now(),
       children: [],
@@ -138,8 +138,8 @@ export class VFSManager {
           type: 'file',
           parent: parentPath,
           permissions: 'rw-r--r--',
-          owner: 'student',
-          group: 'student',
+          owner: 'dayhoff',
+          group: 'dayhoff',
           createdAt: Date.now(),
           modifiedAt: Date.now(),
           content: content,
