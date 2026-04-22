@@ -1,0 +1,16 @@
+import { VFSManager } from '../vfs/VFSManager';
+
+export interface CommandContext {
+  vfs: VFSManager;
+  args: string[];
+  print: (text: string) => void;
+  printError: (text: string) => void;
+  clear: () => void;
+}
+
+export interface Command {
+  name: string;
+  description: string;
+  execute: (ctx: CommandContext) => Promise<void>;
+  help?: string;
+}
