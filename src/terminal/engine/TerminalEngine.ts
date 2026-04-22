@@ -16,7 +16,7 @@ export class TerminalEngine {
   constructor(terminal: Terminal) {
     this.terminal = terminal;
     
-    // Load from localStorage
+    // Carregar do localStorage
     const savedVFS = localStorage.getItem('vfs_state');
     this.vfs = new VFSManager(savedVFS ? JSON.parse(savedVFS) : undefined);
     
@@ -26,15 +26,33 @@ export class TerminalEngine {
     this.questManager = new QuestManager(savedQuestIndex ? parseInt(savedQuestIndex) : 0);
     
     this.terminal.onData(e => this.handleData(e));
-    this.terminal.write('\x1b[1;33mWelcome to the Linux Learning Temple!\x1b[0m\r\n');
-    this.terminal.write('Type \x1b[1;36mquest\x1b[0m to see your current objective.\r\n');
+    
+    // Mensagem de Boas-vindas (MOTD)
+    this.terminal.write('\x1b[1;34m#################################################################\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#  \x1b[1;33mBEM-VINDO AO TERMINAL LABIOMICS - APRENDIZADO DE LINUX\x1b[1;34m       #\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#  \x1b[0mEste ambiente é um simulador gamificado para ensinar os      \x1b[1;34m#\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#  \x1b[0mfundamentos do terminal Linux (Bash).                        \x1b[1;34m#\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#  \x1b[1;32mOBJETIVOS:\x1b[0m                                                   \x1b[1;34m#\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#  \x1b[0m- Dominar comandos básicos e avançados                       \x1b[1;34m#\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#  \x1b[0m- Compreender a hierarquia de arquivos                       \x1b[1;34m#\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#  \x1b[0m- Praticar em um ambiente seguro e interativo                \x1b[1;34m#\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#  \x1b[0mDigite \x1b[1;36mmissao\x1b[0m para ver seu objetivo atual.                  \x1b[1;34m#\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#  \x1b[0mDigite \x1b[1;36majuda\x1b[0m para listar os comandos disponíveis.            \x1b[1;34m#\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
+    this.terminal.write('\x1b[1;34m#################################################################\x1b[0m\r\n');
+    
     this.printPrompt();
   }
 
   private printPrompt() {
     const cwd = this.vfs.getCwd();
     const shortCwd = cwd.replace('/home/dayhoff', '~');
-    this.terminal.write(`\r\n\x1b[1;32mdayhoff@LaBiOmicS\x1b[0m:\x1b[1;34m${shortCwd}\x1b[0m$ `);
+    // Estilo Oh-My-Zsh
+    this.terminal.write(`\r\n\x1b[1;36m➜  \x1b[1;32m${shortCwd}\x1b[0m \x1b[1;34mgit:(\x1b[1;31mmain\x1b[1;34m)\x1b[0m `);
   }
 
   private async handleData(data: string) {
@@ -74,18 +92,18 @@ export class TerminalEngine {
       await this.executeCommand(line);
     }
     
-    // Check quest progress after each command
+    // Verificar progresso da missão após cada comando
     const completed = this.questManager.checkProgress(this.vfs);
     if (completed) {
-      this.terminal.write(`\r\n\x1b[1;32mQUEST COMPLETED: ${completed.title}\x1b[0m\r\n`);
+      this.terminal.write(`\r\n\x1b[1;32m✅ MISSÃO CONCLUÍDA: ${completed.title}\x1b[0m\r\n`);
       this.terminal.write(`${completed.completionMessage}\r\n`);
       
       const next = this.questManager.getCurrentQuest();
       if (next) {
-        this.terminal.write(`\r\n\x1b[1;33mNEW QUEST: ${next.title}\x1b[0m\r\n`);
+        this.terminal.write(`\r\n\x1b[1;33m🚀 PRÓXIMA MISSÃO: ${next.title}\x1b[0m\r\n`);
         this.terminal.write(`${next.description}\r\n`);
       } else {
-        this.terminal.write(`\r\n\x1b[1;35mCongratulations! You have completed all quests!\x1b[0m\r\n`);
+        this.terminal.write(`\r\n\x1b[1;35m🏆 PARABÉNS! Você completou todas as missões!\x1b[0m\r\n`);
       }
     }
     
@@ -119,14 +137,14 @@ export class TerminalEngine {
     const cmdName = parts[0];
     const args = parts.slice(1);
 
-    if (cmdName === 'quest') {
+    if (cmdName === 'missao' || cmdName === 'quest') {
       const q = this.questManager.getCurrentQuest();
       if (q) {
-        this.terminal.write(`\x1b[1;33mCURRENT QUEST: ${q.title}\x1b[0m\r\n`);
+        this.terminal.write(`\x1b[1;33m🎯 MISSÃO ATUAL: ${q.title}\x1b[0m\r\n`);
         this.terminal.write(`${q.description}\r\n`);
-        this.terminal.write(`Hint: ${q.hint}\r\n`);
+        this.terminal.write(`\x1b[1;30mDica: ${q.hint}\x1b[0m\r\n`);
       } else {
-        this.terminal.write('No active quest.\r\n');
+        this.terminal.write('Nenhuma missão ativa no momento.\r\n');
       }
       return;
     }
@@ -137,16 +155,16 @@ export class TerminalEngine {
         vfs: this.vfs,
         args,
         print: (text) => this.terminal.write(text.replace(/\n/g, '\r\n') + '\r\n'),
-        printError: (text) => this.terminal.write(`\x1b[31m${text}\x1b[0m\r\n`),
+        printError: (text) => this.terminal.write(`\x1b[31mErro: ${text}\x1b[0m\r\n`),
         clear: () => this.terminal.clear(),
       };
       try {
         await command.execute(context);
       } catch (err) {
-        this.terminal.write(`\x1b[31mError executing command: ${err}\x1b[0m\r\n`);
+        this.terminal.write(`\x1b[31mErro ao executar comando: ${err}\x1b[0m\r\n`);
       }
     } else {
-      this.terminal.write(`${cmdName}: command not found\r\n`);
+      this.terminal.write(`zsh: comando não encontrado: ${cmdName}\r\n`);
     }
   }
 }

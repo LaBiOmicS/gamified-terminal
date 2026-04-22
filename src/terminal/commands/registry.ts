@@ -10,17 +10,19 @@ export class CommandRegistry {
       this.commands.set(cmd.name, cmd);
     });
 
-    // Add help command
-    this.commands.set('help', {
-      name: 'help',
-      description: 'Display information about available commands',
+    // Adicionar comando ajuda
+    const helpCommand: Command = {
+      name: 'ajuda',
+      description: 'Exibe informações sobre os comandos disponíveis',
       execute: async (ctx) => {
-        ctx.print('Available commands:');
+        ctx.print('Comandos disponíveis:');
         const sortedNames = Array.from(this.commands.keys()).sort();
         ctx.print(sortedNames.join('  '));
-        ctx.print('\nType \'help <command>\' for more info (TODO).');
+        ctx.print('\nDigite \'ajuda <comando>\' para mais informações (TODO).');
       }
-    });
+    };
+    this.commands.set('ajuda', helpCommand);
+    this.commands.set('help', helpCommand);
   }
 
   public getCommand(name: string): Command | undefined {

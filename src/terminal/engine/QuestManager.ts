@@ -12,49 +12,49 @@ export interface Quest {
 export const quests: Quest[] = [
   {
     id: 'intro-1',
-    title: 'Welcome to the Temple',
-    description: 'First, find out where you are. Use the command to print your current working directory.',
-    hint: 'Try using \'pwd\'.',
-    checkCondition: () => true, // Just an intro
-    completionMessage: 'Great! You are in /home/dayhoff. This is your home.',
+    title: 'Bem-vindo ao Templo',
+    description: 'Primeiro, descubra onde você está. Use o comando para imprimir seu diretório de trabalho atual.',
+    hint: 'Tente usar \'pwd\'.',
+    checkCondition: () => true, // Apenas introdução
+    completionMessage: 'Ótimo! Você está em /home/dayhoff. Este é o seu lar.',
   },
   {
     id: 'ls-1',
-    title: 'The Surroundings',
-    description: 'List the files in your current directory to see what is around you.',
-    hint: 'Try using \'ls\'.',
+    title: 'Explorando os Arredores',
+    description: 'Liste os arquivos em seu diretório atual para ver o que há ao seu redor.',
+    hint: 'Tente usar \'ls\'.',
     checkCondition: () => true,
-    completionMessage: 'Excellent. You can see your files now.',
+    completionMessage: 'Excelente. Você pode ver seus arquivos agora.',
   },
   {
     id: 'mkdir-1',
-    title: 'Creating Space',
-    description: 'Create a new directory called \'practice\'.',
-    hint: 'Try \'mkdir practice\'.',
+    title: 'Criando Espaço',
+    description: 'Crie um novo diretório chamado \'pratica\'.',
+    hint: 'Tente \'mkdir pratica\'.',
     checkCondition: (vfs) => {
-      const node = vfs.getNode('/home/dayhoff/practice');
+      const node = vfs.getNode('/home/dayhoff/pratica');
       return !!node && node.type === 'directory';
     },
-    completionMessage: 'Well done! You have created your first directory.',
+    completionMessage: 'Muito bem! Você criou seu primeiro diretório.',
   },
   {
     id: 'cd-1',
-    title: 'Moving In',
-    description: 'Change your current directory to the \'practice\' folder you just created.',
-    hint: 'Try \'cd practice\'.',
-    checkCondition: (vfs) => vfs.getCwd() === '/home/dayhoff/practice',
-    completionMessage: 'You are moving like a pro!',
+    title: 'Entrando na Pasta',
+    description: 'Mude seu diretório atual para a pasta \'pratica\' que você acabou de criar.',
+    hint: 'Tente \'cd pratica\'.',
+    checkCondition: (vfs) => vfs.getCwd() === '/home/dayhoff/pratica',
+    completionMessage: 'Você está se movendo como um profissional!',
   },
   {
     id: 'echo-1',
-    title: 'Writing History',
-    description: 'Create a file named \'note.txt\' containing the text \'Hello Linux\'.',
-    hint: 'Try \'echo Hello Linux > note.txt\'.',
+    title: 'Escrevendo a História',
+    description: 'Crie um arquivo chamado \'nota.txt\' contendo o texto \'Ola Linux\'.',
+    hint: 'Tente \'echo Ola Linux > nota.txt\'.',
     checkCondition: (vfs) => {
-      const content = vfs.readFile('/home/dayhoff/practice/note.txt');
-      return content?.trim() === 'Hello Linux';
+      const content = vfs.readFile('/home/dayhoff/pratica/nota.txt');
+      return content?.trim() === 'Ola Linux';
     },
-    completionMessage: 'You just wrote your first file!',
+    completionMessage: 'Você acabou de escrever seu primeiro arquivo!',
   }
 ];
 
