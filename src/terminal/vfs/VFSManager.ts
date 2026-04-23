@@ -52,19 +52,24 @@ export class VFSManager {
       cwd: '/home/dayhoff',
     };
     
-    // Ensure children are correctly linked
+    // Ensure children are correctly linked - Defensivo para evitar crash com localStorage antigo
     const homeDayhoff = this.state.nodes['/home/dayhoff'] as DirectoryNode;
-    if (!homeDayhoff.children.includes('projetos')) {
-      homeDayhoff.children.push('projetos');
+    if (homeDayhoff && homeDayhoff.children) {
+      if (!homeDayhoff.children.includes('projetos')) {
+        homeDayhoff.children.push('projetos');
+      }
     }
     
     const projetos = this.state.nodes['/home/dayhoff/projetos'] as DirectoryNode;
-    projetos.children = ['sequencia.fasta', 'genoma_curto.seq'];
+    if (projetos) {
+      projetos.children = ['sequencia.fasta', 'genoma_curto.seq'];
+    }
 
-    // Ensure home/dayhoff is in home's children if not already
     const home = this.state.nodes['/home'] as DirectoryNode;
-    if (!home.children.includes('dayhoff')) {
-      home.children.push('dayhoff');
+    if (home && home.children) {
+      if (!home.children.includes('dayhoff')) {
+        home.children.push('dayhoff');
+      }
     }
   }
 
