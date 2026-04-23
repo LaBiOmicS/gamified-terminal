@@ -90,5 +90,45 @@ export const bioCommands: Command[] = [
         }
       }
     }
+  },
+  {
+    name: 'samtools',
+    description: 'Ferramentas para manipular alinhamentos de sequências (SAM/BAM)',
+    execute: async (ctx) => {
+      const sub = ctx.args[0];
+      if (sub === 'view') {
+        ctx.print('r001\t163\tchr1\t7\t30\t8M2I4M\t=\t37\t39\tTTAGATAAAGAGG\t*');
+        ctx.print('r002\t0\tchr1\t9\t30\t3S6M1P1I4M\t*\t0\t0\tAAAAGATAAGGATA\t*');
+      } else if (sub === 'flagstat') {
+        ctx.print('20000 + 0 in total (QC-passed reads + QC-failed reads)\n0 + 0 secondary\n0 + 0 supplementary\n0 + 0 duplicates\n20000 + 0 mapped (100.00% : N/A)');
+      } else {
+        ctx.print('Program: samtools (Tools for alignments in the SAM format)\nUsage: samtools <command> [options]');
+      }
+    }
+  },
+  {
+    name: 'blastn',
+    description: 'Busca de similaridade em sequências de nucleotídeos',
+    execute: async (ctx) => {
+      const query = ctx.args[ctx.args.indexOf('-query') + 1];
+      if (!query) { ctx.print('BLASTN 2.13.0+\nUsage: blastn -query <file> -db <database>'); return; }
+      
+      ctx.print(`Query= ${query}\nLength=150`);
+      ctx.print('\nSequences producing significant alignments:                          E-Value  Bit-score');
+      ctx.print('chr1_segment_A                                                     2e-45    120');
+      ctx.print('chrX_homolog_1                                                     1e-12    56.5');
+    }
+  },
+  {
+    name: 'bedtools',
+    description: 'Suíte de ferramentas para manipulação de arquivos genômicos (BED/GFF/VCF)',
+    execute: async (ctx) => {
+      const sub = ctx.args[0];
+      if (sub === 'intersect') {
+        ctx.print('chr1\t100\t200\tgeneA\tchr1\t150\t250\texon1');
+      } else {
+        ctx.print('bedtools: a powerful toolset for genome arithmetic.\nUsage: bedtools <subcommand> [options]');
+      }
+    }
   }
 ];

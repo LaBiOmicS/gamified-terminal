@@ -116,6 +116,46 @@ export const quests: Quest[] = [
     hint: 'Tente \'ls | grep seq\'.',
     checkCondition: (_, cmd) => cmd === 'ls' || cmd === 'grep', // Simplificação
     completionMessage: 'Pipes são a verdadeira magia do terminal!',
+  },
+  {
+    id: 'env-1',
+    title: 'O Laboratório Virtual',
+    description: 'Para não bagunçar o sistema, crie um ambiente isolado chamado \'bioinfo\' usando o mamba.',
+    hint: 'Tente \'mamba create -n bioinfo\'.',
+    checkCondition: (_, cmd) => {
+      const envs = JSON.parse(localStorage.getItem('terminal_envs') || '[]');
+      return cmd === 'mamba' && envs.includes('bioinfo');
+    },
+    completionMessage: 'Excelente! Ambientes isolados garantem a reprodutibilidade da ciência.',
+  },
+  {
+    id: 'env-2',
+    title: 'Ativando os Motores',
+    description: 'Agora ative o ambiente \'bioinfo\' que você acabou de criar.',
+    hint: 'Tente \'conda activate bioinfo\'.',
+    checkCondition: (_, cmd) => {
+      return (cmd === 'conda' || cmd === 'mamba') && localStorage.getItem('current_env') === 'bioinfo';
+    },
+    completionMessage: 'O prompt mudou! Você agora está operando dentro do ambiente bioinfo.',
+  },
+  {
+    id: 'bio-adv-1',
+    title: 'Canivete Suíço Genômico',
+    description: 'Instale a ferramenta \'samtools\' no seu ambiente atual usando o mamba.',
+    hint: 'Tente \'mamba install samtools\'.',
+    checkCondition: (_, cmd) => {
+      const pkgs = JSON.parse(localStorage.getItem('pkgs_bioinfo') || '[]');
+      return cmd === 'mamba' && pkgs.includes('samtools');
+    },
+    completionMessage: 'Samtools instalado! Esta é uma das ferramentas mais usadas no mundo para Bioinformática.',
+  },
+  {
+    id: 'bio-adv-2',
+    title: 'Visão de Raios-X',
+    description: 'Use o comando \'samtools view\' para visualizar os alinhamentos simulados.',
+    hint: 'Apenas digite \'samtools view\'.',
+    checkCondition: (_, cmd) => cmd === 'samtools',
+    completionMessage: 'Incrível! Você concluiu a jornada avançada de bioinformática no terminal.',
   }
 ];
 

@@ -72,6 +72,9 @@ export const packageManagerCommands: Command[] = [
         const target = ctx.args[1] || 'base';
         if (getEnvs().includes(target)) { ctx.setEnv(target); ctx.print(`Ambiente '${target}' ativado.`); }
         else ctx.printError(`conda activate: ambiente não encontrado: ${target}`);
+      } else if (sub === 'deactivate') {
+        ctx.setEnv('');
+        ctx.print('Ambiente desativado.');
       } else if (sub === 'env' && ctx.args[1] === 'list') {
         ctx.print('# conda environments:\n#');
         getEnvs().forEach((e: string) => ctx.print(`${e.padEnd(20)} ${e === currentEnv ? '*' : ' '} /home/dayhoff/miniconda3/envs/${e}`));
@@ -256,6 +259,14 @@ export const packageManagerCommands: Command[] = [
       } else {
         ctx.print('pixi 0.15.0\nUsage: pixi [init|add|remove|list|run|shell]');
       }
+    }
+  },
+  {
+    name: 'deactivate',
+    description: 'Desativa o ambiente virtual atual',
+    execute: async (ctx) => {
+      ctx.setEnv('');
+      ctx.print('Ambiente desativado.');
     }
   }
 ];
