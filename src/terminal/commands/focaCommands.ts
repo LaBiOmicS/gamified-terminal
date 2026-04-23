@@ -84,7 +84,7 @@ export const focaCommands: Command[] = [
   },
   {
     name: 'df',
-// ... (df unchanged)
+    description: 'Relata o uso de espaço em disco do sistema de arquivos',
     execute: async (ctx) => {
       ctx.print('Sist. Arq.      Tam.   Usado  Disp. Uso% Montado em');
       ctx.print('/dev/sda1        50G    12G    38G  24% /');
@@ -93,7 +93,7 @@ export const focaCommands: Command[] = [
   },
   {
     name: 'du',
-// ... (du unchanged)
+    description: 'Estima o uso de espaço de arquivos',
     execute: async (ctx) => {
       const path = ctx.args[0] || '.';
       ctx.print('4.0K    ' + path);
@@ -101,7 +101,7 @@ export const focaCommands: Command[] = [
   },
   {
     name: 'history',
-// ... (history unchanged)
+    description: 'Exibe a lista de comandos executados',
     execute: async (ctx) => {
       ctx.print('  1  pwd\n  2  ls -la\n  3  mkdir pratica\n  4  history');
     }
