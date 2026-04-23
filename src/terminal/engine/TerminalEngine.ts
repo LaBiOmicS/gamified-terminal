@@ -55,7 +55,7 @@ export class TerminalEngine {
       '#  \x1b[1;32m- Execução com Superusuário (sudo)                           \x1b[1;34m#',
       '#  \x1b[1;32m- Redirecionamento e Pipes (|)                               \x1b[1;34m#',
       '#                                                               #',
-      '#  \x1b[0mDigite \x1b[1;36mmissao\x1b[0m para ver seu objetivo atual.                  \x1b[1;34m#',
+      '#  \x1b[0mDigite \x1b[1;36mmissao\x1b[0m para ver seu objetivo atual.                   \x1b[1;34m#',
       '#  \x1b[0mDigite \x1b[1;36majuda\x1b[0m para listar os comandos disponíveis.            \x1b[1;34m#',
       '#                                                               #',
       '#################################################################'
