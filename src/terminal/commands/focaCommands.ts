@@ -86,17 +86,24 @@ export const focaCommands: Command[] = [
     name: 'df',
     description: 'Relata o uso de espaço em disco do sistema de arquivos',
     execute: async (ctx) => {
+      const humanReadable = ctx.args.includes('-h');
       ctx.print('Sist. Arq.      Tam.   Usado  Disp. Uso% Montado em');
-      ctx.print('/dev/sda1        50G    12G    38G  24% /');
-      ctx.print('tmpfs           3.9G     0G   3.9G   0% /dev/shm');
+      if (humanReadable) {
+        ctx.print('/dev/sda1        50G    12G    38G  24% /');
+        ctx.print('tmpfs           3.9G     0G   3.9G   0% /dev/shm');
+      } else {
+        ctx.print('/dev/sda1   52428800 12582912 39845888  24% /');
+        ctx.print('tmpfs        40894464        0 40894464   0% /dev/shm');
+      }
     }
   },
   {
     name: 'du',
     description: 'Estima o uso de espaço de arquivos',
     execute: async (ctx) => {
-      const path = ctx.args[0] || '.';
-      ctx.print('4.0K    ' + path);
+      const humanReadable = ctx.args.includes('-h');
+      const path = ctx.args.find(a => !a.startsWith('-')) || '.';
+      ctx.print((humanReadable ? '4.0K' : '4') + '    ' + path);
     }
   },
   {
@@ -158,17 +165,38 @@ export const focaCommands: Command[] = [
     name: 'wc',
     description: 'Imprime contagem de linhas, palavras e bytes',
     execute: async (ctx) => {
-      if (ctx.args.length === 0) {
+      const showLines = ctx.args.includes('-l');
+      const showWords = ctx.args.includes('-w');
+      const showBytes = ctx.args.includes('-c');
+      const all = !showLines && !showWords && !showBytes;
+      
+      const paths = ctx.args.filter(a => !a.startsWith('-'));
+      
+      if (paths.length === 0 && !ctx.stdin) {
         ctx.printError('wc: operando de arquivo ausente');
         return;
       }
-      for (const path of ctx.args) {
+
+      const processContent = (content: string, name: string) => {
+        const lines = content.split('\n').filter(l => l.length > 0).length;
+        const words = content.trim().split(/\s+/).filter(Boolean).length;
+        const bytes = content.length;
+        let res = '';
+        if (all || showLines) res += `${lines} `;
+        if (all || showWords) res += `${words} `;
+        if (all || showBytes) res += `${bytes} `;
+        ctx.print(`${res}${name}`);
+      };
+
+      if (ctx.stdin) {
+        processContent(ctx.stdin, '');
+        if (paths.length === 0) return;
+      }
+
+      for (const path of paths) {
         const content = ctx.vfs.readFile(path, ctx.user);
         if (content !== null && content !== 'Permissão negada') {
-          const lines = content.split('\n').length;
-          const words = content.trim().split(/\s+/).filter(Boolean).length;
-          const bytes = content.length;
-          ctx.print(`${lines} ${words} ${bytes} ${path}`);
+          processContent(content, path);
         } else {
           ctx.printError(`wc: ${path}: Permissão negada ou Arquivo não encontrado`);
         }

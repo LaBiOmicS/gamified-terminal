@@ -56,19 +56,53 @@ export const extendedCommands: Command[] = [
     name: 'sort',
     description: 'Ordena linhas de arquivos de texto',
     execute: async (ctx) => {
-      const path = ctx.args[0];
-      const content = path ? ctx.vfs.readFile(path, ctx.user) : null;
+      const reverse = ctx.args.includes('-r');
+      const numeric = ctx.args.includes('-n');
+      const path = ctx.args.find(a => !a.startsWith('-'));
+      
+      let content = path ? ctx.vfs.readFile(path, ctx.user) : ctx.stdin;
       if (content && content !== 'Permissão negada') {
-        ctx.print(content.split('\n').sort().join('\n'));
+        let lines = content.split('\n').filter(l => l.length > 0);
+        if (numeric) {
+          lines.sort((a, b) => parseFloat(a) - parseFloat(b));
+        } else {
+          lines.sort();
+        }
+        if (reverse) lines.reverse();
+        ctx.print(lines.join('\n'));
       } else {
-        ctx.print('Uso: sort [arquivo] (ou use com pipes)');
+        ctx.print('Uso: sort [-rn] [arquivo]');
       }
     }
   },
   {
     name: 'uniq',
     description: 'Reporta ou omite linhas repetidas',
-    execute: async (ctx) => { ctx.print('Simulando filtragem de linhas únicas...'); }
+    execute: async (ctx) => {
+      const count = ctx.args.includes('-c');
+      const path = ctx.args.find(a => !a.startsWith('-'));
+      let content = path ? ctx.vfs.readFile(path, ctx.user) : ctx.stdin;
+      
+      if (content && content !== 'Permissão negada') {
+        const lines = content.split('\n').filter(l => l.length > 0);
+        if (lines.length === 0) return;
+        const result: string[] = [];
+        let lastLine = lines[0];
+        let lastCount = 0;
+        
+        lines.forEach((line) => {
+          if (line === lastLine) {
+            lastCount++;
+          } else {
+            result.push(count ? `${lastCount.toString().padStart(7)} ${lastLine}` : lastLine);
+            lastLine = line;
+            lastCount = 1;
+          }
+        });
+        result.push(count ? `${lastCount.toString().padStart(7)} ${lastLine}` : lastLine);
+        ctx.print(result.join('\n'));
+      }
+    }
   },
   {
     name: 'cut',
@@ -79,8 +113,17 @@ export const extendedCommands: Command[] = [
     name: 'uname',
     description: 'Imprime informações do sistema',
     execute: async (ctx) => {
-      if (ctx.args.includes('-a')) ctx.print('Linux LaBiOmicS 5.15.0-generic #1 SMP x86_64 GNU/Linux');
-      else ctx.print('Linux');
+      if (ctx.args.includes('-a') || ctx.args.includes('--all')) {
+        ctx.print('Linux LaBiOmicS 5.15.0-generic #1 SMP x86_64 GNU/Linux');
+      } else if (ctx.args.includes('-r')) {
+        ctx.print('5.15.0-generic');
+      } else if (ctx.args.includes('-n')) {
+        ctx.print('LaBiOmicS');
+      } else if (ctx.args.includes('-m')) {
+        ctx.print('x86_64');
+      } else {
+        ctx.print('Linux');
+      }
     }
   },
   {
@@ -334,16 +377,20 @@ export const extendedCommands: Command[] = [
     execute: async (ctx) => {
       let n = 10;
       const nIdx = ctx.args.indexOf('-n');
-      if (nIdx !== -1 && ctx.args[nIdx+1]) n = parseInt(ctx.args[nIdx+1]);
-      
-      const path = ctx.args.find(a => !a.startsWith('-') && a !== String(n));
-      if (!path) return;
-      
-      const content = ctx.vfs.readFile(path, ctx.user);
-      if (content !== null && content !== 'Permissão negada') {
-        ctx.print(content.split('\n').slice(0, n).join('\n'));
+      if (nIdx !== -1 && ctx.args[nIdx+1]) {
+        n = parseInt(ctx.args[nIdx+1]);
       } else {
-        ctx.printError(`head: ${path}: Permissão negada ou Arquivo não encontrado`);
+        const directN = ctx.args.find(a => a.startsWith('-') && /^\d+$/.test(a.slice(1)));
+        if (directN) n = parseInt(directN.slice(1));
+      }
+      
+      const path = ctx.args.find(a => !a.startsWith('-') && a !== String(n) && a !== '-n');
+      const content = path ? ctx.vfs.readFile(path, ctx.user) : ctx.stdin;
+      
+      if (content !== null && content !== undefined && content !== 'Permissão negada') {
+        ctx.print(content.split('\n').slice(0, n).join('\n'));
+      } else if (content === 'Permissão negada') {
+        ctx.printError(`head: ${path}: Permissão negada`);
       }
     }
   },
@@ -353,17 +400,21 @@ export const extendedCommands: Command[] = [
     execute: async (ctx) => {
       let n = 10;
       const nIdx = ctx.args.indexOf('-n');
-      if (nIdx !== -1 && ctx.args[nIdx+1]) n = parseInt(ctx.args[nIdx+1]);
-      
-      const path = ctx.args.find(a => !a.startsWith('-') && a !== String(n));
-      if (!path) return;
-      
-      const content = ctx.vfs.readFile(path, ctx.user);
-      if (content !== null && content !== 'Permissão negada') {
-        const lines = content.split('\n');
-        ctx.print(lines.slice(Math.max(0, lines.length - n)).join('\n'));
+      if (nIdx !== -1 && ctx.args[nIdx+1]) {
+        n = parseInt(ctx.args[nIdx+1]);
       } else {
-        ctx.printError(`tail: ${path}: Permissão negada ou Arquivo não encontrado`);
+        const directN = ctx.args.find(a => a.startsWith('-') && /^\d+$/.test(a.slice(1)));
+        if (directN) n = parseInt(directN.slice(1));
+      }
+      
+      const path = ctx.args.find(a => !a.startsWith('-') && a !== String(n) && a !== '-n');
+      const content = path ? ctx.vfs.readFile(path, ctx.user) : ctx.stdin;
+      
+      if (content !== null && content !== undefined && content !== 'Permissão negada') {
+        const lines = content.split('\n').filter(l => l.length > 0);
+        ctx.print(lines.slice(Math.max(0, lines.length - n)).join('\n'));
+      } else if (content === 'Permissão negada') {
+        ctx.printError(`tail: ${path}: Permissão negada`);
       }
     }
   }
