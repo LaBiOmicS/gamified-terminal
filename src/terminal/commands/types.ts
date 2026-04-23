@@ -3,6 +3,8 @@ import { VFSManager } from '../vfs/VFSManager';
 export interface CommandContext {
   vfs: VFSManager;
   args: string[];
+  user: string;
+  stdin?: string;
   print: (text: string) => void;
   printError: (text: string) => void;
   clear: () => void;

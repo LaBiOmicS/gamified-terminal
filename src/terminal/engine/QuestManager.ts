@@ -55,6 +55,67 @@ export const quests: Quest[] = [
       return cmd === 'echo' && content?.trim() === 'Ola Linux';
     },
     completionMessage: 'Você acabou de escrever seu primeiro arquivo!',
+  },
+  {
+    id: 'bio-1',
+    title: 'Análise de Sequências',
+    description: 'Vá até o diretório \'projetos\' e use o comando \'bio-count\' no arquivo \'genoma_curto.seq\' para ver a composição de bases.',
+    hint: 'Use \'cd projetos\' e depois \'bio-count genoma_curto.seq\'.',
+    checkCondition: (vfs, cmd) => {
+      return cmd === 'bio-count' && vfs.getCwd().endsWith('/projetos');
+    },
+    completionMessage: 'Incrível! Você analisou sua primeira sequência genômica.',
+  },
+  {
+    id: 'bio-2',
+    title: 'Complemento Reverso',
+    description: 'Gere o complemento reverso da sequência \'ATGC\' diretamente pelo terminal.',
+    hint: 'Tente \'bio-rev-comp ATGC\'.',
+    checkCondition: (_, cmd) => cmd === 'bio-rev-comp',
+    completionMessage: 'Perfeito! O complemento reverso é fundamental para entender a dupla hélice.',
+  },
+  {
+    id: 'bio-3',
+    title: 'Visualização FASTA',
+    description: 'Use o comando \'fasta-view\' para visualizar o arquivo \'sequencia.fasta\' com cores.',
+    hint: 'Tente \'fasta-view sequencia.fasta\'.',
+    checkCondition: (_, cmd) => cmd === 'fasta-view',
+    completionMessage: 'Visualizar dados é o primeiro passo para grandes descobertas!',
+  },
+  {
+    id: 'sudo-1',
+    title: 'O Poder do Superusuário',
+    description: 'Tente listar o conteúdo do diretório \'/root\'. Se falhar, use o poder do superusuário.',
+    hint: 'Tente \'sudo ls /root\'.',
+    checkCondition: (_, cmd) => cmd === 'sudo',
+    completionMessage: 'Com grandes poderes vêm grandes responsabilidades!',
+  },
+  {
+    id: 'find-1',
+    title: 'O Detetive de Arquivos',
+    description: 'Localize onde está o arquivo \'genoma_curto.seq\' em todo o sistema.',
+    hint: 'Tente \'find / -name genoma_curto.seq\'.',
+    checkCondition: (_, cmd) => cmd === 'find',
+    completionMessage: 'Você encontrou! O comando find é indispensável em bioinformática.',
+  },
+  {
+    id: 'chmod-1',
+    title: 'Segredo de Estado',
+    description: 'Crie um arquivo chamado \'segredo.txt\' e mude suas permissões para que apenas você possa ler (r--------).',
+    hint: 'Use \'touch segredo.txt\' e depois \'chmod r-------- segredo.txt\'.',
+    checkCondition: (vfs, cmd) => {
+      const node = vfs.getNode('/home/dayhoff/segredo.txt');
+      return cmd === 'chmod' && !!node && node.permissions === 'r--------';
+    },
+    completionMessage: 'Seu segredo está seguro agora!',
+  },
+  {
+    id: 'pipe-1',
+    title: 'Encanamentos de Dados',
+    description: 'Liste todos os arquivos no diretório atual e filtre apenas aqueles que contêm \'seq\' no nome usando um pipe.',
+    hint: 'Tente \'ls | grep seq\'.',
+    checkCondition: (_, cmd) => cmd === 'ls' || cmd === 'grep', // Simplificação
+    completionMessage: 'Pipes são a verdadeira magia do terminal!',
   }
 ];
 

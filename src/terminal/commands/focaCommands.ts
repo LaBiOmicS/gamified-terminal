@@ -50,8 +50,8 @@ export const focaCommands: Command[] = [
       }
 
       for (const path of files) {
-        const content = ctx.vfs.readFile(path);
-        if (content !== null) {
+        const content = ctx.vfs.readFile(path, ctx.user);
+        if (content !== null && content !== 'Permissão negada') {
           const lines = content.split('\n');
           lines.forEach((line, index) => {
             let isMatch = ignoreCase 
@@ -66,7 +66,7 @@ export const focaCommands: Command[] = [
             }
           });
         } else {
-          ctx.printError(`grep: ${path}: Arquivo ou diretório não encontrado`);
+          ctx.printError(`grep: ${path}: Permissão negada ou Arquivo não encontrado`);
         }
       }
     }
@@ -75,21 +75,16 @@ export const focaCommands: Command[] = [
     name: 'find',
     description: 'Busca por arquivos em uma hierarquia de diretórios',
     execute: async (ctx) => {
-      const path = ctx.args[0] || '.';
+      const pathArg = ctx.args.find(a => !a.startsWith('-')) || '.';
       const namePattern = ctx.args[ctx.args.indexOf('-name') + 1];
       
-      const nodes = ctx.vfs.getNodes();
-      const results = Object.keys(nodes).filter(p => {
-        if (namePattern) return p.includes(namePattern);
-        return true;
-      });
-      
+      const results = ctx.vfs.findNodes(pathArg, namePattern);
       ctx.print(results.join('\n'));
     }
   },
   {
     name: 'df',
-    description: 'Relata o uso de espaço em disco do sistema de arquivos',
+// ... (df unchanged)
     execute: async (ctx) => {
       ctx.print('Sist. Arq.      Tam.   Usado  Disp. Uso% Montado em');
       ctx.print('/dev/sda1        50G    12G    38G  24% /');
@@ -98,7 +93,7 @@ export const focaCommands: Command[] = [
   },
   {
     name: 'du',
-    description: 'Estima o uso de espaço de arquivos',
+// ... (du unchanged)
     execute: async (ctx) => {
       const path = ctx.args[0] || '.';
       ctx.print('4.0K    ' + path);
@@ -106,9 +101,8 @@ export const focaCommands: Command[] = [
   },
   {
     name: 'history',
-    description: 'Exibe a lista de comandos executados',
+// ... (history unchanged)
     execute: async (ctx) => {
-      // O histórico é gerenciado pelo TerminalEngine, mas vamos simular
       ctx.print('  1  pwd\n  2  ls -la\n  3  mkdir pratica\n  4  history');
     }
   },
@@ -118,28 +112,35 @@ export const focaCommands: Command[] = [
     execute: async (ctx) => {
       if (ctx.args.length === 0) {
         ctx.print('usage: sudo -h | -K | -k | -V');
+        ctx.print('\nPara executar um comando como root, use: sudo [comando]');
         return;
       }
-      ctx.print('[sudo] senha para dayhoff: ');
-      ctx.print('Simulando execução com privilégios de root...');
-      // Apenas um mock por enquanto
+      // O motor lida com a execução do comando subsequente como root.
+      // Este comando só é chamado se 'sudo' for digitado sem argumentos (tratado acima)
+      // ou se o motor falhar em interceptar.
     }
   },
   {
     name: 'groups',
     description: 'Exibe os grupos aos quais o usuário pertence',
     execute: async (ctx) => {
-      ctx.print('dayhoff sudo student labiomics');
+      if (ctx.user === 'root') ctx.print('root');
+      else ctx.print('dayhoff sudo student labiomics');
     }
   },
   {
     name: 'id',
     description: 'Exibe os IDs de usuário e grupo reais e efetivos',
     execute: async (ctx) => {
-      ctx.print('uid=1000(dayhoff) gid=1000(dayhoff) grupos=1000(dayhoff),27(sudo),1001(labiomics)');
+      if (ctx.user === 'root') {
+        ctx.print('uid=0(root) gid=0(root) grupos=0(root)');
+      } else {
+        ctx.print('uid=1000(dayhoff) gid=1000(dayhoff) grupos=1000(dayhoff),27(sudo),1001(labiomics)');
+      }
     }
   },
   {
+// ... (ssh unchanged)
     name: 'ssh',
     description: 'Cliente de login remoto OpenSSH',
     execute: async (ctx) => {
@@ -162,14 +163,14 @@ export const focaCommands: Command[] = [
         return;
       }
       for (const path of ctx.args) {
-        const content = ctx.vfs.readFile(path);
-        if (content !== null) {
+        const content = ctx.vfs.readFile(path, ctx.user);
+        if (content !== null && content !== 'Permissão negada') {
           const lines = content.split('\n').length;
           const words = content.trim().split(/\s+/).filter(Boolean).length;
           const bytes = content.length;
           ctx.print(`${lines} ${words} ${bytes} ${path}`);
         } else {
-          ctx.printError(`wc: ${path}: Arquivo ou diretório não encontrado`);
+          ctx.printError(`wc: ${path}: Permissão negada ou Arquivo não encontrado`);
         }
       }
     }
@@ -182,11 +183,11 @@ export const focaCommands: Command[] = [
       const path = ctx.args[0];
       if (!path) return;
       
-      const content = ctx.vfs.readFile(path);
-      if (content !== null) {
+      const content = ctx.vfs.readFile(path, ctx.user);
+      if (content !== null && content !== 'Permissão negada') {
         ctx.print(content.split('\n').slice(0, n).join('\n'));
       } else {
-        ctx.printError(`head: ${path}: Arquivo ou diretório não encontrado`);
+        ctx.printError(`head: ${path}: Permissão negada ou Arquivo não encontrado`);
       }
     }
   },
@@ -198,15 +199,16 @@ export const focaCommands: Command[] = [
       const path = ctx.args[0];
       if (!path) return;
       
-      const content = ctx.vfs.readFile(path);
-      if (content !== null) {
+      const content = ctx.vfs.readFile(path, ctx.user);
+      if (content !== null && content !== 'Permissão negada') {
         const lines = content.split('\n');
         ctx.print(lines.slice(Math.max(0, lines.length - n)).join('\n'));
       } else {
-        ctx.printError(`tail: ${path}: Arquivo ou diretório não encontrado`);
+        ctx.printError(`tail: ${path}: Permissão negada ou Arquivo não encontrado`);
       }
     }
   },
+// ... (ps, top, free, uptime unchanged)
   {
     name: 'ps',
     description: 'Relatório do status dos processos atuais',
@@ -245,8 +247,8 @@ export const focaCommands: Command[] = [
       }
       const mode = ctx.args[0];
       const path = ctx.args[1];
-      if (!ctx.vfs.chmod(path, mode)) {
-        ctx.printError(`chmod: não foi possível acessar '${path}': Arquivo ou diretório não encontrado`);
+      if (!ctx.vfs.chmod(path, mode, ctx.user)) {
+        ctx.printError(`chmod: não foi possível mudar permissões de '${path}': Permissão negada ou Arquivo não encontrado`);
       }
     }
   },
@@ -260,8 +262,8 @@ export const focaCommands: Command[] = [
       }
       const owner = ctx.args[0];
       const path = ctx.args[1];
-      if (!ctx.vfs.chown(path, owner)) {
-        ctx.printError(`chown: não foi possível acessar '${path}': Arquivo ou diretório não encontrado`);
+      if (!ctx.vfs.chown(path, owner, ctx.user)) {
+        ctx.printError(`chown: não foi possível mudar o dono de '${path}': Apenas o root pode fazer isso`);
       }
     }
   },

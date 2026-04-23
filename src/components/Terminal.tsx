@@ -81,39 +81,49 @@ const Terminal: React.FC = () => {
 
   const commandGroups = [
     {
-      title: 'Navegação',
+      title: '1. Navegação e Exploração de Arquivos',
+      info: 'Comandos para entender onde você está e o que há ao seu redor.',
       commands: [
-        { name: 'pwd', desc: 'Mostra onde você está agora', example: 'pwd' },
-        { name: 'ls', desc: 'Lista arquivos e pastas', example: 'ls -la' },
-        { name: 'cd', desc: 'Entra em uma pasta', example: 'cd nome_da_pasta' },
-        { name: 'find', desc: 'Busca arquivos', example: 'find . -name "*.txt"' },
+        { name: 'pwd', desc: 'Exibe o caminho completo do diretório atual (Print Working Directory)', example: 'pwd' },
+        { name: 'ls', desc: 'Lista o conteúdo do diretório (arquivos e pastas)', example: 'ls -la' },
+        { name: 'cd', desc: 'Muda o diretório de trabalho atual', example: 'cd diretório' },
       ]
     },
     {
-      title: 'Arquivos e Pastas',
+      title: '2. Manipulação de Arquivos e Pastas',
       commands: [
-        { name: 'mkdir', desc: 'Cria uma nova pasta', example: 'mkdir -p a/b/c' },
-        { name: 'touch', desc: 'Cria um arquivo vazio', example: 'touch nota.txt' },
-        { name: 'rm', desc: 'Remove arquivos/pastas', example: 'rm -rf pasta/' },
-        { name: 'chmod', desc: 'Muda permissões', example: 'chmod 777 script.sh' },
+        { name: 'mkdir', desc: 'Cria um novo diretório (pasta)', example: 'mkdir nova_pasta' },
+        { name: 'touch', desc: 'Cria um arquivo vazio ou atualiza o timestamp', example: 'touch arquivo.txt' },
+        { name: 'cp', desc: 'Copia arquivos ou diretórios', example: 'cp origem destino' },
+        { name: 'mv', desc: 'Move ou renomeia arquivos ou diretórios', example: 'mv antigo novo' },
+        { name: 'rm', desc: 'Remove arquivos ou diretórios', example: 'rm -rf pasta' },
       ]
     },
     {
-      title: 'Texto e Conteúdo',
+      title: '3. Visualização e Busca de Texto',
       commands: [
-        { name: 'cat', desc: 'Mostra conteúdo', example: 'cat nota.txt' },
-        { name: 'grep', desc: 'Busca texto', example: 'grep -i "erro" log.txt' },
-        { name: 'head/tail', desc: 'Vê início ou fim', example: 'tail -f log.txt' },
-        { name: 'wc', desc: 'Conta linhas/palavras', example: 'wc -l arq.txt' },
+        { name: 'cat', desc: 'Exibe o conteúdo completo de um arquivo', example: 'cat sequencia.fasta' },
+        { name: 'grep', desc: 'Busca por padrões de texto dentro de arquivos', example: 'grep "ATG" seq.txt' },
+        { name: 'find', desc: 'Busca arquivos em toda a hierarquia', example: 'find / -name "seq.fasta"' },
+        { name: 'head', desc: 'Exibe as primeiras linhas de um arquivo', example: 'head -n 5 seq.txt' },
+        { name: 'tail', desc: 'Exibe as últimas linhas de um arquivo', example: 'tail -n 5 seq.txt' },
       ]
     },
     {
-      title: 'Rede e Sistema',
+      title: '4. Administração e Permissões',
       commands: [
-        { name: 'sudo', desc: 'Executa como root', example: 'sudo apt update' },
-        { name: 'df/du', desc: 'Espaço em disco', example: 'df -h' },
-        { name: 'ps/top', desc: 'Processos do sistema', example: 'ps aux' },
-        { name: 'ssh', desc: 'Acesso remoto', example: 'ssh dayhoff@host' },
+        { name: 'sudo', desc: 'Executa comandos com privilégios de superusuário', example: 'sudo ls /root' },
+        { name: 'chmod', desc: 'Altera as permissões de acesso (rwx)', example: 'chmod rwxr-xr-x arquivo' },
+        { name: 'chown', desc: 'Altera o dono e o grupo de um arquivo', example: 'sudo chown root arquivo' },
+        { name: 'whoami', desc: 'Exibe o nome do usuário atual', example: 'whoami' },
+      ]
+    },
+    {
+      title: 'Bioinformática (LaBiOmicS)',
+      commands: [
+        { name: 'bio-count', desc: 'Conta a frequência de bases (A, T, C, G)', example: 'bio-count seq.fasta' },
+        { name: 'bio-rev-comp', desc: 'Gera o complemento reverso de DNA', example: 'bio-rev-comp ATGC' },
+        { name: 'fasta-view', desc: 'Visualiza arquivos FASTA coloridos', example: 'fasta-view seq.fasta' },
       ]
     }
   ];
@@ -184,15 +194,20 @@ const Terminal: React.FC = () => {
           visibility: sidebarOpen ? 'visible' : 'hidden'
         }}>
           <div style={{ padding: '20px 15px 10px', fontSize: '11px', fontWeight: 700, color: '#007acc', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Guia de Comandos (Cola)
+            Guia de Comandos
           </div>
           
           <div style={{ flex: 1, overflowY: 'auto', padding: '0 15px 20px' }}>
             {commandGroups.map((group, i) => (
               <div key={i} style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: '#888', marginBottom: '8px', borderBottom: '1px solid #222', paddingBottom: '3px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#888', marginBottom: '4px', borderBottom: '1px solid #222', paddingBottom: '3px' }}>
                   {group.title}
                 </div>
+                {group.info && (
+                  <div style={{ fontSize: '11px', color: '#555', marginBottom: '10px', fontStyle: 'italic' }}>
+                    {group.info}
+                  </div>
+                )}
                 {group.commands.map((cmd, j) => (
                   <div key={j} style={{ marginBottom: '10px' }}>
                     <div style={{ fontSize: '13px', color: '#eee', fontFamily: 'monospace', fontWeight: 'bold' }}>{cmd.name}</div>
@@ -202,6 +217,25 @@ const Terminal: React.FC = () => {
                 ))}
               </div>
             ))}
+
+            {/* Dica de Ouro Section */}
+            <div style={{ 
+              marginTop: '30px', 
+              padding: '15px', 
+              backgroundColor: 'rgba(255, 215, 0, 0.05)', 
+              border: '1px solid rgba(255, 215, 0, 0.2)', 
+              borderRadius: '8px' 
+            }}>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: '#ffd700', marginBottom: '8px' }}>
+                💡 Dica de Ouro: Pipes (|) e Grep
+              </div>
+              <div style={{ fontSize: '11px', color: '#aaa', lineHeight: '1.4' }}>
+                Uma das maiores forças do Linux é o <strong>grep</strong>, usado para buscar texto. 
+                Com o <strong>pipe (|)</strong>, você pode enviar o resultado de um comando para outro.<br/><br/>
+                <code style={{ color: '#eee' }}>ls | grep ".fasta"</code><br/>
+                (Lista arquivos e filtra apenas os .fasta)
+              </div>
+            </div>
           </div>
           
           {/* Missão no Sidebar */}

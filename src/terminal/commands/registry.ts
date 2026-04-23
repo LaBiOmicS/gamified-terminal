@@ -1,12 +1,13 @@
 import type { Command } from './types';
 import { basicCommands } from './basicCommands';
 import { focaCommands } from './focaCommands';
+import { bioCommands } from './bioCommands';
 
 export class CommandRegistry {
   private commands: Map<string, Command> = new Map();
 
   constructor() {
-    [...basicCommands, ...focaCommands].forEach(cmd => {
+    [...basicCommands, ...focaCommands, ...bioCommands].forEach(cmd => {
       this.commands.set(cmd.name, cmd);
     });
 

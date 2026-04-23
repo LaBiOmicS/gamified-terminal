@@ -17,6 +17,8 @@ export class TerminalEngine {
   private onStateChange?: () => void;
   private promptStyle: PromptStyle = 'bash';
 
+  private currentUser: string = 'dayhoff';
+
   constructor(terminal: Terminal, onStateChange?: () => void) {
     this.terminal = terminal;
     this.onStateChange = onStateChange;
@@ -32,6 +34,9 @@ export class TerminalEngine {
 
     const savedStyle = localStorage.getItem('prompt_style') as PromptStyle;
     if (savedStyle) this.promptStyle = savedStyle;
+
+    const savedUser = localStorage.getItem('current_user');
+    if (savedUser) this.currentUser = savedUser;
     
     this.terminal.onData(e => this.handleData(e));
     
@@ -39,15 +44,12 @@ export class TerminalEngine {
     const banner = [
       '#################################################################',
       '#                                                               #',
-      '#  \x1b[1;33mBEM-VINDO AO TERMINAL LABIOMICS - APRENDIZADO DE LINUX\x1b[1;34m       #',
+      '#  \x1b[1;33mBEM-VINDO AO TERMINAL LABIOMICS - VERSÃO 2.0\x1b[1;34m                 #',
       '#                                                               #',
-      '#  \x1b[0mEste ambiente é um simulador gamificado para ensinar os      \x1b[1;34m#',
-      '#  \x1b[0mfundamentos do terminal Linux (Bash).                        \x1b[1;34m#',
-      '#                                                               #',
-      '#  \x1b[1;32mOBJETIVOS:\x1b[0m                                                   \x1b[1;34m#',
-      '#  \x1b[0m- Dominar comandos básicos e avançados do Foca Linux         \x1b[1;34m#',
-      '#  \x1b[0m- Compreender a hierarquia de arquivos e permissões          \x1b[1;34m#',
-      '#  \x1b[0m- Praticar em um ambiente seguro e interativo                \x1b[1;34m#',
+      '#  \x1b[0mEste ambiente simulado agora suporta:                        \x1b[1;34m#',
+      '#  \x1b[1;32m- Sistema de Permissões Realista (chmod/chown)               \x1b[1;34m#',
+      '#  \x1b[1;32m- Execução com Superusuário (sudo)                           \x1b[1;34m#',
+      '#  \x1b[1;32m- Redirecionamento e Pipes (|)                               \x1b[1;34m#',
       '#                                                               #',
       '#  \x1b[0mDigite \x1b[1;36mmissao\x1b[0m para ver seu objetivo atual.                  \x1b[1;34m#',
       '#  \x1b[0mDigite \x1b[1;36majuda\x1b[0m para listar os comandos disponíveis.            \x1b[1;34m#',
@@ -82,17 +84,20 @@ export class TerminalEngine {
   private printPrompt() {
     const cwd = this.vfs.getCwd();
     const shortCwd = cwd.replace('/home/dayhoff', '~');
+    const user = this.currentUser;
+    const symbol = user === 'root' ? '#' : '$';
     
     switch (this.promptStyle) {
       case 'zsh':
         this.terminal.write(`\r\n\x1b[1;36m➜  \x1b[1;32m${shortCwd}\x1b[0m \x1b[1;34mgit:(\x1b[1;31mmain\x1b[1;34m)\x1b[0m `);
         break;
       case 'minimal':
-        this.terminal.write(`\r\n\x1b[1;32m${shortCwd} $\x1b[0m `);
+        this.terminal.write(`\r\n\x1b[1;32m${shortCwd} ${symbol}\x1b[0m `);
         break;
       case 'bash':
       default:
-        this.terminal.write(`\r\n\x1b[1;32mdayhoff@LaBiOmicS\x1b[0m:\x1b[1;34m${shortCwd}\x1b[0m$ `);
+        const userColor = user === 'root' ? '\x1b[1;31m' : '\x1b[1;32m';
+        this.terminal.write(`\r\n${userColor}${user}@LaBiOmicS\x1b[0m:\x1b[1;34m${shortCwd}\x1b[0m${symbol} `);
         break;
     }
   }
@@ -123,6 +128,7 @@ export class TerminalEngine {
     localStorage.setItem('vfs_state', JSON.stringify(this.vfs.getState()));
     localStorage.setItem('quest_index', this.questManager.getCurrentIndex().toString());
     localStorage.setItem('prompt_style', this.promptStyle);
+    localStorage.setItem('current_user', this.currentUser);
     if (this.onStateChange) this.onStateChange();
   }
 
@@ -179,7 +185,56 @@ export class TerminalEngine {
   }
 
   private async executeCommand(line: string) {
-    const parts = line.split(/\s+/);
+    let effectiveUser = this.currentUser;
+    let commandLine = line;
+
+    if (line.startsWith('sudo ')) {
+      effectiveUser = 'root';
+      commandLine = line.substring(5);
+      this.terminal.write('[sudo] senha para dayhoff: *******\r\n');
+    }
+
+    // Suporte básico a Pipes
+    if (commandLine.includes('|')) {
+      const commands = commandLine.split('|').map(c => c.trim());
+      let pipeData = '';
+
+      for (let i = 0; i < commands.length; i++) {
+        const parts = commands[i].split(/\s+/);
+        const cmdName = parts[0];
+        const args = [...parts.slice(1)];
+        
+        if (pipeData) {
+          args.push(pipeData);
+        }
+
+        const command = this.registry.getCommand(cmdName);
+        if (command) {
+          let output = '';
+          const context: CommandContext = {
+            vfs: this.vfs,
+            args,
+            user: effectiveUser,
+            print: (text) => {
+              output += text + '\n';
+              if (i === commands.length - 1) {
+                this.terminal.write(text.replace(/\n/g, '\r\n') + '\r\n');
+              }
+            },
+            printError: (text) => this.terminal.write(`\x1b[31mErro: ${text}\x1b[0m\r\n`),
+            clear: () => this.terminal.clear(),
+          };
+          await command.execute(context);
+          pipeData = output.trim();
+        } else {
+          this.terminal.write(`zsh: comando não encontrado: ${cmdName}\r\n`);
+          break;
+        }
+      }
+      return;
+    }
+
+    const parts = commandLine.split(/\s+/);
     const cmdName = parts[0];
     const args = parts.slice(1);
 
@@ -212,6 +267,7 @@ export class TerminalEngine {
       const context: CommandContext = {
         vfs: this.vfs,
         args,
+        user: effectiveUser,
         print: (text) => this.terminal.write(text.replace(/\n/g, '\r\n') + '\r\n'),
         printError: (text) => this.terminal.write(`\x1b[31mErro: ${text}\x1b[0m\r\n`),
         clear: () => this.terminal.clear(),

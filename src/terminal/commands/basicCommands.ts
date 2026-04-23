@@ -16,7 +16,7 @@ export const basicCommands: Command[] = [
       const longFormat = ctx.args.some(a => a.includes('l') && a.startsWith('-'));
       const pathArg = ctx.args.find(a => !a.startsWith('-')) || ctx.vfs.getCwd();
       
-      const childrenNames = ctx.vfs.listDirectory(pathArg);
+      const childrenNames = ctx.vfs.listDirectory(pathArg, ctx.user);
       if (childrenNames) {
         let filtered = showHidden ? ['.', '..', ...childrenNames] : childrenNames.filter(n => !n.startsWith('.'));
         
@@ -38,7 +38,7 @@ export const basicCommands: Command[] = [
           ctx.print(filtered.join('  '));
         }
       } else {
-        ctx.printError(`ls: não foi possível acessar '${pathArg}': Arquivo ou diretório não encontrado`);
+        ctx.printError(`ls: não foi possível acessar '${pathArg}': Permissão negada ou Diretório não encontrado`);
       }
     }
   },
@@ -47,8 +47,8 @@ export const basicCommands: Command[] = [
     description: 'Muda o diretório de trabalho',
     execute: async (ctx) => {
       const path = ctx.args[0] || '/home/dayhoff';
-      if (!ctx.vfs.setCwd(path)) {
-        ctx.printError(`cd: ${path}: Arquivo ou diretório não encontrado`);
+      if (!ctx.vfs.setCwd(path, ctx.user)) {
+        ctx.printError(`cd: ${path}: Permissão negada ou Arquivo ou diretório não encontrado`);
       }
     }
   },
@@ -61,11 +61,11 @@ export const basicCommands: Command[] = [
         return;
       }
       for (const path of ctx.args) {
-        const content = ctx.vfs.readFile(path);
-        if (content !== null) {
+        const content = ctx.vfs.readFile(path, ctx.user);
+        if (content !== null && content !== 'Permissão negada') {
           ctx.print(content);
         } else {
-          ctx.printError(`cat: ${path}: Arquivo ou diretório não encontrado`);
+          ctx.printError(`cat: ${path}: Permissão negada ou Arquivo ou diretório não encontrado`);
         }
       }
     }
@@ -90,12 +90,12 @@ export const basicCommands: Command[] = [
           for (const part of parts) {
             current += '/' + part;
             if (!ctx.vfs.getNode(current)) {
-              ctx.vfs.mkdir(current);
+              ctx.vfs.mkdir(current, ctx.user);
             }
           }
         } else {
-          if (!ctx.vfs.mkdir(path)) {
-            ctx.printError(`mkdir: não foi possível criar o diretório '${path}': O arquivo já existe ou o diretório pai não existe`);
+          if (!ctx.vfs.mkdir(path, ctx.user)) {
+            ctx.printError(`mkdir: não foi possível criar o diretório '${path}': Permissão negada ou arquivo já existe`);
           }
         }
       }
@@ -124,8 +124,8 @@ export const basicCommands: Command[] = [
       }
 
       for (const path of paths) {
-        if (!ctx.vfs.rm(path, recursive)) {
-          if (!force) ctx.printError(`rm: não foi possível remover '${path}': Arquivo ou diretório não encontrado ou diretório não vazio`);
+        if (!ctx.vfs.rm(path, ctx.user, recursive)) {
+          if (!force) ctx.printError(`rm: não foi possível remover '${path}': Permissão negada ou diretório não vazio`);
         }
       }
     }
@@ -148,8 +148,8 @@ export const basicCommands: Command[] = [
           return;
         }
         
-        if (!ctx.vfs.writeFile(target, content, isAppend)) {
-          ctx.printError(`zsh: ${target}: Arquivo ou diretório não encontrado`);
+        if (!ctx.vfs.writeFile(target, content, ctx.user, isAppend)) {
+          ctx.printError(`zsh: ${target}: Permissão negada ou Diretório não encontrado`);
         }
       } else {
         ctx.print(ctx.args.join(' '));
@@ -167,7 +167,7 @@ export const basicCommands: Command[] = [
     name: 'whoami',
     description: 'Imprime o nome do usuário atual',
     execute: async (ctx) => {
-      ctx.print('dayhoff');
+      ctx.print(ctx.user);
     }
   },
   {
@@ -187,13 +187,33 @@ export const basicCommands: Command[] = [
       }
       const source = ctx.args[0];
       const dest = ctx.args[1];
-      const content = ctx.vfs.readFile(source);
-      if (content !== null) {
-        if (!ctx.vfs.writeFile(dest, content)) {
-          ctx.printError(`cp: não foi possível criar o arquivo '${dest}': Arquivo ou diretório não encontrado`);
+      const content = ctx.vfs.readFile(source, ctx.user);
+      if (content !== null && content !== 'Permissão negada') {
+        if (!ctx.vfs.writeFile(dest, content, ctx.user)) {
+          ctx.printError(`cp: não foi possível criar o arquivo '${dest}': Permissão negada`);
         }
       } else {
-        ctx.printError(`cp: não foi possível obter estado de '${source}': Arquivo ou diretório não encontrado`);
+        ctx.printError(`cp: não foi possível obter estado de '${source}': Permissão negada ou Arquivo não encontrado`);
+      }
+    }
+  },
+  {
+    name: 'touch',
+    description: 'Cria um arquivo vazio ou atualiza a data de acesso e modificação',
+    execute: async (ctx) => {
+      if (ctx.args.length === 0) {
+        ctx.printError('touch: operando de arquivo ausente');
+        return;
+      }
+      for (const path of ctx.args) {
+        const content = ctx.vfs.readFile(path, ctx.user);
+        if (content === null) {
+          ctx.vfs.writeFile(path, '', ctx.user);
+        } else if (content !== 'Permissão negada') {
+          ctx.vfs.writeFile(path, content, ctx.user);
+        } else {
+          ctx.printError(`touch: ${path}: Permissão negada`);
+        }
       }
     }
   },
@@ -207,15 +227,15 @@ export const basicCommands: Command[] = [
       }
       const source = ctx.args[0];
       const dest = ctx.args[1];
-      const content = ctx.vfs.readFile(source);
-      if (content !== null) {
-        if (ctx.vfs.writeFile(dest, content)) {
-          ctx.vfs.rm(source);
+      const content = ctx.vfs.readFile(source, ctx.user);
+      if (content !== null && content !== 'Permissão negada') {
+        if (ctx.vfs.writeFile(dest, content, ctx.user)) {
+          ctx.vfs.rm(source, ctx.user);
         } else {
-          ctx.printError(`mv: não foi possível mover '${source}' para '${dest}': Arquivo ou diretório não encontrado`);
+          ctx.printError(`mv: não foi possível mover '${source}' para '${dest}': Permissão negada`);
         }
       } else {
-        ctx.printError(`mv: não foi possível obter estado de '${source}': Arquivo ou diretório não encontrado`);
+        ctx.printError(`mv: não foi possível obter estado de '${source}': Permissão negada ou Arquivo não encontrado`);
       }
     }
   }
