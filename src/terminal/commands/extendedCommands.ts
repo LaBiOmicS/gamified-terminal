@@ -27,20 +27,53 @@ export const extendedCommands: Command[] = [
     name: 'tar',
     description: 'Utilitário de arquivamento',
     execute: async (ctx) => {
-      if (ctx.args.includes('-cvf')) ctx.print('Arquivando arquivos...');
-      else if (ctx.args.includes('-xvf')) ctx.print('Extraindo arquivos...');
-      else ctx.print('Uso: tar [opção] [arquivo]');
+      const verbose = ctx.args.some(a => a.includes('v'));
+      const compress = ctx.args.some(a => a.includes('z'));
+      const bzip2 = ctx.args.some(a => a.includes('j'));
+      const extract = ctx.args.some(a => a.includes('x'));
+      const create = ctx.args.some(a => a.includes('c'));
+      
+      const file = ctx.args.find(a => !a.startsWith('-')) || 'archive.tar';
+
+      if (create) {
+        if (verbose) ctx.print('a bin/\na etc/\na home/');
+        ctx.print(`Arquivado com sucesso em ${file}${compress ? '.gz' : (bzip2 ? '.bz2' : '')}`);
+      } else if (extract) {
+        if (verbose) ctx.print('x bin/\nx etc/\nx home/');
+        ctx.print(`Extraído com sucesso de ${file}`);
+      } else {
+        ctx.print('Uso: tar [-czjvf] [arquivo]');
+      }
     }
   },
   {
     name: 'zip',
     description: 'Empacota e comprime (arquiva) arquivos',
-    execute: async (ctx) => { ctx.print('adding: file.txt (deflated 10%)'); }
+    execute: async (ctx) => {
+      const recursive = ctx.args.includes('-r');
+      const target = ctx.args.find(a => !a.startsWith('-'));
+      if (!target) { ctx.printError('zip error: Nothing to do!'); return; }
+      ctx.print(`  adding: ${target} (deflated 15%)`);
+    }
   },
   {
     name: 'unzip',
     description: 'Lista, testa e extrai arquivos compactados em um arquivo ZIP',
-    execute: async (ctx) => { ctx.print('Archive: file.zip\n  inflating: file.txt'); }
+    execute: async (ctx) => {
+      const file = ctx.args[0];
+      if (!file) { ctx.print('UnZip 6.00 of 20 April 2009, by Info-ZIP.  Usage: unzip [-opts] zipfile'); return; }
+      ctx.print(`Archive:  ${file}\n  inflating: ${file.replace('.zip', '')}`);
+    }
+  },
+  {
+    name: '7z',
+    description: 'Arquivador de arquivos com alta taxa de compressão',
+    execute: async (ctx) => {
+      const cmd = ctx.args[0];
+      if (cmd === 'a') ctx.print('Creating archive: backup.7z\nItems to compress: 5\nFiles read from disk: 5\nEverything is Ok');
+      else if (cmd === 'x') ctx.print('Extracting archive: backup.7z\nEverything is Ok');
+      else ctx.print('7-Zip 16.02 (x64) : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21\nUsage: 7z <command> [<switches>...] <archive_name>');
+    }
   },
   {
     name: 'sed',
@@ -284,12 +317,27 @@ export const extendedCommands: Command[] = [
   {
     name: 'scp',
     description: 'Cópia segura (cópia de arquivo remoto)',
-    execute: async (ctx) => { ctx.print('arquivo.txt                                   100% 1024     1.0KB/s   00:00'); }
+    execute: async (ctx) => {
+      const file = ctx.args[0];
+      const dest = ctx.args[1];
+      if (!file || !dest) { ctx.print('usage: scp [-346BCpqrTv] [[user@]host1:]file1 ... [[user@]host2:]file2'); return; }
+      ctx.print(`${file}                                   0%    0     0.0KB/s   --:-- ETA`);
+      await new Promise(r => setTimeout(r, 500));
+      ctx.print(`${file}                                 100% 1024     1.0KB/s   00:00`);
+    }
   },
   {
     name: 'rsync',
     description: 'Ferramenta de cópia de arquivos rápida, versátil e remota (e local)',
-    execute: async (ctx) => { ctx.print('sending incremental file list\nfile1.txt\n\nsent 100 bytes  received 35 bytes  270.00 bytes/sec'); }
+    execute: async (ctx) => {
+      const archive = ctx.args.includes('-a');
+      const verbose = ctx.args.includes('-v');
+      if (ctx.args.length < 2) { ctx.print('rsync  version 3.2.3  protocol version 31\nUsage: rsync [OPTION]... SRC [SRC]... DEST'); return; }
+      
+      if (verbose) ctx.print('sending incremental file list');
+      ctx.print('file1.txt\nfile2.txt');
+      if (archive) ctx.print('sent 1,234 bytes  received 67 bytes  2,602.00 bytes/sec\ntotal size is 1,120  speedup is 0.86');
+    }
   },
   {
     name: 'lscpu',

@@ -207,21 +207,49 @@ export const focaCommands: Command[] = [
     name: 'ps',
     description: 'Relatório do status dos processos atuais',
     execute: async (ctx) => {
-      ctx.print('  PID TTY          TIME CMD\n 1234 pts/0    00:00:00 zsh\n 5678 pts/0    00:00:00 ps');
+      const aux = ctx.args.includes('aux');
+      const ef = ctx.args.includes('-ef');
+      
+      if (aux) {
+        ctx.print('USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND');
+        ctx.print('root         1  0.0  0.1  168320  9612 ?        Ss   Apr22   0:02 /sbin/init');
+        ctx.print('dayhoff   1234  0.1  0.5  543200 42100 pts/0    Ss   12:00   0:01 /bin/bash');
+        ctx.print('dayhoff   5678  0.0  0.0   12344  2100 pts/0    R+   12:35   0:00 ps aux');
+      } else if (ef) {
+        ctx.print('UID        PID  PPID  C STIME TTY          TIME CMD');
+        ctx.print('root         1     0  0 Apr22 ?        00:00:02 /sbin/init');
+        ctx.print('dayhoff   1234     1  0 12:00 pts/0    00:00:01 /bin/bash');
+      } else {
+        ctx.print('  PID TTY          TIME CMD\n 1234 pts/0    00:00:01 bash\n 5678 pts/0    00:00:00 ps');
+      }
     }
   },
   {
     name: 'top',
     description: 'Exibe processos do Linux',
     execute: async (ctx) => {
-      ctx.print('top - 12:34:56 up 1 day, 2:30,  1 user,  load average: 0.00, 0.01, 0.05\nTasks: 1 total, 1 running, 0 sleeping, 0 stopped, 0 zombie\n%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni, 100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st\nMiB Mem :   8192.0 total,   4096.0 free,   2048.0 used,   2048.0 buff/cache\n\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n 5678 dayhoff   20   0   12345   6789   1234 R   0.0   0.1   0:00.01 top');
+      ctx.print('\x1b[H\x1b[J'); // Limpa a tela
+      ctx.print('top - 12:35:42 up 1 day, 2:31,  1 user,  load average: 0.08, 0.03, 0.05');
+      ctx.print('Tasks: 125 total,   1 running, 124 sleeping,   0 stopped,   0 zombie');
+      ctx.print('%Cpu(s):  0.3 us,  0.3 sy,  0.0 ni, 99.3 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st');
+      ctx.print('MiB Mem :   7956.1 total,   3124.5 free,   2456.8 used,   2374.8 buff/cache');
+      ctx.print('\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND');
+      ctx.print(' 1234 dayhoff   20   0  543200  42100  32400 S   0.3   0.5   0:01.45 bash');
+      ctx.print(' 5678 dayhoff   20   0   12345   6789   1234 R   0.0   0.1   0:00.01 top');
     }
   },
   {
     name: 'free',
     description: 'Exibe quantidade de memória livre e usada no sistema',
     execute: async (ctx) => {
-      ctx.print('              total        used        free      shared  buff/cache   available\nMem:        8192000     2048000     4096000      102400     2048000     6144000\nSwap:       2048000           0     2048000');
+      const h = ctx.args.includes('-h');
+      if (h) {
+        ctx.print('              total        used        free      shared  buff/cache   available');
+        ctx.print('Mem:           7.8G        2.4G        3.1G        100M        2.3G        5.1G');
+        ctx.print('Swap:          2.0G          0B        2.0G');
+      } else {
+        ctx.print('              total        used        free      shared  buff/cache   available\nMem:        8192000     2048000     4096000      102400     2048000     6144000\nSwap:       2048000           0     2048000');
+      }
     }
   },
   {
