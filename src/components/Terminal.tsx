@@ -84,37 +84,36 @@ const Terminal: React.FC = () => {
       title: 'Navegação',
       commands: [
         { name: 'pwd', desc: 'Mostra onde você está agora', example: 'pwd' },
-        { name: 'ls', desc: 'Lista arquivos e pastas', example: 'ls -l' },
+        { name: 'ls', desc: 'Lista arquivos e pastas', example: 'ls -la' },
         { name: 'cd', desc: 'Entra em uma pasta', example: 'cd nome_da_pasta' },
-        { name: 'cd ..', desc: 'Volta para a pasta anterior', example: 'cd ..' },
+        { name: 'find', desc: 'Busca arquivos', example: 'find . -name "*.txt"' },
       ]
     },
     {
       title: 'Arquivos e Pastas',
       commands: [
-        { name: 'mkdir', desc: 'Cria uma nova pasta', example: 'mkdir nova_pasta' },
+        { name: 'mkdir', desc: 'Cria uma nova pasta', example: 'mkdir -p a/b/c' },
         { name: 'touch', desc: 'Cria um arquivo vazio', example: 'touch nota.txt' },
-        { name: 'cp', desc: 'Copia um arquivo', example: 'cp arq1.txt copia.txt' },
-        { name: 'mv', desc: 'Move ou renomeia um arquivo', example: 'mv arq.txt pasta/' },
-        { name: 'rm', desc: 'Remove um arquivo', example: 'rm arquivo.txt' },
-        { name: 'rm -r', desc: 'Remove uma pasta e tudo nela', example: 'rm -r pasta/' },
+        { name: 'rm', desc: 'Remove arquivos/pastas', example: 'rm -rf pasta/' },
+        { name: 'chmod', desc: 'Muda permissões', example: 'chmod 777 script.sh' },
       ]
     },
     {
       title: 'Texto e Conteúdo',
       commands: [
-        { name: 'cat', desc: 'Mostra o conteúdo de um arquivo', example: 'cat nota.txt' },
-        { name: 'echo', desc: 'Escreve texto ou cria arquivos', example: 'echo "Oi" > arq.txt' },
-        { name: 'grep', desc: 'Busca texto dentro de arquivos', example: 'grep "erro" log.txt' },
-        { name: 'head/tail', desc: 'Vê o início ou fim de um arquivo', example: 'head arq.txt' },
+        { name: 'cat', desc: 'Mostra conteúdo', example: 'cat nota.txt' },
+        { name: 'grep', desc: 'Busca texto', example: 'grep -i "erro" log.txt' },
+        { name: 'head/tail', desc: 'Vê início ou fim', example: 'tail -f log.txt' },
+        { name: 'wc', desc: 'Conta linhas/palavras', example: 'wc -l arq.txt' },
       ]
     },
     {
       title: 'Rede e Sistema',
       commands: [
-        { name: 'apt', desc: 'Instala pacotes (simulado)', example: 'apt install git' },
-        { name: 'ping', desc: 'Testa conexão com um site', example: 'ping google.com' },
-        { name: 'top/ps', desc: 'Mostra processos rodando', example: 'top' },
+        { name: 'sudo', desc: 'Executa como root', example: 'sudo apt update' },
+        { name: 'df/du', desc: 'Espaço em disco', example: 'df -h' },
+        { name: 'ps/top', desc: 'Processos do sistema', example: 'ps aux' },
+        { name: 'ssh', desc: 'Acesso remoto', example: 'ssh dayhoff@host' },
       ]
     }
   ];

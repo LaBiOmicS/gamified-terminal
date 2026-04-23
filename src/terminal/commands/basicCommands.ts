@@ -12,12 +12,33 @@ export const basicCommands: Command[] = [
     name: 'ls',
     description: 'Lista o conteúdo do diretório',
     execute: async (ctx) => {
-      const path = ctx.args[0] || ctx.vfs.getCwd();
-      const children = ctx.vfs.listDirectory(path);
-      if (children) {
-        ctx.print(children.join('  '));
+      const showHidden = ctx.args.some(a => a.includes('a') && a.startsWith('-'));
+      const longFormat = ctx.args.some(a => a.includes('l') && a.startsWith('-'));
+      const pathArg = ctx.args.find(a => !a.startsWith('-')) || ctx.vfs.getCwd();
+      
+      const childrenNames = ctx.vfs.listDirectory(pathArg);
+      if (childrenNames) {
+        let filtered = showHidden ? ['.', '..', ...childrenNames] : childrenNames.filter(n => !n.startsWith('.'));
+        
+        if (longFormat) {
+          ctx.print('total ' + filtered.length * 4);
+          for (const name of filtered) {
+            let node;
+            if (name === '.') node = ctx.vfs.getNode(pathArg);
+            else if (name === '..') node = ctx.vfs.getNode(ctx.vfs.resolvePath(pathArg + '/..'));
+            else node = ctx.vfs.getNode(ctx.vfs.resolvePath(pathArg + '/' + name));
+
+            if (node) {
+              const type = node.type === 'directory' ? 'd' : '-';
+              const date = new Date(node.modifiedAt).toLocaleDateString('pt-BR', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+              ctx.print(`${type}${node.permissions} 1 ${node.owner} ${node.group} 4096 ${date} ${name}`);
+            }
+          }
+        } else {
+          ctx.print(filtered.join('  '));
+        }
       } else {
-        ctx.printError(`ls: não foi possível acessar '${path}': Arquivo ou diretório não encontrado`);
+        ctx.printError(`ls: não foi possível acessar '${pathArg}': Arquivo ou diretório não encontrado`);
       }
     }
   },
@@ -53,13 +74,29 @@ export const basicCommands: Command[] = [
     name: 'mkdir',
     description: 'Cria diretórios',
     execute: async (ctx) => {
-      if (ctx.args.length === 0) {
+      const createParents = ctx.args.includes('-p');
+      const paths = ctx.args.filter(a => !a.startsWith('-'));
+      
+      if (paths.length === 0) {
         ctx.printError('mkdir: operando ausente');
         return;
       }
-      for (const path of ctx.args) {
-        if (!ctx.vfs.mkdir(path)) {
-          ctx.printError(`mkdir: não foi possível criar o diretório '${path}': O arquivo já existe ou o diretório pai não existe`);
+      
+      for (const path of paths) {
+        if (createParents) {
+          const absolutePath = ctx.vfs.resolvePath(path);
+          const parts = absolutePath.split('/').filter(Boolean);
+          let current = '';
+          for (const part of parts) {
+            current += '/' + part;
+            if (!ctx.vfs.getNode(current)) {
+              ctx.vfs.mkdir(current);
+            }
+          }
+        } else {
+          if (!ctx.vfs.mkdir(path)) {
+            ctx.printError(`mkdir: não foi possível criar o diretório '${path}': O arquivo já existe ou o diretório pai não existe`);
+          }
         }
       }
     }
@@ -69,24 +106,26 @@ export const basicCommands: Command[] = [
     description: 'Remove arquivos ou diretórios',
     execute: async (ctx) => {
       let recursive = false;
+      let force = false;
       const paths: string[] = [];
 
       for (const arg of ctx.args) {
-        if (arg === '-r' || arg === '-rf') {
-          recursive = true;
+        if (arg.startsWith('-')) {
+          if (arg.includes('r')) recursive = true;
+          if (arg.includes('f')) force = true;
         } else {
           paths.push(arg);
         }
       }
 
       if (paths.length === 0) {
-        ctx.printError('rm: operando ausente');
+        if (!force) ctx.printError('rm: operando ausente');
         return;
       }
 
       for (const path of paths) {
         if (!ctx.vfs.rm(path, recursive)) {
-          ctx.printError(`rm: não foi possível remover '${path}': Arquivo ou diretório não encontrado ou diretório não vazio`);
+          if (!force) ctx.printError(`rm: não foi possível remover '${path}': Arquivo ou diretório não encontrado ou diretório não vazio`);
         }
       }
     }

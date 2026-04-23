@@ -32,13 +32,18 @@ export const focaCommands: Command[] = [
     name: 'grep',
     description: 'Imprime linhas que combinam com padrões',
     execute: async (ctx) => {
-      if (ctx.args.length < 1) {
-        ctx.printError('Uso: grep PADRÃO [ARQUIVO]...');
+      const ignoreCase = ctx.args.some(a => a.includes('i') && a.startsWith('-'));
+      const invertMatch = ctx.args.some(a => a.includes('v') && a.startsWith('-'));
+      const showLineNumber = ctx.args.some(a => a.includes('n') && a.startsWith('-'));
+      
+      const pattern = ctx.args.find(a => !a.startsWith('-'));
+      const files = ctx.args.filter(a => !a.startsWith('-') && a !== pattern);
+      
+      if (!pattern) {
+        ctx.printError('Uso: grep [OPÇÃO]... PADRÃO [ARQUIVO]...');
         return;
       }
-      const pattern = ctx.args[0];
-      const files = ctx.args.slice(1);
-      
+
       if (files.length === 0) {
         ctx.printError('grep: operando de arquivo ausente');
         return;
@@ -48,14 +53,104 @@ export const focaCommands: Command[] = [
         const content = ctx.vfs.readFile(path);
         if (content !== null) {
           const lines = content.split('\n');
-          const matches = lines.filter(line => line.includes(pattern));
-          if (matches.length > 0) {
-            ctx.print(matches.join('\n'));
-          }
+          lines.forEach((line, index) => {
+            let isMatch = ignoreCase 
+              ? line.toLowerCase().includes(pattern.toLowerCase())
+              : line.includes(pattern);
+            
+            if (invertMatch) isMatch = !isMatch;
+
+            if (isMatch) {
+              const prefix = showLineNumber ? `\x1b[1;32m${index + 1}:\x1b[0m` : '';
+              ctx.print(`${prefix}${line}`);
+            }
+          });
         } else {
           ctx.printError(`grep: ${path}: Arquivo ou diretório não encontrado`);
         }
       }
+    }
+  },
+  {
+    name: 'find',
+    description: 'Busca por arquivos em uma hierarquia de diretórios',
+    execute: async (ctx) => {
+      const path = ctx.args[0] || '.';
+      const namePattern = ctx.args[ctx.args.indexOf('-name') + 1];
+      
+      const nodes = ctx.vfs.getNodes();
+      const results = Object.keys(nodes).filter(p => {
+        if (namePattern) return p.includes(namePattern);
+        return true;
+      });
+      
+      ctx.print(results.join('\n'));
+    }
+  },
+  {
+    name: 'df',
+    description: 'Relata o uso de espaço em disco do sistema de arquivos',
+    execute: async (ctx) => {
+      ctx.print('Sist. Arq.      Tam.   Usado  Disp. Uso% Montado em');
+      ctx.print('/dev/sda1        50G    12G    38G  24% /');
+      ctx.print('tmpfs           3.9G     0G   3.9G   0% /dev/shm');
+    }
+  },
+  {
+    name: 'du',
+    description: 'Estima o uso de espaço de arquivos',
+    execute: async (ctx) => {
+      const path = ctx.args[0] || '.';
+      ctx.print('4.0K    ' + path);
+    }
+  },
+  {
+    name: 'history',
+    description: 'Exibe a lista de comandos executados',
+    execute: async (ctx) => {
+      // O histórico é gerenciado pelo TerminalEngine, mas vamos simular
+      ctx.print('  1  pwd\n  2  ls -la\n  3  mkdir pratica\n  4  history');
+    }
+  },
+  {
+    name: 'sudo',
+    description: 'Executa um comando como superusuário',
+    execute: async (ctx) => {
+      if (ctx.args.length === 0) {
+        ctx.print('usage: sudo -h | -K | -k | -V');
+        return;
+      }
+      ctx.print('[sudo] senha para dayhoff: ');
+      ctx.print('Simulando execução com privilégios de root...');
+      // Apenas um mock por enquanto
+    }
+  },
+  {
+    name: 'groups',
+    description: 'Exibe os grupos aos quais o usuário pertence',
+    execute: async (ctx) => {
+      ctx.print('dayhoff sudo student labiomics');
+    }
+  },
+  {
+    name: 'id',
+    description: 'Exibe os IDs de usuário e grupo reais e efetivos',
+    execute: async (ctx) => {
+      ctx.print('uid=1000(dayhoff) gid=1000(dayhoff) grupos=1000(dayhoff),27(sudo),1001(labiomics)');
+    }
+  },
+  {
+    name: 'ssh',
+    description: 'Cliente de login remoto OpenSSH',
+    execute: async (ctx) => {
+      const host = ctx.args[0];
+      if (!host) {
+        ctx.print('Uso: ssh usuario@host');
+        return;
+      }
+      ctx.print(`Conectando-se a ${host}...`);
+      ctx.print('The authenticity of host cannot be established.');
+      ctx.print('Are you sure you want to continue connecting (yes/no/[fingerprint])?');
     }
   },
   {

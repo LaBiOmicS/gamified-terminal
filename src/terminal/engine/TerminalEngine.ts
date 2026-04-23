@@ -35,23 +35,29 @@ export class TerminalEngine {
     
     this.terminal.onData(e => this.handleData(e));
     
-    // Mensagem de Boas-vindas (MOTD)
-    this.terminal.write('\x1b[1;34m#################################################################\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#  \x1b[1;33mBEM-VINDO AO TERMINAL LABIOMICS - APRENDIZADO DE LINUX\x1b[1;34m       #\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#  \x1b[0mEste ambiente é um simulador gamificado para ensinar os      \x1b[1;34m#\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#  \x1b[0mfundamentos do terminal Linux (Bash).                        \x1b[1;34m#\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#  \x1b[1;32mOBJETIVOS:\x1b[0m                                                   \x1b[1;34m#\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#  \x1b[0m- Dominar comandos básicos e avançados                       \x1b[1;34m#\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#  \x1b[0m- Compreender a hierarquia de arquivos                       \x1b[1;34m#\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#  \x1b[0m- Praticar em um ambiente seguro e interativo                \x1b[1;34m#\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#  \x1b[0mDigite \x1b[1;36mmissao\x1b[0m para ver seu objetivo atual.                  \x1b[1;34m#\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#  \x1b[0mDigite \x1b[1;36majuda\x1b[0m para listar os comandos disponíveis.            \x1b[1;34m#\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#                                                               #\x1b[0m\r\n');
-    this.terminal.write('\x1b[1;34m#################################################################\x1b[0m\r\n');
+    // Mensagem de Boas-vindas (MOTD) centralizada e alinhada
+    const banner = [
+      '#################################################################',
+      '#                                                               #',
+      '#  \x1b[1;33mBEM-VINDO AO TERMINAL LABIOMICS - APRENDIZADO DE LINUX\x1b[1;34m       #',
+      '#                                                               #',
+      '#  \x1b[0mEste ambiente é um simulador gamificado para ensinar os      \x1b[1;34m#',
+      '#  \x1b[0mfundamentos do terminal Linux (Bash).                        \x1b[1;34m#',
+      '#                                                               #',
+      '#  \x1b[1;32mOBJETIVOS:\x1b[0m                                                   \x1b[1;34m#',
+      '#  \x1b[0m- Dominar comandos básicos e avançados do Foca Linux         \x1b[1;34m#',
+      '#  \x1b[0m- Compreender a hierarquia de arquivos e permissões          \x1b[1;34m#',
+      '#  \x1b[0m- Praticar em um ambiente seguro e interativo                \x1b[1;34m#',
+      '#                                                               #',
+      '#  \x1b[0mDigite \x1b[1;36mmissao\x1b[0m para ver seu objetivo atual.                  \x1b[1;34m#',
+      '#  \x1b[0mDigite \x1b[1;36majuda\x1b[0m para listar os comandos disponíveis.            \x1b[1;34m#',
+      '#                                                               #',
+      '#################################################################'
+    ];
+    
+    this.terminal.write('\x1b[1;34m');
+    banner.forEach(line => this.terminal.write(line + '\r\n'));
+    this.terminal.write('\x1b[0m');
     
     this.printPrompt();
   }
