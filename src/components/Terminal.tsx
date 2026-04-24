@@ -362,7 +362,8 @@ const Terminal: React.FC = () => {
             </button>
             <div style={{ fontSize: '10px', color: '#666', lineHeight: '1.4' }}>
               <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>ARAMAS v1.0</div>
-              Desenvolvido pelo <span style={{ color: '#007acc' }}>LaBiOmicS - UMC</span>
+              Coordenado por: <span style={{ color: '#007acc' }}>Fabiano B. Menegidio</span>
+              <br/>Desenvolvido pelo <span style={{ color: '#007acc' }}>LaBiOmicS - UMC</span>
               <br/>Recurso Pedagógico
               <br/>Licença MIT
             </div>

@@ -127,6 +127,7 @@ const App: React.FC = () => {
               <strong>ARAMAS</strong> | v1.0.0
             </div>
             <div className="footer-credits">
+              Coordenado por <strong>Prof. Dr. Fabiano B. Menegidio</strong><br/>
               Desenvolvido por <strong>LaBiOmicS</strong><br/>
               Laboratório de Bioinformática e Ciências Ômicas<br/>
               <strong>Universidade de Mogi das Cruzes (UMC)</strong>

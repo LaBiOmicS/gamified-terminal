@@ -36,6 +36,7 @@ export class CommandRegistry {
         
         ctx.print(`\x1b[1;32m=== ARAMAS - Ambiente Remoto para o Aprendizado e Manipulação de Arquivos e Sistemas ===\x1b[0m`);
         ctx.print(`\x1b[1mRecurso Pedagógico para o ensino de Linux e Bioinformática\x1b[0m`);
+        ctx.print(`Coordenado por: \x1b[1;36mProf. Dr. Fabiano B. Menegidio\x1b[0m`);
         ctx.print(`Desenvolvido por: \x1b[1;36mLaBiOmicS - Laboratório de Bioinformática e Ciências Ômicas\x1b[0m`);
         ctx.print(`Instituição: \x1b[1;36mUniversidade de Mogi das Cruzes (UMC)\x1b[0m`);
         ctx.print(`Licença: \x1b[1;33mMIT\x1b[0m`);
