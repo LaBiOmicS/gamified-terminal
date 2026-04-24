@@ -160,19 +160,25 @@ export const packageManagerCommands: Command[] = [
     execute: async (ctx) => {
       const sub = ctx.args[0];
       
+      interface Container {
+        id: string;
+        image: string;
+        name: string;
+        status: string;
+      }
+
       const getImages = () => JSON.parse(localStorage.getItem('docker_images') || '["ubuntu:latest", "nginx:latest"]');
       const addImage = (name: string) => {
         const imgs = getImages();
         if (!imgs.includes(name)) { imgs.push(name); localStorage.setItem('docker_images', JSON.stringify(imgs)); }
       };
-      
-      const getContainers = () => JSON.parse(localStorage.getItem('docker_containers') || '[]');
+
+      const getContainers = (): Container[] => JSON.parse(localStorage.getItem('docker_containers') || '[]');
       const addContainer = (img: string, name: string) => {
         const cnts = getContainers();
         cnts.push({ id: Math.random().toString(36).substring(2, 14), image: img, name, status: 'Up 2 minutes' });
         localStorage.setItem('docker_containers', JSON.stringify(cnts));
       };
-
       if (sub === 'pull') {
         const img = ctx.args[1];
         if (!img) { ctx.printError('docker pull: erro: imagem não especificada'); return; }
@@ -219,7 +225,7 @@ export const packageManagerCommands: Command[] = [
         }
       } else if (sub === 'ps') {
         ctx.print('CONTAINER ID   IMAGE          COMMAND    CREATED         STATUS         NAMES');
-        getContainers().forEach((c: any) => {
+        getContainers().forEach((c) => {
           ctx.print(`${c.id.padEnd(14)} ${c.image.padEnd(14)} "bash"     2 minutes ago   ${c.status.padEnd(14)} ${c.name}`);
         });
       } else if (sub === 'images') {
@@ -230,7 +236,7 @@ export const packageManagerCommands: Command[] = [
         });
       } else if (sub === 'rm') {
         const id = ctx.args[1];
-        const cnts = getContainers().filter((c: any) => c.id !== id && c.name !== id);
+        const cnts = getContainers().filter((c) => c.id !== id && c.name !== id);
         localStorage.setItem('docker_containers', JSON.stringify(cnts));
         ctx.print(id);
       } else if (sub === 'rmi') {

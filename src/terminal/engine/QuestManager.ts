@@ -2,12 +2,18 @@ import { VFSManager } from '../vfs/VFSManager';
 
 export type QuestCategory = 'Sistemas Operacionais' | 'Manipulação de Dados' | 'Computação Científica';
 
+export interface Stats {
+  sudoCount: number;
+  pipeCount: number;
+  envCount: number;
+}
+
 export interface Achievement {
   id: string;
   name: string;
   description: string;
   icon: string;
-  condition: (stats: any) => boolean;
+  condition: (stats: Stats) => boolean;
 }
 
 export interface Quest {
@@ -144,7 +150,7 @@ export class QuestManager {
   private totalXp: number = 0;
   private stats = { sudoCount: 0, pipeCount: 0, envCount: 1 };
 
-  constructor() {
+  constructor(_vfs?: VFSManager) {
     this.loadState();
   }
 

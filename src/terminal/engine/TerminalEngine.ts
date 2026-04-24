@@ -29,9 +29,8 @@ export class TerminalEngine {
     this.vfs = new VFSManager(savedVFS ? JSON.parse(savedVFS) : undefined);
     
     this.registry = new CommandRegistry();
-    
-    const savedQuestIndex = localStorage.getItem('quest_index');
-    this.questManager = new QuestManager(savedQuestIndex ? parseInt(savedQuestIndex) : 0);
+
+    this.questManager = new QuestManager(this.vfs);
 
     const savedStyle = localStorage.getItem('prompt_style') as PromptStyle;
     if (savedStyle) this.promptStyle = savedStyle;
@@ -106,10 +105,11 @@ export class TerminalEngine {
         this.terminal.write(`\r\n\x1b[1;32m${envPrefix}${shortCwd} ${symbol}\x1b[0m `);
         break;
       case 'bash':
-      default:
+      default: {
         const userColor = user === 'root' ? '\x1b[1;31m' : '\x1b[1;32m';
         this.terminal.write(`\r\n${envPrefix}${userColor}${user}@LaBiOmicS\x1b[0m:\x1b[1;34m${shortCwd}\x1b[0m${symbol} `);
         break;
+      }
     }
   }
 

@@ -18,7 +18,7 @@ export const basicCommands: Command[] = [
       
       const childrenNames = ctx.vfs.listDirectory(pathArg, ctx.user);
       if (childrenNames) {
-        let filtered = showHidden ? ['.', '..', ...childrenNames] : childrenNames.filter(n => !n.startsWith('.'));
+        const filtered = showHidden ? ['.', '..', ...childrenNames] : childrenNames.filter(n => !n.startsWith('.'));
         
         if (longFormat) {
           ctx.print('total ' + filtered.length * 4);

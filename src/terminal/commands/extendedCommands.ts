@@ -105,9 +105,9 @@ export const extendedCommands: Command[] = [
       const numeric = ctx.args.includes('-n');
       const path = ctx.args.find(a => !a.startsWith('-'));
       
-      let content = path ? ctx.vfs.readFile(path, ctx.user) : ctx.stdin;
+      const content = path ? ctx.vfs.readFile(path, ctx.user) : ctx.stdin;
       if (content && content !== 'Permissão negada') {
-        let lines = content.split('\n').filter(l => l.length > 0);
+        const lines = content.split('\n').filter(l => l.length > 0);
         if (numeric) {
           lines.sort((a, b) => parseFloat(a) - parseFloat(b));
         } else {
@@ -126,7 +126,7 @@ export const extendedCommands: Command[] = [
     execute: async (ctx) => {
       const count = ctx.args.includes('-c');
       const path = ctx.args.find(a => !a.startsWith('-'));
-      let content = path ? ctx.vfs.readFile(path, ctx.user) : ctx.stdin;
+      const content = path ? ctx.vfs.readFile(path, ctx.user) : ctx.stdin;
       
       if (content && content !== 'Permissão negada') {
         const lines = content.split('\n').filter(l => l.length > 0);

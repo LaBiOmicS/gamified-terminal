@@ -5,7 +5,7 @@ export const bioCommands: Command[] = [
     name: 'bio-count',
     description: 'Conta a frequência de bases (A, T, C, G) em uma sequência ou arquivo',
     execute: async (ctx) => {
-      let input = ctx.args[0];
+      const input = ctx.args[0];
       if (!input) {
         ctx.printError('Uso: bio-count [sequência ou arquivo]');
         return;
@@ -38,7 +38,7 @@ export const bioCommands: Command[] = [
     name: 'bio-rev-comp',
     description: 'Gera o complemento reverso de uma sequência de DNA',
     execute: async (ctx) => {
-      let input = ctx.args[0];
+      const input = ctx.args[0];
       if (!input) {
         ctx.printError('Uso: bio-rev-comp [sequência ou arquivo]');
         return;
