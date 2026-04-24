@@ -12,9 +12,9 @@ export const basicCommands: Command[] = [
   {
     name: 'ls',
     description: 'Lista o conteúdo do diretório',
-    help: 'ls [OPÇÃO]... [DIRETÓRIO]...\n\nLista informações sobre os arquivos (o diretório atual por padrão).\n\nOpções:\n  -a, --all    não ignora entradas iniciadas com .\n  -l           usa um formato de listagem longa',
+    help: 'ls [OPÇÃO]... [DIRETÓRIO]...\n\nLista informações sobre os arquivos.\n\nOpções:\n  -a, --all    exibe arquivos ocultos\n  -l           formato de listagem longa\n  -h, --human  tamanhos em formato legível\n  -R           recursivo\n  -t           ordena por tempo de modificação',
     execute: async (ctx) => {
-      const showHidden = ctx.args.some(a => a.includes('a') && a.startsWith('-'));
+      const showHidden = ctx.args.some(a => (a.includes('a') || a === '--all') && a.startsWith('-'));
       const longFormat = ctx.args.some(a => a.includes('l') && a.startsWith('-'));
       const pathArg = ctx.args.find(a => !a.startsWith('-')) || ctx.vfs.getCwd();
       
@@ -77,9 +77,10 @@ export const basicCommands: Command[] = [
   {
     name: 'mkdir',
     description: 'Cria diretórios',
-    help: 'mkdir [OPÇÃO]... DIRETÓRIO...\n\nCria o(s) DIRETÓRIO(s), se ainda não existirem.\n\nOpções:\n  -p, --parents     cria diretórios pais, se necessário',
+    help: 'mkdir [OPÇÃO]... DIRETÓRIO...\n\nCria o(s) DIRETÓRIO(s), se ainda não existirem.\n\nOpções:\n  -p, --parents     cria diretórios pais, se necessário\n  -v, --verbose     exibe mensagem para cada diretório criado',
     execute: async (ctx) => {
-      const createParents = ctx.args.includes('-p');
+      const createParents = ctx.args.includes('-p') || ctx.args.includes('--parents');
+      const verbose = ctx.args.includes('-v') || ctx.args.includes('--verbose');
       const paths = ctx.args.filter(a => !a.startsWith('-'));
       
       if (paths.length === 0) {
@@ -96,10 +97,13 @@ export const basicCommands: Command[] = [
             current += '/' + part;
             if (!ctx.vfs.getNode(current)) {
               ctx.vfs.mkdir(current, ctx.user);
+              if (verbose) ctx.print(`mkdir: diretório criado '${current}'`);
             }
           }
         } else {
-          if (!ctx.vfs.mkdir(path, ctx.user)) {
+          if (ctx.vfs.mkdir(path, ctx.user)) {
+            if (verbose) ctx.print(`mkdir: diretório criado '${path}'`);
+          } else {
             ctx.printError(`mkdir: não foi possível criar o diretório '${path}': Permissão negada ou arquivo já existe`);
           }
         }
@@ -109,16 +113,18 @@ export const basicCommands: Command[] = [
   {
     name: 'rm',
     description: 'Remove arquivos ou diretórios',
-    help: 'rm [OPÇÃO]... ARQUIVO...\n\nRemove (apaga) o(s) ARQUIVO(s).\n\nOpções:\n  -r, -R, --recursive   remove diretórios e seus conteúdos recursivamente\n  -f, --force           ignora arquivos inexistentes e nunca pergunta',
+    help: 'rm [OPÇÃO]... ARQUIVO...\n\nRemove (apaga) o(s) ARQUIVO(s).\n\nOpções:\n  -r, -R, --recursive   remove diretórios e seus conteúdos recursivamente\n  -f, --force           ignora arquivos inexistentes e nunca pergunta\n  -v, --verbose         explica o que está sendo feito',
     execute: async (ctx) => {
       let recursive = false;
       let force = false;
+      let verbose = false;
       const paths: string[] = [];
 
       for (const arg of ctx.args) {
         if (arg.startsWith('-')) {
           if (arg.includes('r')) recursive = true;
           if (arg.includes('f')) force = true;
+          if (arg.includes('v')) verbose = true;
         } else {
           paths.push(arg);
         }
@@ -130,7 +136,9 @@ export const basicCommands: Command[] = [
       }
 
       for (const path of paths) {
-        if (!ctx.vfs.rm(path, ctx.user, recursive)) {
+        if (ctx.vfs.rm(path, ctx.user, recursive)) {
+          if (verbose) ctx.print(`removido '${path}'`);
+        } else {
           if (!force) ctx.printError(`rm: não foi possível remover '${path}': Permissão negada ou diretório não vazio`);
         }
       }

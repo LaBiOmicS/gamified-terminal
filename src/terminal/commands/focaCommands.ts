@@ -4,91 +4,131 @@ export const focaCommands: Command[] = [
   {
     name: 'man',
     description: 'Interface para os manuais de referência do sistema',
+    help: 'man COMANDO\n\nExibe a página de manual do sistema para o COMANDO especificado.',
     execute: async (ctx) => {
       const page = ctx.args[0];
-      if (!page) {
-        ctx.print('Qual página de manual você deseja?');
-        return;
-      }
-      
+      if (!page) { ctx.print('Qual página de manual você deseja?'); return; }
       const manuals: Record<string, string> = {
-        ls: 'LS(1) - lista o conteúdo do diretório\n\nSINOPSE: ls [ARQUIVO]...\nDESCRIÇÃO: Lista informações sobre os ARQUIVOS (o diretório atual por padrão).',
-        cd: 'CD(1) - muda o diretório de trabalho\n\nSINOPSE: cd [DIR]\nDESCRIÇÃO: Muda o diretório atual para DIR.',
-        cat: 'CAT(1) - concatena arquivos e imprime na saída padrão\n\nSINOPSE: cat [ARQUIVO]...\nDESCRIÇÃO: Concatena ARQUIVO(s) para a saída padrão.',
-        pwd: 'PWD(1) - imprime o nome do diretório atual\n\nSINOPSE: pwd\nDESCRIÇÃO: Imprime o nome completo do diretório de trabalho atual.',
-        mkdir: 'MKDIR(1) - cria diretórios\n\nSINOPSE: mkdir DIRETÓRIO...\nDESCRIÇÃO: Cria o(s) DIRETÓRIO(s), se ainda não existirem.',
-        rm: 'RM(1) - remove arquivos ou diretórios\n\nSINOPSE: rm [OPÇÃO]... [ARQUIVO]...\nDESCRIÇÃO: rm remove cada arquivo especificado.',
-        grep: 'GREP(1) - imprime linhas que combinam com padrões\n\nSINOPSE: grep PADRÃO [ARQUIVO]...\nDESCRIÇÃO: grep busca pelo PADRÃO em cada ARQUIVO.',
+        ls: 'LS(1) - lista o conteúdo do diretório\n\nSINOPSE: ls [ARQUIVO]...\nDESCRIÇÃO: Lista informações sobre os ARQUIVOS.',
+        chmod: 'CHMOD(1) - altera permissões de acesso a arquivos\n\nSINOPSE: chmod [OPÇÃO]... MODO[,MODO]... ARQUIVO...',
+        ip: 'IP(8) - exibe/manipula roteamento, dispositivos e túneis\n\nSINOPSE: ip [OPÇÕES] OBJETO {COMANDO | help}'
       };
-
-      if (manuals[page]) {
-        ctx.print(manuals[page]);
+      ctx.print(manuals[page] || `Nenhuma entrada de manual para ${page}`);
+    }
+  },
+  {
+    name: 'chmod',
+    description: 'Altera as permissões de acesso a arquivos',
+    help: 'chmod [OPÇÃO]... MODO[,MODO]... ARQUIVO...\n\nModifica as permissões de cada ARQUIVO de acordo com MODO.\n\nOpções:\n  -R, --recursive        modifica arquivos e diretórios recursivamente\n  -v, --verbose          exibe um diagnóstico para cada arquivo processado\n\nExemplos:\n  chmod 755 script.sh\n  chmod u+x,g-w arquivo.txt',
+    execute: async (ctx) => {
+      if (ctx.args.length < 2) { ctx.printError('chmod: operando ausente'); return; }
+      const mode = ctx.args.find(a => !a.startsWith('-'));
+      const path = ctx.args.find(a => !a.startsWith('-') && a !== mode);
+      if (path && ctx.vfs.chmod(path, mode || '644', ctx.user)) {
+        if (ctx.args.includes('-v')) ctx.print(`o modo de '${path}' foi alterado para ${mode}`);
       } else {
-        ctx.print(`Nenhuma entrada de manual para ${page}`);
+        ctx.printError(`chmod: não foi possível acessar '${path}': Arquivo não encontrado`);
       }
     }
   },
   {
-    name: 'grep',
-    description: 'Imprime linhas que combinam com padrões',
+    name: 'chown',
+    description: 'Altera o dono e o grupo de arquivos',
+    help: 'chown [OPÇÃO]... [DONO][:[GRUPO]] ARQUIVO...\n\nAltera o proprietário e/ou grupo de cada ARQUIVO.\n\nOpções:\n  -R, --recursive        opera em arquivos e diretórios recursivamente\n\nExemplo:\n  chown root:root /etc/passwd',
     execute: async (ctx) => {
-      const ignoreCase = ctx.args.some(a => a.includes('i') && a.startsWith('-'));
-      const invertMatch = ctx.args.some(a => a.includes('v') && a.startsWith('-'));
-      const showLineNumber = ctx.args.some(a => a.includes('n') && a.startsWith('-'));
-      
-      const pattern = ctx.args.find(a => !a.startsWith('-'));
-      const files = ctx.args.filter(a => !a.startsWith('-') && a !== pattern);
-      
-      if (!pattern) {
-        ctx.printError('Uso: grep [OPÇÃO]... PADRÃO [ARQUIVO]...');
-        return;
-      }
-
-      if (files.length === 0) {
-        ctx.printError('grep: operando de arquivo ausente');
-        return;
-      }
-
-      for (const path of files) {
-        const content = ctx.vfs.readFile(path, ctx.user);
-        if (content !== null && content !== 'Permissão negada') {
-          const lines = content.split('\n');
-          lines.forEach((line, index) => {
-            let isMatch = ignoreCase 
-              ? line.toLowerCase().includes(pattern.toLowerCase())
-              : line.includes(pattern);
-            
-            if (invertMatch) isMatch = !isMatch;
-
-            if (isMatch) {
-              const prefix = showLineNumber ? `\x1b[1;32m${index + 1}:\x1b[0m` : '';
-              ctx.print(`${prefix}${line}`);
-            }
-          });
-        } else {
-          ctx.printError(`grep: ${path}: Permissão negada ou Arquivo não encontrado`);
-        }
+      if (ctx.args.length < 2) { ctx.printError('chown: operando ausente'); return; }
+      const owner = ctx.args.find(a => !a.startsWith('-'));
+      const path = ctx.args.find(a => !a.startsWith('-') && a !== owner);
+      if (path && ctx.vfs.chown(path, owner?.split(':')[0] || 'root', ctx.user)) {
+        ctx.print(`Propriedade de '${path}' alterada.`);
+      } else {
+        ctx.printError(`chown: alteração falhou para '${path}'`);
       }
     }
   },
   {
-    name: 'find',
-    description: 'Busca por arquivos em uma hierarquia de diretórios',
+    name: 'ps',
+    description: 'Relatório do status dos processos atuais',
+    help: 'ps [OPÇÕES]\n\nExibe informações sobre os processos ativos.\n\nOpções:\n  aux      exibe todos os processos de todos os usuários\n  -ef      exibe todos os processos em formato completo\n  --tree   exibe processos em formato de árvore',
     execute: async (ctx) => {
-      const pathArg = ctx.args.find(a => !a.startsWith('-')) || '.';
-      const namePattern = ctx.args[ctx.args.indexOf('-name') + 1];
-      
-      const results = ctx.vfs.findNodes(pathArg, namePattern);
-      ctx.print(results.join('\n'));
+      if (ctx.args.includes('aux')) {
+        ctx.print('USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND');
+        ctx.print('root         1  0.0  0.1  168M  9612 ?        Ss   Apr22   0:02 /sbin/init');
+        ctx.print('dayhoff    124  0.1  0.5  543M 42100 pts/0    Ss   12:00   0:01 /bin/bash');
+        ctx.print('dayhoff    567  0.0  0.0  123M  2100 pts/0    R+   12:35   0:00 ps aux');
+      } else if (ctx.args.includes('-ef')) {
+        ctx.print('UID        PID  PPID  C STIME TTY          TIME CMD');
+        ctx.print('root         1     0  0 Apr22 ?        00:00:02 /sbin/init');
+        ctx.print('dayhoff    124     1  0 12:00 pts/0    00:00:01 /bin/bash');
+      } else {
+        ctx.print('  PID TTY          TIME CMD\n  124 pts/0    00:00:01 bash\n  568 pts/0    00:00:00 ps');
+      }
+    }
+  },
+  {
+    name: 'top',
+    description: 'Exibe processos do Linux de forma dinâmica',
+    help: 'top\n\nExibe uma visão em tempo real dos processos do sistema.',
+    execute: async (ctx) => {
+      ctx.print('\x1b[H\x1b[Jtop - 12:35:42 up 1 day, 2:31,  1 user,  load average: 0.08, 0.03, 0.05');
+      ctx.print('Tasks: 125 total,   1 running, 124 sleeping,   0 stopped,   0 zombie');
+      ctx.print('%Cpu(s):  0.3 us,  0.3 sy,  0.0 ni, 99.3 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st');
+      ctx.print('MiB Mem :   7956.1 total,   3124.5 free,   2456.8 used,   2374.8 buff/cache');
+      ctx.print('\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND');
+      ctx.print('  124 dayhoff   20   0  543200  42100  32400 S   0.3   0.5   0:01.45 bash');
+      ctx.print('  569 dayhoff   20   0   12345   6789   1234 R   0.0   0.1   0:00.01 top');
+    }
+  },
+  {
+    name: 'free',
+    description: 'Exibe quantidade de memória livre e usada',
+    help: 'free [OPÇÃO]\n\nExibe a quantidade total de memória física e de swap livre e usada.\n\nOpções:\n  -h, --human   exibe em formato legível (GB, MB)\n  -m, --mega    exibe em megabytes',
+    execute: async (ctx) => {
+      const h = ctx.args.includes('-h');
+      ctx.print('              total        used        free      shared  buff/cache   available');
+      if (h) {
+        ctx.print('Mem:           7.8G        2.4G        3.1G        100M        2.3G        5.1G');
+        ctx.print('Swap:          2.0G          0B        2.0G');
+      } else {
+        ctx.print('Mem:        8192000     2048000     4096000      102400     2048000     6144000');
+        ctx.print('Swap:       2048000           0     2048000');
+      }
+    }
+  },
+  {
+    name: 'ip',
+    description: 'Exibe ou manipula roteamento, dispositivos e interfaces',
+    help: 'ip [OPÇÕES] OBJETO {COMANDO}\n\nObjetos:\n  address (a)    endereços IP nas interfaces\n  link (l)       dispositivos de rede\n  route (r)      tabela de roteamento\n\nExemplos:\n  ip addr show\n  ip link set eth0 up',
+    execute: async (ctx) => {
+      const sub = ctx.args[0];
+      if (sub === 'addr' || sub === 'a') {
+        ctx.print('1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default\n    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00\n    inet 127.0.0.1/8 scope host lo\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default\n    link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff\n    inet 192.168.1.10/24 brd 192.168.1.255 scope global dynamic eth0');
+      } else if (sub === 'link' || sub === 'l') {
+        ctx.print('1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 state UNKNOWN\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP');
+      } else {
+        ctx.print('Usage: ip [ OPTIONS ] OBJECT { COMMAND | help }');
+      }
+    }
+  },
+  {
+    name: 'netstat',
+    description: 'Exibe conexões de rede e estatísticas',
+    help: 'netstat [OPÇÕES]\n\nOpções:\n  -a, --all        exibe todos os sockets\n  -t               exibe conexões TCP\n  -u               exibe conexões UDP\n  -l               exibe sockets em escuta\n  -p               exibe o PID/Nome do programa',
+    execute: async (ctx) => {
+      ctx.print('Active Internet connections (only servers)\nProto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name');
+      ctx.print('tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      842/nginx: master');
+      ctx.print('tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      711/sshd');
+      ctx.print('udp        0      0 0.0.0.0:68              0.0.0.0:*                           620/dhclient');
     }
   },
   {
     name: 'df',
-    description: 'Relata o uso de espaço em disco do sistema de arquivos',
+    description: 'Relata o uso de espaço em disco',
+    help: 'df [OPÇÃO]... [ARQUIVO]...\n\nOpções:\n  -h, --human-readable   exibe tamanhos em formato legível (ex: 1K 234M 2G)\n  -T, --print-type       exibe o tipo do sistema de arquivos',
     execute: async (ctx) => {
-      const humanReadable = ctx.args.includes('-h');
+      const h = ctx.args.includes('-h');
       ctx.print('Sist. Arq.      Tam.   Usado  Disp. Uso% Montado em');
-      if (humanReadable) {
+      if (h) {
         ctx.print('/dev/sda1        50G    12G    38G  24% /');
         ctx.print('tmpfs           3.9G     0G   3.9G   0% /dev/shm');
       } else {
@@ -98,245 +138,52 @@ export const focaCommands: Command[] = [
     }
   },
   {
-    name: 'du',
-    description: 'Estima o uso de espaço de arquivos',
+    name: 'nmap',
+    description: 'Exploração de rede e scanner de segurança',
+    help: 'nmap [Tipo de Scan] [Opções] {alvo}\n\nExemplos:\n  nmap localhost\n  nmap -p 80,443 192.168.1.1',
     execute: async (ctx) => {
-      const humanReadable = ctx.args.includes('-h');
-      const path = ctx.args.find(a => !a.startsWith('-')) || '.';
-      ctx.print((humanReadable ? '4.0K' : '4') + '    ' + path);
+      const host = ctx.args.find(a => !a.startsWith('-')) || 'localhost';
+      ctx.print(`Starting Nmap 7.93 at ${new Date().toISOString()}`);
+      ctx.print(`Nmap scan report for ${host} (127.0.0.1)\nHost is up (0.00004s latency).`);
+      ctx.print('PORT     STATE SERVICE\n22/tcp   open  ssh\n80/tcp   open  http\n443/tcp  open  https\n3306/tcp open  mysql');
+      ctx.print('\nNmap done: 1 IP address (1 host up) scanned in 0.05 seconds');
     }
   },
   {
-    name: 'history',
-    description: 'Exibe a lista de comandos executados',
+    name: 'mem',
+    description: 'Alias para free -h',
+    help: 'mem\n\nExibe informações de memória em formato legível.',
     execute: async (ctx) => {
-      ctx.print('  1  pwd\n  2  ls -la\n  3  mkdir pratica\n  4  history');
+      const free = focaCommands.find(c => c.name === 'free');
+      if (free) await free.execute({...ctx, args: ['-h']});
     }
   },
   {
-    name: 'sudo',
-    description: 'Executa um comando como superusuário',
+    name: 'nslookup',
+    description: 'Consulta servidores de nomes de domínio interativamente',
+    help: 'nslookup [HOST]\n\nExemplo:\n  nslookup google.com',
     execute: async (ctx) => {
-      if (ctx.args.length === 0) {
-        ctx.print('usage: sudo -h | -K | -k | -V');
-        ctx.print('\nPara executar um comando como root, use: sudo [comando]');
-        return;
-      }
-      // O motor lida com a execução do comando subsequente como root.
-      // Este comando só é chamado se 'sudo' for digitado sem argumentos (tratado acima)
-      // ou se o motor falhar em interceptar.
+      const host = ctx.args[0] || 'google.com';
+      ctx.print(`Server:         127.0.0.53\nAddress:        127.0.0.53#53\n\nNon-authoritative answer:\nName:   ${host}\nAddress: 142.250.191.46`);
     }
   },
   {
-    name: 'groups',
-    description: 'Exibe os grupos aos quais o usuário pertence',
+    name: 'dig',
+    description: 'Utilitário de busca DNS',
+    help: 'dig [HOST]\n\nExemplo:\n  dig labiomics.com',
     execute: async (ctx) => {
-      if (ctx.user === 'root') ctx.print('root');
-      else ctx.print('dayhoff sudo student labiomics');
+      const host = ctx.args[0] || 'example.com';
+      ctx.print(`; <<>> DiG 9.18.12 <<>> ${host}\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 12345\n\n;; ANSWER SECTION:\n${host}.   300 IN  A   93.184.216.34`);
     }
   },
   {
-    name: 'id',
-    description: 'Exibe os IDs de usuário e grupo reais e efetivos',
+    name: 'lsblk',
+    description: 'Lista dispositivos de bloco',
+    help: 'lsblk [OPÇÕES]\n\nLista informações sobre todos os dispositivos de bloco disponíveis.',
     execute: async (ctx) => {
-      if (ctx.user === 'root') {
-        ctx.print('uid=0(root) gid=0(root) grupos=0(root)');
-      } else {
-        ctx.print('uid=1000(dayhoff) gid=1000(dayhoff) grupos=1000(dayhoff),27(sudo),1001(labiomics)');
-      }
-    }
-  },
-  {
-// ... (ssh unchanged)
-    name: 'ssh',
-    description: 'Cliente de login remoto OpenSSH',
-    execute: async (ctx) => {
-      const host = ctx.args[0];
-      if (!host) {
-        ctx.print('Uso: ssh usuario@host');
-        return;
-      }
-      ctx.print(`Conectando-se a ${host}...`);
-      ctx.print('The authenticity of host cannot be established.');
-      ctx.print('Are you sure you want to continue connecting (yes/no/[fingerprint])?');
-    }
-  },
-  {
-    name: 'wc',
-    description: 'Imprime contagem de linhas, palavras e bytes',
-    execute: async (ctx) => {
-      const showLines = ctx.args.includes('-l');
-      const showWords = ctx.args.includes('-w');
-      const showBytes = ctx.args.includes('-c');
-      const all = !showLines && !showWords && !showBytes;
-      
-      const paths = ctx.args.filter(a => !a.startsWith('-'));
-      
-      if (paths.length === 0 && !ctx.stdin) {
-        ctx.printError('wc: operando de arquivo ausente');
-        return;
-      }
-
-      const processContent = (content: string, name: string) => {
-        const lines = content.split('\n').filter(l => l.length > 0).length;
-        const words = content.trim().split(/\s+/).filter(Boolean).length;
-        const bytes = content.length;
-        let res = '';
-        if (all || showLines) res += `${lines} `;
-        if (all || showWords) res += `${words} `;
-        if (all || showBytes) res += `${bytes} `;
-        ctx.print(`${res}${name}`);
-      };
-
-      if (ctx.stdin) {
-        processContent(ctx.stdin, '');
-        if (paths.length === 0) return;
-      }
-
-      for (const path of paths) {
-        const content = ctx.vfs.readFile(path, ctx.user);
-        if (content !== null && content !== 'Permissão negada') {
-          processContent(content, path);
-        } else {
-          ctx.printError(`wc: ${path}: Permissão negada ou Arquivo não encontrado`);
-        }
-      }
-    }
-  },
-  {
-    name: 'ps',
-    description: 'Relatório do status dos processos atuais',
-    execute: async (ctx) => {
-      const aux = ctx.args.includes('aux');
-      const ef = ctx.args.includes('-ef');
-      
-      if (aux) {
-        ctx.print('USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND');
-        ctx.print('root         1  0.0  0.1  168320  9612 ?        Ss   Apr22   0:02 /sbin/init');
-        ctx.print('dayhoff   1234  0.1  0.5  543200 42100 pts/0    Ss   12:00   0:01 /bin/bash');
-        ctx.print('dayhoff   5678  0.0  0.0   12344  2100 pts/0    R+   12:35   0:00 ps aux');
-      } else if (ef) {
-        ctx.print('UID        PID  PPID  C STIME TTY          TIME CMD');
-        ctx.print('root         1     0  0 Apr22 ?        00:00:02 /sbin/init');
-        ctx.print('dayhoff   1234     1  0 12:00 pts/0    00:00:01 /bin/bash');
-      } else {
-        ctx.print('  PID TTY          TIME CMD\n 1234 pts/0    00:00:01 bash\n 5678 pts/0    00:00:00 ps');
-      }
-    }
-  },
-  {
-    name: 'top',
-    description: 'Exibe processos do Linux',
-    execute: async (ctx) => {
-      ctx.print('\x1b[H\x1b[J'); // Limpa a tela
-      ctx.print('top - 12:35:42 up 1 day, 2:31,  1 user,  load average: 0.08, 0.03, 0.05');
-      ctx.print('Tasks: 125 total,   1 running, 124 sleeping,   0 stopped,   0 zombie');
-      ctx.print('%Cpu(s):  0.3 us,  0.3 sy,  0.0 ni, 99.3 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st');
-      ctx.print('MiB Mem :   7956.1 total,   3124.5 free,   2456.8 used,   2374.8 buff/cache');
-      ctx.print('\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND');
-      ctx.print(' 1234 dayhoff   20   0  543200  42100  32400 S   0.3   0.5   0:01.45 bash');
-      ctx.print(' 5678 dayhoff   20   0   12345   6789   1234 R   0.0   0.1   0:00.01 top');
-    }
-  },
-  {
-    name: 'free',
-    description: 'Exibe quantidade de memória livre e usada no sistema',
-    execute: async (ctx) => {
-      const h = ctx.args.includes('-h');
-      if (h) {
-        ctx.print('              total        used        free      shared  buff/cache   available');
-        ctx.print('Mem:           7.8G        2.4G        3.1G        100M        2.3G        5.1G');
-        ctx.print('Swap:          2.0G          0B        2.0G');
-      } else {
-        ctx.print('              total        used        free      shared  buff/cache   available\nMem:        8192000     2048000     4096000      102400     2048000     6144000\nSwap:       2048000           0     2048000');
-      }
-    }
-  },
-  {
-    name: 'uptime',
-    description: 'Informa há quanto tempo o sistema está ligado',
-    execute: async (ctx) => {
-      ctx.print(' 12:34:56 up 1 day, 2:30,  1 user,  load average: 0.00, 0.01, 0.05');
-    }
-  },
-  {
-    name: 'chmod',
-    description: 'Altera as permissões de acesso a arquivos',
-    execute: async (ctx) => {
-      if (ctx.args.length < 2) {
-        ctx.printError('chmod: operando ausente');
-        return;
-      }
-      const mode = ctx.args[0];
-      const path = ctx.args[1];
-      if (!ctx.vfs.chmod(path, mode, ctx.user)) {
-        ctx.printError(`chmod: não foi possível mudar permissões de '${path}': Permissão negada ou Arquivo não encontrado`);
-      }
-    }
-  },
-  {
-    name: 'chown',
-    description: 'Altera o dono e o grupo de arquivos',
-    execute: async (ctx) => {
-      if (ctx.args.length < 2) {
-        ctx.printError('chown: operando ausente');
-        return;
-      }
-      const owner = ctx.args[0];
-      const path = ctx.args[1];
-      if (!ctx.vfs.chown(path, owner, ctx.user)) {
-        ctx.printError(`chown: não foi possível mudar o dono de '${path}': Apenas o root pode fazer isso`);
-      }
-    }
-  },
-  {
-    name: 'apt',
-    description: 'Ferramenta de gerenciamento de pacotes',
-    execute: async (ctx) => {
-      const command = ctx.args[0];
-      const pkg = ctx.args[1];
-      if (command === 'install' && pkg) {
-        ctx.print(`Lendo listas de pacotes... Pronto`);
-        ctx.print(`Construindo árvore de dependências... Pronto`);
-        ctx.print(`Os seguintes pacotes NOVOS serão instalados: ${pkg}`);
-        ctx.print(`0 atualizados, 1 novos instalados, 0 a serem removidos.`);
-        ctx.print(`Instalando ${pkg}... [OK]`);
-      } else if (command === 'update') {
-        ctx.print('Atingido:1 http://br.archive.ubuntu.com/ubuntu jammy InRelease');
-        ctx.print('Lendo listas de pacotes... Pronto');
-      } else {
-        ctx.print('Uso: apt [install|update] [pacote]');
-      }
-    }
-  },
-  {
-    name: 'ping',
-    description: 'Envia pacotes ICMP ECHO_REQUEST para hosts da rede',
-    execute: async (ctx) => {
-      const host = ctx.args[0];
-      if (!host) {
-        ctx.printError('ping: host ausente');
-        return;
-      }
-      ctx.print(`PING ${host} (127.0.0.1) 56(84) bytes of data.`);
-      ctx.print(`64 bytes from ${host} (127.0.0.1): icmp_seq=1 ttl=64 time=0.045 ms`);
-      ctx.print(`64 bytes from ${host} (127.0.0.1): icmp_seq=2 ttl=64 time=0.048 ms`);
-      ctx.print(`--- ${host} ping statistics ---`);
-      ctx.print('2 packets transmitted, 2 received, 0% packet loss, time 1001ms');
-    }
-  },
-  {
-    name: 'tracert',
-    description: 'Rastreia a rota para um host (alias para traceroute)',
-    execute: async (ctx) => {
-      const host = ctx.args[0];
-      if (!host) {
-        ctx.printError('tracert: host ausente');
-        return;
-      }
-      ctx.print(`traceroute to ${host} (127.0.0.1), 30 hops max, 60 byte packets`);
-      ctx.print(` 1  gateway (192.168.1.1)  0.521 ms  0.498 ms  0.472 ms`);
-      ctx.print(` 2  ${host} (127.0.0.1)  0.589 ms  0.564 ms  0.541 ms`);
+      ctx.print('NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS');
+      ctx.print('sda      8:0    0    50G  0 disk \n└─sda1   8:1    0    50G  0 part /');
+      ctx.print('sr0     11:0    1  1024M  0 rom');
     }
   }
 ];
