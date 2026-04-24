@@ -52,7 +52,22 @@ channels:
 dependencies:
   - samtools
   - bwa
-  - fastqc`},"/home/dayhoff/Dockerfile":{name:`Dockerfile`,type:`file`,parent:`/home/dayhoff`,permissions:`rw-r--r--`,owner:`dayhoff`,group:`dayhoff`,createdAt:Date.now(),modifiedAt:Date.now(),content:`FROM ubuntu:22.04
+  - fastqc`},"/home/dayhoff/Makefile":{name:`Makefile`,type:`file`,parent:`/home/dayhoff`,permissions:`rw-r--r--`,owner:`dayhoff`,group:`dayhoff`,createdAt:Date.now(),modifiedAt:Date.now(),content:`all: program
+
+program: main.o utils.o
+	gcc main.o utils.o -o program
+
+main.o: main.c
+	gcc -c main.c
+
+utils.o: utils.c
+	gcc -c utils.c`},"/home/dayhoff/Snakefile":{name:`Snakefile`,type:`file`,parent:`/home/dayhoff`,permissions:`rw-r--r--`,owner:`dayhoff`,group:`dayhoff`,createdAt:Date.now(),modifiedAt:Date.now(),content:`rule all:
+    input: "results/mapped.bam"
+
+rule map_reads:
+    input: "data/sample.fastq"
+    output: "results/mapped.bam"
+    shell: "bwa mem ref.fa {input} > {output}"`},"/home/dayhoff/Dockerfile":{name:`Dockerfile`,type:`file`,parent:`/home/dayhoff`,permissions:`rw-r--r--`,owner:`dayhoff`,group:`dayhoff`,createdAt:Date.now(),modifiedAt:Date.now(),content:`FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y samtools
 CMD ["samtools"]`}},cwd:`/home/dayhoff`};let t=this.state.nodes[`/home/dayhoff`];t&&t.children&&(t.children.includes(`projetos`)||t.children.push(`projetos`));let n=this.state.nodes[`/home/dayhoff/projetos`];n&&(n.children=[`sequencia.fasta`,`genoma_curto.seq`]);let r=this.state.nodes[`/home`];r&&r.children&&(r.children.includes(`dayhoff`)||r.children.push(`dayhoff`))}createDirNode(e,t,n=`rwxr-xr-x`){return{name:e,type:`directory`,parent:t,permissions:n,owner:e===`root`?`root`:`dayhoff`,group:e===`root`?`root`:`dayhoff`,createdAt:Date.now(),modifiedAt:Date.now(),children:[]}}findNodes(e,t){let n=this.resolvePath(e),r=[],i=Object.keys(this.state.nodes);for(let e of i)e.startsWith(n)&&(!t||e.includes(t))&&r.push(e);return r}getState(){return JSON.parse(JSON.stringify(this.state))}getNodes(){return this.state.nodes}getCwd(){return this.state.cwd}resolvePath(e){if(e.startsWith(`/`))return this.normalizePath(e);let t=this.state.cwd===`/`?`/${e}`:`${this.state.cwd}/${e}`;return this.normalizePath(t)}normalizePath(e){let t=e.split(`/`).filter(Boolean),n=[];for(let e of t)e!==`.`&&(e===`..`?n.pop():n.push(e));return`/`+n.join(`/`)}getNode(e){let t=this.normalizePath(e);return this.state.nodes[t]||null}checkPermission(e,t,n){if(t===`root`)return!0;let r=this.getNode(e);if(!r)return!1;let i=r.permissions;if(r.owner===t){if(n===`r`)return i[0]===`r`;if(n===`w`)return i[1]===`w`;if(n===`x`)return i[2]===`x`}else{if(n===`r`)return i[6]===`r`;if(n===`w`)return i[7]===`w`;if(n===`x`)return i[8]===`x`}return!1}setCwd(e,t=`dayhoff`){let n=this.resolvePath(e),r=this.getNode(n);return r&&r.type===`directory`&&this.checkPermission(n,t,`x`)?(this.state.cwd=n,!0):!1}listDirectory(e,t=`dayhoff`){let n=e?this.resolvePath(e):this.state.cwd,r=this.getNode(n);return r&&r.type===`directory`&&this.checkPermission(n,t,`r`)?r.children:null}readFile(e,t=`dayhoff`){let n=this.resolvePath(e),r=this.getNode(n);return r&&r.type===`file`?this.checkPermission(n,t,`r`)?r.content:`Permissão negada`:null}writeFile(e,t,n=`dayhoff`,r=!1){let i=this.resolvePath(e),a=this.getNode(i);if(a){if(a.type===`directory`||!this.checkPermission(i,n,`w`))return!1;let e=a;return e.content=r?e.content+t:t,e.modifiedAt=Date.now(),!0}else{let e=i.split(`/`),r=e.pop(),a=`/`+e.filter(Boolean).join(`/`),o=this.getNode(a);if(o&&o.type===`directory`){if(!this.checkPermission(a,n,`w`))return!1;let e={name:r,type:`file`,parent:a,permissions:`rw-r--r--`,owner:n,group:n,createdAt:Date.now(),modifiedAt:Date.now(),content:t};return this.state.nodes[i]=e,o.children.push(r),!0}}return!1}mkdir(e,t=`dayhoff`){let n=this.resolvePath(e);if(this.getNode(n))return!1;let r=n.split(`/`),i=r.pop(),a=`/`+r.filter(Boolean).join(`/`),o=this.getNode(a);if(o&&o.type===`directory`){if(!this.checkPermission(a,t,`w`))return!1;let e=this.createDirNode(i,a);return e.owner=t,e.group=t,this.state.nodes[n]=e,o.children.push(i),!0}return!1}rm(e,t=`dayhoff`,n=!1){let r=this.resolvePath(e);if(r===`/`)return!1;let i=this.getNode(r);if(!i)return!1;let a=i.parent||`/`;if(!this.checkPermission(a,t,`w`)||i.type===`directory`&&!n&&i.children.length>0)return!1;if(i.type===`directory`&&n){let e=[...i.children];for(let n of e)this.rm(`${r}/${n}`,t,!0)}let o=this.getNode(a);return o&&o.type===`directory`&&(o.children=o.children.filter(e=>e!==i.name)),delete this.state.nodes[r],!0}chmod(e,t,n=`dayhoff`){let r=this.resolvePath(e),i=this.state.nodes[r];return i?n!==`root`&&i.owner!==n?!1:(i.permissions=t,i.modifiedAt=Date.now(),!0):!1}chown(e,t,n=`dayhoff`){let r=this.resolvePath(e),i=this.state.nodes[r];return i&&n===`root`?(i.owner=t,i.modifiedAt=Date.now(),!0):!1}},sc=[{name:`pwd`,description:`Imprime o nome do diretório atual`,help:`pwd
 
@@ -515,7 +530,46 @@ Comandos:
   which [cmd]       Mostra o caminho absoluto para o executável`,execute:async e=>{let t=e.args[0];if(t===`versions`)e.print(`  system
 * 3.10.4 (set by /home/dayhoff/.pyenv/version)
   3.11.0
-  3.12-dev`);else if(t===`install`){let t=e.args[1]||`3.11.0`;e.print(`Downloading Python-${t}.tar.xz...\nInstalling Python-${t}... [OK]`)}else t===`global`?e.print(`Global Python version set to ${e.args[1]||`3.10.4`}`):e.print(`Usage: pyenv [install|versions|global|local|which]`)}},{name:`docker`,description:`Gerenciador de containers Docker`,help:`docker [COMANDO] [OPÇÕES]
+  3.12-dev`);else if(t===`install`){let t=e.args[1]||`3.11.0`;e.print(`Downloading Python-${t}.tar.xz...\nInstalling Python-${t}... [OK]`)}else t===`global`?e.print(`Global Python version set to ${e.args[1]||`3.10.4`}`):e.print(`Usage: pyenv [install|versions|global|local|which]`)}},{name:`apt`,description:`Gerenciador de pacotes do Debian/Ubuntu`,help:`apt [COMANDO] [PACOTE]
+
+Interface avançada para gerenciamento de pacotes do sistema.
+
+Comandos:
+  update      Atualiza a lista de repositórios
+  install     Instala pacotes e suas dependências
+  remove      Remove pacotes
+  search      Busca pacotes na base de dados
+  list --upgradable Lista pacotes que podem ser atualizados`,execute:async e=>{let t=e.args[0],n=e.args[1];if(t===`update`)e.print(`Atingido:1 http://br.archive.ubuntu.com/ubuntu jammy InRelease`),e.print(`Obter:2 http://br.archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]`),e.print(`Obter:3 http://br.archive.ubuntu.com/ubuntu jammy-backports InRelease [108 kB]`),e.print(`Obter:4 http://security.ubuntu.com/ubuntu jammy-security InRelease [110 kB]`),e.print(`Lendo listas de pacotes... 0%`),await new Promise(e=>setTimeout(e,400)),e.print(`Lendo listas de pacotes... 100% [Pronto]`);else if(t===`install`){if(!n){e.printError(`apt install: erro: pacote não especificado`);return}e.print(`Lendo listas de pacotes... Pronto
+Construindo árvore de dependências... Pronto`),e.print(`Os seguintes pacotes ADICIONAIS serão instalados:\n  lib${n}-dev common-${n}`),e.print(`Os seguintes NOVOS pacotes serão instalados:\n  ${n} lib${n}-dev common-${n}`),e.print(`0 atualizados, 3 novos instalados, 0 a serem removidos.`),e.print(`É preciso baixar 1.250 kB de arquivos.`),e.print(`Depois desta operação, 4.500 kB de espaço em disco rígido serão utilizados.`),e.print(`Obter:1 http://br.archive.ubuntu.com/ubuntu jammy/main ... [OK]`),e.print(`Configurando ${n} (1.2.3-1ubuntu1) ...`),e.print(`\x1B[32mProgresso: [########################################] 100%\x1B[0m`),mc(`system`,n)}else t===`search`?e.print(`Sorting... Done\nFull Text Search... Done\n${n||`samtools`}/jammy 1.16.1-1 amd64\n  Tools for manipulating next-generation sequencing data`):e.print(`Uso: apt [install|remove|update|search|list]`)}},{name:`make`,description:`Utilitário para gerenciar a compilação de programas`,help:`make [ALVO]
+
+Executa comandos especificados em um Makefile para compilar código ou automatizar tarefas.`,execute:async e=>{if(e.vfs.readFile(`Makefile`,e.user)){let t=e.args[0]||`all`;e.print(`gcc -Wall -O2 -c main.c -o main.o`),e.print(`gcc -Wall -O2 -c utils.c -o utils.o`),e.print(`gcc main.o utils.o -o program`),e.print(`\x1b[1;32mMake: Alvo '${t}' concluído com sucesso.\x1b[0m`)}else e.printError(`make: *** Nenhum alvo especificado e nenhum makefile encontrado. Pare.`)}},{name:`snakemake`,description:`Sistema de gerenciamento de fluxos de trabalho (Bioinformática)`,help:`snakemake [OPÇÕES]
+
+Executa pipelines definidos em um Snakefile.
+
+Opções:
+  -n, --dry-run   Exibe o que seria executado sem rodar nada
+  -c, --cores     Especifica o número de núcleos (ex: -c 4)
+  --list-rules    Lista todas as regras do Snakefile`,execute:async e=>{let t=e.args.includes(`-n`)||e.args.includes(`--dry-run`);if(!e.vfs.readFile(`Snakefile`,e.user)&&!e.args.includes(`--list-rules`)){e.printError(`Error: Snakefile not found in current directory.`);return}e.print(`\x1B[1mBuilding DAG of jobs...\x1B[0m`),e.print(`Job counts:
+	count	jobs
+	1	all
+	1	map_reads
+	1	sort_bam
+	1	call_variants
+	4	total
+`),t?(e.print(`\x1B[33m[Dry-run] Rule map_reads:\x1B[0m
+	input: data/sample.fastq
+	output: results/mapped.bam`),e.print(`\x1B[33m[Dry-run] Rule sort_bam:\x1B[0m
+	input: results/mapped.bam
+	output: results/sorted.bam`),e.print(`
+\x1B[1;32mThis was a dry-run. No jobs were executed.\x1B[0m`)):(e.print(`\x1B[1;34mRule map_reads:\x1B[0m`),e.print(`	input: data/sample.fastq
+	output: results/mapped.bam
+	jobid: 1`),await new Promise(e=>setTimeout(e,600)),e.print(`\x1B[32mFinished job 1.\x1B[0m
+1 of 4 steps (25%) done`),e.print(`
+\x1B[1;34mRule sort_bam:\x1B[0m`),e.print(`	input: results/mapped.bam
+	output: results/sorted.bam
+	jobid: 2`),await new Promise(e=>setTimeout(e,400)),e.print(`\x1B[32mFinished job 2.\x1B[0m
+2 of 4 steps (50%) done`),e.print(`
+\x1B[1;32mComplete!\x1B[0m`))}},{name:`docker`,description:`Gerenciador de containers Docker`,help:`docker [COMANDO] [OPÇÕES]
 
 Plataforma para containers e orquestração.
 
