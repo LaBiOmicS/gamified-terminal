@@ -24,10 +24,20 @@ const Terminal: React.FC = () => {
   };
 
   useEffect(() => {
+    const safeFit = () => {
+      try {
+        if (fitAddonRef.current) {
+          fitAddonRef.current.fit();
+        }
+      } catch (e) {
+        console.warn('Terminal fit failed', e);
+      }
+    };
+
     const handleResize = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
-      if (fitAddonRef.current) fitAddonRef.current.fit();
+      requestAnimationFrame(safeFit);
     };
 
     window.addEventListener('resize', handleResize);
@@ -52,7 +62,7 @@ const Terminal: React.FC = () => {
     xterm.loadAddon(fitAddon);
     
     xterm.open(terminalRef.current);
-    fitAddon.fit();
+    requestAnimationFrame(safeFit);
 
     xtermRef.current = xterm;
     fitAddonRef.current = fitAddon;
@@ -82,25 +92,35 @@ const Terminal: React.FC = () => {
     engineRef.current = new TerminalEngine(xterm, updateUI, handleGame);
     updateUI();
 
-    setTimeout(() => fitAddon.fit(), 100);
+    const timer = setTimeout(safeFit, 100);
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      clearTimeout(timer);
       xterm.dispose();
     };
   }, []);
 
   useEffect(() => {
-    const timer1 = setTimeout(() => {
-      if (fitAddonRef.current) fitAddonRef.current.fit();
-    }, 300);
-    const timer2 = setTimeout(() => {
-      if (fitAddonRef.current) fitAddonRef.current.fit();
-    }, 500);
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
+    const safeFit = () => {
+      try {
+        if (fitAddonRef.current) {
+          fitAddonRef.current.fit();
+        }
+      } catch (e) {
+        // Silently fail during transitions
+      }
     };
+
+    // Múltiplos frames para garantir o fit durante e após a transição
+    const timers = [
+      setTimeout(safeFit, 50),
+      setTimeout(safeFit, 150),
+      setTimeout(safeFit, 300),
+      setTimeout(safeFit, 600)
+    ];
+    
+    return () => timers.forEach(clearTimeout);
   }, [sidebarOpen]);
 
   const commandGroups = [
@@ -251,10 +271,11 @@ const Terminal: React.FC = () => {
 
         <aside style={{ 
           width: isMobile ? '280px' : (sidebarOpen ? '300px' : '0px'), 
+          flex: '0 0 auto',
           height: '100%', 
           backgroundColor: '#111112', 
           borderRight: (sidebarOpen || !isMobile) ? '1px solid #333' : 'none',
-          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: isMobile ? 'transform 0.3s ease' : 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -264,7 +285,6 @@ const Terminal: React.FC = () => {
           top: 0,
           transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
           boxShadow: isMobile && sidebarOpen ? '10px 0 15px rgba(0,0,0,0.5)' : 'none',
-          visibility: !isMobile && !sidebarOpen ? 'hidden' : 'visible',
           pointerEvents: isMobile && !sidebarOpen ? 'none' : 'auto'
         }}>
           <div style={{ padding: '20px 15px', backgroundColor: '#1a1a1b', borderBottom: '1px solid #333' }}>
