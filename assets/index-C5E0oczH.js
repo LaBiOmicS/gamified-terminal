@@ -122,9 +122,30 @@ Exibe a página de manual do sistema para o COMANDO especificado.`,execute:async
 SINOPSE: ls [ARQUIVO]...
 DESCRIÇÃO: Lista informações sobre os ARQUIVOS.`,chmod:`CHMOD(1) - altera permissões de acesso a arquivos
 
-SINOPSE: chmod [OPÇÃO]... MODO[,MODO]... ARQUIVO...`,ip:`IP(8) - exibe/manipula roteamento, dispositivos e túneis
+SINOPSE: chmod [OPÇÃO]... MODO[,MODO]... ARQUIVO...`,sbatch:`SBATCH(1) - envia um script de lote para o Slurm
 
-SINOPSE: ip [OPÇÕES] OBJETO {COMANDO | help}`}[t]||`Nenhuma entrada de manual para ${t}`)}},{name:`chmod`,description:`Altera as permissões de acesso a arquivos`,help:`chmod [OPÇÃO]... MODO[,MODO]... ARQUIVO...
+SINOPSE: sbatch [OPÇÕES] SCRIPT`}[t]||`Nenhuma entrada de manual para ${t}`)}},{name:`du`,description:`Estima o uso de espaço de arquivos`,help:`du [OPÇÃO]... [ARQUIVO]...
+
+Exibe o uso de disco de cada arquivo e diretório.
+
+Opções:
+  -h, --human-readable   tamanhos em formato legível (ex: 1K 234M 2G)
+  -s, --summarize        exibe apenas o total para cada argumento`,execute:async e=>{let t=e.args.includes(`-h`)||e.args.includes(`--human-readable`),n=e.args.includes(`-s`)||e.args.includes(`--summarize`),r=e.args.find(e=>!e.startsWith(`-`))||`.`;n?e.print(`${t?`452M`:`462848`}\t${r}`):(e.print(`${t?`12K`:`12`}\t${r}/config`),e.print(`${t?`440M`:`450560`}\t${r}/data`),e.print(`${t?`452M`:`462848`}\t${r}`))}},{name:`vim`,description:`Vi IMproved, um editor de texto para programadores`,help:`vim [ARQUIVO]
+
+Inicia o editor de texto Vim. (Simulação visual)`,execute:async e=>{let t=e.args[0]||`[Novo Arquivo]`;e.clear();for(let n=0;n<20;n++)n===0?e.print(`\x1B[1;34m~   \x1B[0mBem-vindo ao Vim (Simulação)`):n===1?e.print(`\x1b[1;34m~   \x1b[0mArquivo: ${t}`):e.print(`\x1B[1;34m~\x1B[0m`);e.print(`\x1b[7m"${t}" 0L, 0C                              1,1           Tudo\x1b[0m`),e.print(`\x1B[1;30m(Pressione 'Ctrl+C' ou digite ':q' no prompt real para sair da simulação)\x1B[0m`)}},{name:`sbatch`,description:`Envia um script de lote para o Slurm`,help:`sbatch [OPÇÕES] SCRIPT
+
+Envia um script para execução no cluster.
+
+Exemplo:
+  sbatch pipeline.sh`,execute:async e=>{if(!e.args[0]){e.printError(`sbatch: erro: nenhum script especificado`);return}let t=Math.floor(Math.random()*9e5)+1e5;e.print(`Submitted batch job ${t}`)}},{name:`squeue`,description:`Exibe a fila de jobs do Slurm`,help:`squeue [OPÇÕES]
+
+Opções:
+  -u [user]   Lista apenas jobs do usuário`,execute:async e=>{e.print(`             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)`);let t=Math.floor(Math.random()*9e5)+1e5;e.print(`${t}     batch   pipeline  dayhoff  R       0:15      1 node-01`),e.print(`${t+1}     batch   analysis  dayhoff  PD      0:00      1 (Resources)`)}},{name:`sinfo`,description:`Exibe informações sobre os nós e partições do Slurm`,help:`sinfo
+
+Exibe o estado dos recursos do cluster.`,execute:async e=>{e.print(`PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST`),e.print(`batch*       up   infinite      8   idle node-[01-08]`),e.print(`gpu          up   infinite      2   busy node-09,node-10`)}},{name:`scancel`,description:`Cancela jobs no Slurm`,help:`scancel JOBID
+
+Exemplo:
+  scancel 123456`,execute:async e=>{let t=e.args[0];if(!t){e.printError(`scancel: erro: JOBID necessário`);return}e.print(`Job ${t} cancelled.`)}},{name:`chmod`,description:`Altera as permissões de acesso a arquivos`,help:`chmod [OPÇÃO]... MODO[,MODO]... ARQUIVO...
 
 Modifica as permissões de cada ARQUIVO de acordo com MODO.
 
