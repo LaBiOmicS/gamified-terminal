@@ -91,9 +91,16 @@ const Terminal: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer1 = setTimeout(() => {
       if (fitAddonRef.current) fitAddonRef.current.fit();
     }, 300);
+    const timer2 = setTimeout(() => {
+      if (fitAddonRef.current) fitAddonRef.current.fit();
+    }, 500);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, [sidebarOpen]);
 
   const commandGroups = [
@@ -225,17 +232,20 @@ const Terminal: React.FC = () => {
 
       <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}>
         <aside style={{ 
-          width: sidebarOpen ? (isMobile ? '100%' : '300px') : '0px', 
+          width: isMobile ? '280px' : (sidebarOpen ? '300px' : '0px'), 
           height: '100%', 
           backgroundColor: '#111112', 
-          borderRight: sidebarOpen ? '1px solid #333' : 'none',
-          transition: 'width 0.3s ease',
+          borderRight: (sidebarOpen || !isMobile) ? '1px solid #333' : 'none',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
           position: isMobile ? 'absolute' : 'relative',
-          zIndex: 90,
-          visibility: sidebarOpen ? 'visible' : 'hidden'
+          zIndex: 95,
+          left: 0,
+          top: 0,
+          transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
+          boxShadow: isMobile && sidebarOpen ? '10px 0 15px rgba(0,0,0,0.5)' : 'none'
         }}>
           <div style={{ padding: '20px 15px', backgroundColor: '#1a1a1b', borderBottom: '1px solid #333' }}>
             <div style={{ fontSize: '10px', color: '#888', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase' }}>Perfil do Estudante</div>
