@@ -4,6 +4,7 @@ export const basicCommands: Command[] = [
   {
     name: 'pwd',
     description: 'Imprime o nome do diretório atual',
+    help: 'pwd\n\nImprime o caminho absoluto do diretório de trabalho atual.',
     execute: async (ctx) => {
       ctx.print(ctx.vfs.getCwd());
     }
@@ -11,6 +12,7 @@ export const basicCommands: Command[] = [
   {
     name: 'ls',
     description: 'Lista o conteúdo do diretório',
+    help: 'ls [OPÇÃO]... [DIRETÓRIO]...\n\nLista informações sobre os arquivos (o diretório atual por padrão).\n\nOpções:\n  -a, --all    não ignora entradas iniciadas com .\n  -l           usa um formato de listagem longa',
     execute: async (ctx) => {
       const showHidden = ctx.args.some(a => a.includes('a') && a.startsWith('-'));
       const longFormat = ctx.args.some(a => a.includes('l') && a.startsWith('-'));
@@ -45,6 +47,7 @@ export const basicCommands: Command[] = [
   {
     name: 'cd',
     description: 'Muda o diretório de trabalho',
+    help: 'cd [DIRETÓRIO]\n\nMuda o diretório atual para DIRETÓRIO. Se nenhum diretório for especificado, muda para o diretório home do usuário.',
     execute: async (ctx) => {
       const path = ctx.args[0] || '/home/dayhoff';
       if (!ctx.vfs.setCwd(path, ctx.user)) {
@@ -55,6 +58,7 @@ export const basicCommands: Command[] = [
   {
     name: 'cat',
     description: 'Concatena arquivos e imprime na saída padrão',
+    help: 'cat [ARQUIVO]...\n\nLê o conteúdo de ARQUIVO(s) e o exibe no terminal.',
     execute: async (ctx) => {
       if (ctx.args.length === 0) {
         ctx.printError('cat: operando de arquivo ausente');
@@ -73,6 +77,7 @@ export const basicCommands: Command[] = [
   {
     name: 'mkdir',
     description: 'Cria diretórios',
+    help: 'mkdir [OPÇÃO]... DIRETÓRIO...\n\nCria o(s) DIRETÓRIO(s), se ainda não existirem.\n\nOpções:\n  -p, --parents     cria diretórios pais, se necessário',
     execute: async (ctx) => {
       const createParents = ctx.args.includes('-p');
       const paths = ctx.args.filter(a => !a.startsWith('-'));
@@ -104,6 +109,7 @@ export const basicCommands: Command[] = [
   {
     name: 'rm',
     description: 'Remove arquivos ou diretórios',
+    help: 'rm [OPÇÃO]... ARQUIVO...\n\nRemove (apaga) o(s) ARQUIVO(s).\n\nOpções:\n  -r, -R, --recursive   remove diretórios e seus conteúdos recursivamente\n  -f, --force           ignora arquivos inexistentes e nunca pergunta',
     execute: async (ctx) => {
       let recursive = false;
       let force = false;
@@ -133,6 +139,7 @@ export const basicCommands: Command[] = [
   {
     name: 'echo',
     description: 'Exibe uma linha de texto',
+    help: 'echo [STRING]... [>|>> ARQUIVO]\n\nExibe a STRING na saída padrão ou a redireciona para um ARQUIVO.\n\nRedirecionamento:\n  >   sobrescreve o conteúdo do arquivo\n  >>  anexa ao final do arquivo',
     execute: async (ctx) => {
       const redirectIndex = ctx.args.indexOf('>');
       const appendIndex = ctx.args.indexOf('>>');
@@ -159,6 +166,7 @@ export const basicCommands: Command[] = [
   {
     name: 'clear',
     description: 'Limpa a tela do terminal',
+    help: 'clear\n\nLimpa todo o conteúdo visível no terminal.',
     execute: async (ctx) => {
       ctx.clear();
     }
@@ -166,6 +174,7 @@ export const basicCommands: Command[] = [
   {
     name: 'whoami',
     description: 'Imprime o nome do usuário atual',
+    help: 'whoami\n\nExibe o nome do usuário efetivo associado à sessão atual.',
     execute: async (ctx) => {
       ctx.print(ctx.user);
     }
@@ -173,6 +182,7 @@ export const basicCommands: Command[] = [
   {
     name: 'date',
     description: 'Exibe a data e hora do sistema',
+    help: 'date\n\nExibe a data e hora atual do sistema no formato local.',
     execute: async (ctx) => {
       ctx.print(new Date().toLocaleString('pt-BR'));
     }
@@ -180,6 +190,7 @@ export const basicCommands: Command[] = [
   {
     name: 'cp',
     description: 'Copia arquivos e diretórios',
+    help: 'cp ORIGEM DESTINO\n\nCopia o arquivo ORIGEM para o arquivo ou diretório DESTINO.',
     execute: async (ctx) => {
       if (ctx.args.length < 2) {
         ctx.printError('cp: operando de arquivo ausente');
@@ -200,6 +211,7 @@ export const basicCommands: Command[] = [
   {
     name: 'touch',
     description: 'Cria um arquivo vazio ou atualiza a data de acesso e modificação',
+    help: 'touch ARQUIVO...\n\nCria um ARQUIVO vazio se ele não existir, ou atualiza o timestamp se existir.',
     execute: async (ctx) => {
       if (ctx.args.length === 0) {
         ctx.printError('touch: operando de arquivo ausente');
@@ -220,6 +232,7 @@ export const basicCommands: Command[] = [
   {
     name: 'mv',
     description: 'Move (renomeia) arquivos',
+    help: 'mv ORIGEM DESTINO\n\nRenomeia ORIGEM para DESTINO, ou move ORIGEM para o diretório DESTINO.',
     execute: async (ctx) => {
       if (ctx.args.length < 2) {
         ctx.printError('mv: operando de arquivo ausente');

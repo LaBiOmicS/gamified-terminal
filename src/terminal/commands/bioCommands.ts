@@ -4,6 +4,7 @@ export const bioCommands: Command[] = [
   {
     name: 'bio-count',
     description: 'Conta a frequência de bases (A, T, C, G) em uma sequência ou arquivo',
+    help: 'bio-count [SEQUÊNCIA | ARQUIVO]\n\nCalcula a frequência de nucleotídeos, total de pares de bases e conteúdo GC.\nSe o argumento for um arquivo existente, lê o arquivo; caso contrário, processa a string fornecida.',
     execute: async (ctx) => {
       const input = ctx.args[0];
       if (!input) {
@@ -37,6 +38,7 @@ export const bioCommands: Command[] = [
   {
     name: 'bio-rev-comp',
     description: 'Gera o complemento reverso de uma sequência de DNA',
+    help: 'bio-rev-comp [SEQUÊNCIA | ARQUIVO]\n\nGera a sequência complementar reversa (5\'->3\').\nAceita string direta ou caminho de arquivo.',
     execute: async (ctx) => {
       const input = ctx.args[0];
       if (!input) {
@@ -64,6 +66,7 @@ export const bioCommands: Command[] = [
   {
     name: 'fasta-view',
     description: 'Visualiza arquivos FASTA com destaque de cor',
+    help: 'fasta-view ARQUIVO\n\nExibe o conteúdo de um arquivo FASTA com cores para os nucleotídeos (A, T, C, G) e destaque para o cabeçalho.',
     execute: async (ctx) => {
       const path = ctx.args[0];
       if (!path) {
@@ -94,6 +97,7 @@ export const bioCommands: Command[] = [
   {
     name: 'samtools',
     description: 'Ferramentas para manipular alinhamentos de sequências (SAM/BAM)',
+    help: 'samtools [COMANDO] [OPÇÕES]\n\nSuite para manipulação de arquivos SAM/BAM.\n\nComandos:\n  view       Exibe alinhamentos\n  flagstat   Resumo estatístico do mapeamento',
     execute: async (ctx) => {
       const sub = ctx.args[0];
       if (sub === 'view') {
@@ -109,6 +113,7 @@ export const bioCommands: Command[] = [
   {
     name: 'blastn',
     description: 'Busca de similaridade em sequências de nucleotídeos',
+    help: 'blastn -query ARQUIVO -db DATABASE\n\nRealiza busca local de alinhamento de nucleotídeos.',
     execute: async (ctx) => {
       const query = ctx.args[ctx.args.indexOf('-query') + 1];
       if (!query) { ctx.print('BLASTN 2.13.0+\nUsage: blastn -query <file> -db <database>'); return; }
@@ -122,6 +127,7 @@ export const bioCommands: Command[] = [
   {
     name: 'bedtools',
     description: 'Suíte de ferramentas para manipulação de arquivos genômicos (BED/GFF/VCF)',
+    help: 'bedtools [SUBCOMANDO] [OPÇÕES]\n\nOperações aritméticas genômicas.\n\nSubcomandos comuns:\n  intersect   Encontra sobreposições entre arquivos',
     execute: async (ctx) => {
       const sub = ctx.args[0];
       if (sub === 'intersect') {

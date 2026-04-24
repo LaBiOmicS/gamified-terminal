@@ -17,6 +17,7 @@ export class CommandRegistry {
     const helpCommand: Command = {
       name: 'ajuda',
       description: 'Exibe informações sobre os comandos disponíveis',
+      help: 'ajuda\n\nLista todos os comandos registrados e exibe dicas de uso para iniciantes.',
       execute: async (ctx) => {
         ctx.print('\x1b[1;32mComandos disponíveis:\x1b[0m');
         

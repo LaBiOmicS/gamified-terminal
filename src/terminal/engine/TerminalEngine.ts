@@ -257,6 +257,12 @@ export class TerminalEngine {
     const args = parts.slice(1);
 
     if (cmdName === 'missao' || cmdName === 'quest') {
+      if (args.includes('-h') || args.includes('--help')) {
+        this.terminal.write(`\x1b[1;32mAJUDA: missao\x1b[0m\r\n`);
+        this.terminal.write(`Mostra o objetivo atual da sua jornada de aprendizado.\r\n`);
+        this.terminal.write(`\r\n\x1b[1;33mUSO:\x1b[0m\r\nmissao\r\n`);
+        return;
+      }
       const q = this.questManager.getCurrentQuest();
       if (q) {
         this.terminal.write(`\x1b[1;33m🎯 MISSÃO ATUAL: ${q.title}\x1b[0m\r\n`);
@@ -269,6 +275,12 @@ export class TerminalEngine {
     }
 
     if (cmdName === 'tema') {
+      if (args.includes('-h') || args.includes('--help')) {
+        this.terminal.write(`\x1b[1;32mAJUDA: tema\x1b[0m\r\n`);
+        this.terminal.write(`Muda o estilo visual do prompt do terminal.\r\n`);
+        this.terminal.write(`\r\n\x1b[1;33mUSO:\x1b[0m\r\ntema [bash | zsh | minimal]\r\n`);
+        return;
+      }
       const style = args[0] as PromptStyle;
       const validStyles: PromptStyle[] = ['bash', 'zsh', 'minimal'];
       if (!style || !validStyles.includes(style)) {
@@ -282,6 +294,17 @@ export class TerminalEngine {
 
     const command = this.registry.getCommand(cmdName);
     if (command) {
+      if (args.includes('-h') || args.includes('--help')) {
+        this.terminal.write(`\x1b[1;32mAJUDA: ${command.name}\x1b[0m\r\n`);
+        this.terminal.write(`${command.description}\r\n`);
+        if (command.help) {
+          this.terminal.write(`\r\n\x1b[1;33mUSO:\x1b[0m\r\n${command.help.replace(/\n/g, '\r\n')}\r\n`);
+        } else {
+          this.terminal.write(`\r\nUso: ${command.name} [argumentos]\r\n`);
+        }
+        return;
+      }
+
       const context: CommandContext = {
         vfs: this.vfs,
         args,

@@ -27,6 +27,7 @@ export const packageManagerCommands: Command[] = [
   {
     name: 'conda',
     description: 'Gerenciador de pacotes e ambientes (Conda)',
+    help: 'conda [COMANDO] [OPÇÕES]\n\nGerencia ambientes virtuais e pacotes.\n\nComandos:\n  install [pacote]    Instala um novo pacote\n  remove [pacote]     Remove um pacote\n  list                Lista pacotes instalados no ambiente atual\n  activate [env]      Ativa um ambiente virtual\n  deactivate          Desativa o ambiente atual\n  env list            Lista todos os ambientes disponíveis\n  env create -f [yml] Cria ambiente a partir de um arquivo',
     execute: async (ctx) => {
       const sub = ctx.args[0];
       const currentEnv = localStorage.getItem('current_env') || 'base';
@@ -86,6 +87,7 @@ export const packageManagerCommands: Command[] = [
   {
     name: 'mamba',
     description: 'Gerenciador de pacotes rápido (Mamba)',
+    help: 'mamba [COMANDO] [OPÇÕES]\n\nAlternativa ultra-rápida ao conda.\n\nComandos:\n  install [pacote]    Instala um pacote rapidamente\n  remove [pacote]     Remove um pacote\n  activate [env]      Ativa um ambiente virtual',
     execute: async (ctx) => {
       const sub = ctx.args[0];
       const currentEnv = localStorage.getItem('current_env') || 'base';
@@ -112,6 +114,7 @@ export const packageManagerCommands: Command[] = [
   {
     name: 'pip',
     description: 'Instalador de pacotes para Python',
+    help: 'pip [COMANDO] [OPÇÕES]\n\nGerenciador de pacotes oficial do Python.\n\nComandos:\n  install [pacote]       Instala pacotes\n  install -r [file.txt]  Instala pacotes de um arquivo de requisitos\n  uninstall [pacote]     Remove pacotes\n  list                   Lista pacotes Python instalados',
     execute: async (ctx) => {
       const sub = ctx.args[0];
       if (sub === 'install') {
@@ -136,6 +139,7 @@ export const packageManagerCommands: Command[] = [
   {
     name: 'apt',
     description: 'Gerenciador de pacotes do Debian/Ubuntu',
+    help: 'apt [COMANDO] [PACOTE]\n\nInterface simplificada para gerenciamento de pacotes do sistema.\n\nComandos:\n  update      Atualiza a lista de repositórios\n  install     Instala um novo pacote\n  remove      Remove um pacote do sistema',
     execute: async (ctx) => {
       const sub = ctx.args[0];
       const pkg = ctx.args[1];
@@ -157,6 +161,7 @@ export const packageManagerCommands: Command[] = [
   {
     name: 'docker',
     description: 'Gerenciador de containers Docker',
+    help: 'docker [COMANDO] [OPÇÕES]\n\nPlataforma para containers.\n\nComandos:\n  pull [img]      Baixa uma imagem do Docker Hub\n  run [img]       Cria e inicia um container\n  ps              Lista containers em execução\n  images          Lista imagens locais\n  build -t [tag]  Cria imagem a partir do Dockerfile atual\n  rm [id]         Remove um container\n  rmi [id]        Remove uma imagem',
     execute: async (ctx) => {
       const sub = ctx.args[0];
       
@@ -252,6 +257,7 @@ export const packageManagerCommands: Command[] = [
   {
     name: 'pixi',
     description: 'Gerenciador moderno (Pixi)',
+    help: 'pixi [COMANDO] [OPÇÕES]\n\nGerenciador de pacotes baseado em Conda para múltiplos sistemas operacionais.\n\nComandos:\n  add [pacote]    Adiciona um novo pacote ao projeto\n  remove [pkg]    Remove um pacote\n  list            Lista pacotes do projeto',
     execute: async (ctx) => {
       const sub = ctx.args[0];
       if (sub === 'add') {
@@ -269,6 +275,7 @@ export const packageManagerCommands: Command[] = [
   {
     name: 'deactivate',
     description: 'Desativa o ambiente virtual atual',
+    help: 'deactivate\n\nSai do ambiente virtual ativo e retorna ao ambiente base.',
     execute: async (ctx) => {
       ctx.setEnv('');
       ctx.print('Ambiente desativado.');
