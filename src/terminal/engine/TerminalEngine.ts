@@ -97,6 +97,13 @@ export class TerminalEngine {
     this.printPrompt();
   }
 
+  public async resetSystem() {
+    this.questManager.reset();
+    localStorage.clear();
+    this.terminal.write('\r\n\x1b[1;32mSistema resetado com sucesso. Reiniciando...\x1b[0m\r\n');
+    setTimeout(() => window.location.reload(), 1000);
+  }
+
   private printPrompt() {
     const cwd = this.vfs.getCwd();
     const shortCwd = cwd.replace('/home/dayhoff', '~');
@@ -114,7 +121,7 @@ export class TerminalEngine {
       case 'bash':
       default: {
         const userColor = user === 'root' ? '\x1b[1;31m' : '\x1b[1;32m';
-        this.terminal.write(`\r\n${envPrefix}${userColor}${user}@LaBiOmicS\x1b[0m:\x1b[1;34m${shortCwd}\x1b[0m${symbol} `);
+        this.terminal.write(`\r\n${envPrefix}${userColor}${user}@LaBiOmics\x1b[0m:\x1b[1;34m${shortCwd}\x1b[0m${symbol} `);
         break;
       }
     }
@@ -298,15 +305,6 @@ export class TerminalEngine {
       return;
     }
 
-  public async resetSystem() {
-    this.questManager.reset();
-    localStorage.clear();
-    this.terminal.write('\r\n\x1b[1;32mSistema resetado com sucesso. Reiniciando...\x1b[0m\r\n');
-    setTimeout(() => window.location.reload(), 1000);
-  }
-
-  private async executeCommand(line: string) {
-...
     if (cmdName === 'reset') {
       this.terminal.write('\x1b[1;31mATENÇÃO: Isso apagará todo o seu progresso e arquivos criados!\x1b[0m\r\n');
       this.terminal.write('Você tem certeza que deseja resetar? (s/n): ');
