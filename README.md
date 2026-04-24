@@ -1,32 +1,97 @@
 # ARAMAS v1.0.0
 ### Ambiente Remoto para o Aprendizado e Manipulação de Arquivos e Sistemas
 
-O **ARAMAS** é um recurso pedagógico gamificado desenvolvido para o ensino de Linux e Bioinformática. O projeto simula um ambiente de terminal real, permitindo que estudantes pratiquem comandos, gerenciem ambientes e executem ferramentas de bioinformática enquanto progridem em uma jornada de aprendizado baseada em missões e XP.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-v22.22.2-green.svg)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
 
-## 🚀 Acesso
-Acesse a ferramenta online: [https://labiomics.github.io/aramas/](https://labiomics.github.io/aramas/)
+O **ARAMAS** é uma plataforma educacional imersiva e gamificada projetada para o ensino de **Linux** e **Bioinformática**. Ele oferece um ambiente de terminal simulado onde estudantes podem praticar comandos reais, gerenciar sistemas de arquivos e executar pipelines de análise genômica em uma jornada baseada em missões, XP e progressão de ranks.
 
-## 🧬 Características
-- **Terminal Gamificado:** Ganhe XP, conquiste insígnias e suba de rank (de Novato a Mestre).
-- **Módulos de Aprendizado:**
-  - Sistemas Operacionais (Básico ao Admin).
-  - Manipulação de Dados (Pipes, Filtros e Fluxos).
-  - Computação Científica (Bioinformática, Containers e HPC).
-- **Ferramentas Simuladas:** Samtools, BWA, Snakemake, Docker, Singularity e muito mais.
-- **VFS (Virtual File System):** Sistema de arquivos persistente em memória com suporte a permissões.
+---
 
-## 🛠️ Tecnologias
-- React + TypeScript
-- XTerm.js (Emulação de Terminal)
-- React Router (Navegação)
-- Vite (Build Tool)
+## 🚀 Demonstração Online
+Acesse a plataforma agora: [https://labiomics.github.io/aramas/](https://labiomics.github.io/aramas/)
 
-## 👤 Coordenação
-**Prof. Dr. Fabiano B. Menegidio**
+---
 
-## 🧪 Laboratório
-**LaBiOmicS** - Laboratório de Bioinformática e Ciências Ômicas
-**Universidade de Mogi das Cruzes (UMC)**
+## 🧬 Principais Funcionalidades
+
+### 🎮 Gamificação Ativa
+- **Sistema de XP e Ranks:** Evolua de *Novato(a)* até *Mestre da Bioinformática*.
+- **Missões Estruturadas:** 50+ missões divididas em 3 módulos de complexidade crescente.
+- **Conquistas:** Desbloqueie insígnias como "Mestre dos Pipes" e "Administrador(a)".
+- **Persistência Local:** Seu progresso e arquivos são salvos automaticamente no navegador.
+
+### 💻 Terminal de Alta Performance
+- **Simulação Fiel:** Baseado em XTerm.js com suporte a cores ANSI, histórico e auto-complete.
+- **VFS (Virtual File System):** Sistema de arquivos em memória com suporte a permissões (chmod/chown), usuários (root/dayhoff) e diretórios padrão Linux.
+- **Suporte a Pipes:** Encadeamento de comandos complexos (ex: `grep | sort | uniq -c`).
+
+### 🔬 Foco em Bioinformática
+- **Bio-Commands:** Simulação de ferramentas essenciais: `samtools`, `bwa`, `fastqc`, `bcftools`, `snakemake`, etc.
+- **Ciência de Dados:** Suporte robusto a `awk`, `sed`, `grep` e editores como `vim`.
+- **Ambientes e Containers:** Gerenciamento virtual via `mamba`, `conda`, `docker` e `singularity`.
+
+---
+
+## 📚 Estrutura Educacional (Módulos)
+
+1.  **Sistemas Operacionais:** Navegação, manipulação de arquivos, permissões e administração básica.
+2.  **Manipulação de Dados:** Filtros, fluxos de texto, ordenação e automação com xargs.
+3.  **Computação Científica:** Ferramentas de Bioinfo, automação de pipelines e computação em cluster (HPC).
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Frontend:** React 19 + TypeScript
+- **Terminal:** [XTerm.js](https://xtermjs.org/)
+- **Roteamento:** React Router Dom (HashRouter)
+- **Engine de Build:** Vite + Rolldown
+- **Estilização:** Vanilla CSS3 com variáveis dinâmicas
+
+---
+
+## ⚙️ Desenvolvimento e Instalação Local
+
+### Pré-requisitos
+- **Node.js:** v22.22.2 (Recomendado utilizar NVM)
+- **NPM:** v10.x ou superior
+
+### Passo a Passo
+1.  **Clonar o repositório:**
+    ```bash
+    git clone https://github.com/LaBiOmicS/aramas.git
+    cd aramas/gamified-terminal
+    ```
+2.  **Instalar dependências:**
+    ```bash
+    npm install
+    ```
+3.  **Executar em modo desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
+4.  **Gerar Build de Produção:**
+    ```bash
+    npm run build
+    ```
+
+---
+
+## 👤 Coordenação e Créditos
+
+O projeto **ARAMAS** é uma iniciativa acadêmica desenvolvida no âmbito da Bioinformática.
+
+- **Coordenador do Projeto:** Prof. Dr. Fabiano B. Menegidio
+- **Laboratório:** [LaBiOmicS](https://github.com/LaBiOmicS) - Laboratório de Bioinformática e Ciências Ômicas
+- **Instituição:** Universidade de Mogi das Cruzes (UMC)
+
+---
 
 ## 📄 Licença
-Este projeto está sob a licença MIT.
+
+Este projeto está licenciado sob a **Licença MIT** - consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+*ARAMAS - Dominando o Terminal, Conquistando a Ciência.*
