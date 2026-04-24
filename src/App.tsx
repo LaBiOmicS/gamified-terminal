@@ -1,18 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { HashRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Terminal from './components/Terminal';
 import './App.css';
 
-const App: React.FC = () => {
-  const [showTerminal, setShowTerminal] = useState(false);
-
-  const handleStart = () => {
-    setShowTerminal(true);
-    window.scrollTo(0, 0);
-  };
-
-  if (showTerminal) {
-    return <Terminal />;
-  }
+const LandingPage: React.FC = () => {
+  const navigate = useNavigate();
 
   return (
     <div className="landing-page">
@@ -29,7 +21,7 @@ const App: React.FC = () => {
               <span className="badge">Bioinformática</span>
               <span className="badge">Gamificado</span>
             </div>
-            <button className="cta-button" onClick={handleStart}>
+            <button className="cta-button" onClick={() => navigate('/terminal')}>
               ACESSAR TERMINAL <span className="arrow">→</span>
             </button>
           </div>
@@ -133,7 +125,7 @@ const App: React.FC = () => {
             </div>
             <div className="footer-credits">
               Coordenado por <strong>Prof. Dr. Fabiano B. Menegidio</strong><br/>
-              Desenvolvido por <strong>LaBiOmicS</strong><br/>
+              Desenvolvido por <strong>LaBiOmics</strong><br/>
               Laboratório de Bioinformática e Ciências Ômicas<br/>
               <strong>Universidade de Mogi das Cruzes (UMC)</strong>
             </div>
@@ -141,6 +133,17 @@ const App: React.FC = () => {
         </div>
       </footer>
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/terminal" element={<Terminal />} />
+      </Routes>
+    </Router>
   );
 };
 
