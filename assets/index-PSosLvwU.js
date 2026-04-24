@@ -187,149 +187,102 @@ Exibe o conteúdo de um arquivo FASTA com cores para os nucleotídeos.`,execute:
 
 Gera um relatório HTML com métricas de qualidade das leituras.`,execute:async e=>{if(!e.args[0]){e.printError(`Uso: fastqc seqfile1 seqfile2 .. seqfileN`);return}e.print(`Started analysis of ${e.args[0]}`),await new Promise(e=>setTimeout(e,800)),e.print(`Analysis complete for ${e.args[0]}\nHTML report saved to ${e.args[0].split(`.`)[0]}_fastqc.html\nZIP archive saved to ${e.args[0].split(`.`)[0]}_fastqc.zip`)}},{name:`multiqc`,description:`Agrega relatórios de bioinformática em um único documento`,help:`multiqc [DIRETÓRIO]
 
-Busca por relatórios (ex: FastQC, STAR, Salmon) e os unifica.`,execute:async e=>{e.print(`[INFO   ]         multiqc : This is MultiQC v1.14`),e.print(`[INFO   ]         multiqc : Template    : default`),e.print(`[INFO   ]         multiqc : Searching '${e.args[0]||`.`}'`),await new Promise(e=>setTimeout(e,600)),e.print(`[INFO   ]          fastqc : Found 4 reports`),e.print(`[INFO   ]             bwa : Found 2 reports`),e.print(`[INFO   ]         multiqc : Report      : multiqc_report.html`),e.print(`[INFO   ]         multiqc : Data        : multiqc_data`),e.print(`[INFO   ]         multiqc : MultiQC complete`)}},{name:`trimmomatic`,description:`Aparador de leituras flexível para dados Illumina`,help:`trimmomatic PE/SE [arquivos] [etapas]
+Busca por relatórios (ex: FastQC, STAR, Salmon) e os unifica.`,execute:async e=>{e.print(`[INFO   ]         multiqc : This is MultiQC v1.14`),e.print(`[INFO   ]         multiqc : Searching '${e.args[0]||`.`}'`),await new Promise(e=>setTimeout(e,600)),e.print(`[INFO   ]         multiqc : MultiQC complete`)}},{name:`trimmomatic`,description:`Aparador de leituras flexível para dados Illumina`,help:`trimmomatic PE/SE [arquivos] [etapas]
 
-Filtra e apara leituras de sequenciamento por qualidade e adaptadores.`,execute:async e=>{e.print(`TrimmomaticPE: Started with arguments: ${e.args.join(` `)}`),e.print(`Multiple cores found: Using 4 threads`),await new Promise(e=>setTimeout(e,700)),e.print(`Input Read Pairs: 100000 Both Surviving: 95000 (95.00%) Forward Only Surviving: 2000 (2.00%) Reverse Only Surviving: 1500 (1.50%) Dropped: 1500 (1.50%)`),e.print(`TrimmomaticPE: Completed successfully`)}},{name:`fastp`,description:`Aparador e filtrador ultra-rápido all-in-one para FASTQ`,help:`fastp -i in.fq -o out.fq
+Filtra e apara leituras de sequenciamento por qualidade e adaptadores.`,execute:async e=>{e.print(`TrimmomaticPE: Started with arguments: ${e.args.join(` `)}`),await new Promise(e=>setTimeout(e,700)),e.print(`Input Read Pairs: 100000 Both Surviving: 95000 (95.00%) Dropped: 1500 (1.50%)`)}},{name:`fastp`,description:`Aparador e filtrador ultra-rápido all-in-one para FASTQ`,help:`fastp -i in.fq -o out.fq
 
-Ferramenta rápida baseada em C++ para QC e trimming.`,execute:async e=>{e.print(`Read1 before filtering:`),e.print(`total reads: 100000
+Ferramenta rápida baseada em C++ para QC e trimming.`,execute:async e=>{e.print(`total reads: 100000
 total bases: 15000000
 Q20 bases: 97.5%
-Q30 bases: 92.1%`),await new Promise(e=>setTimeout(e,500)),e.print(`
-Filtering result:
-reads passed filter: 98000
-reads failed due to low quality: 1500
-reads failed due to too many N: 500`),e.print(`
-JSON report: fastp.json
-HTML report: fastp.html`)}},{name:`bwa`,description:`Burrows-Wheeler Aligner para mapeamento de leituras contra genoma de referência`,help:`bwa mem ref.fa read1.fq [read2.fq]
+Q30 bases: 92.1%`)}},{name:`bwa`,description:`Burrows-Wheeler Aligner para mapeamento de leituras contra genoma de referência`,help:`bwa mem ref.fa read1.fq [read2.fq]
 
 Realiza o alinhamento de leituras (reads) utilizando o algoritmo BWA-MEM.`,execute:async e=>{let t=e.args[0];t===`index`?e.print(`[bwa_index] Pack FASTA... 0.05 sec
-[bwa_index] Construct BWT for the packed sequence...
-[bwa_index] 1.50 sec
-[bwa_index] Update BWT... 0.02 sec`):t===`mem`?(e.print(`[M::bwa_idx_load] loaded the bwa index from genome.fa`),e.print(`[M::process] read 100000 sequences (15000000 bp)...`),await new Promise(e=>setTimeout(e,800)),e.print(`[M::mem_process_seqs] Processed 100000 reads in 2.345 CPU sec, 0.654 real sec`),e.print(`[main] Version: 0.7.17-r1188\n[main] CMD: bwa ${e.args.join(` `)}\n[main] Real time: 0.812 sec; CPU: 2.501 sec`)):e.print(`Usage: bwa <command> [options]
-Commands:
-  index         index sequences in the FASTA format
-  mem           BWA-MEM algorithm`)}},{name:`bowtie2`,description:`Alinhador rápido e sensível de leituras para genomas longos`,help:`bowtie2 -x <bt2-idx> {-1 <m1> -2 <m2> | -U <r>} -S <sam>
+[bwa_index] Construct BWT... done`):t===`mem`?e.print(`[M::bwa_idx_load] loaded index
+[M::mem_process_seqs] Processed 100000 reads`):e.print(`Usage: bwa <command> [options]`)}},{name:`bowtie2`,description:`Alinhador rápido e sensível de leituras para genomas longos`,help:`bowtie2 -x <bt2-idx> {-1 <m1> -2 <m2> | -U <r>} -S <sam>
 
-Constrói índices e mapeia leituras de DNA.`,execute:async e=>{if(e.args.length===0){e.print(`Bowtie 2 version 2.4.4
-Usage: bowtie2 [options]* -x <bt2-idx> {-1 <m1> -2 <m2> | -U <r>} [-S <sam>]`);return}e.print(`100000 reads; of these:`),e.print(`  100000 (100.00%) were paired; of these:`),e.print(`    5000 (5.00%) aligned concordantly 0 times`),e.print(`    90000 (90.00%) aligned concordantly exactly 1 time`),e.print(`    5000 (5.00%) aligned concordantly >1 times`),e.print(`95.00% overall alignment rate`)}},{name:`minimap2`,description:`Alinhador versátil para sequências de DNA/RNA`,help:`minimap2 -a ref.fa query.fq > aln.sam
+Constrói índices e mapeia leituras de DNA.`,execute:async e=>{e.print(`95.00% overall alignment rate`)}},{name:`minimap2`,description:`Alinhador versátil para sequências de DNA/RNA`,help:`minimap2 -a ref.fa query.fq > aln.sam
 
-Especialmente bom para reads longos (PacBio/Nanopore) ou genomas completos.`,execute:async e=>{if(e.args.length===0){e.print(`Usage: minimap2 [options] <target.fa>|<target.mmi> [query.fa] [...]`);return}e.print(`[M::mm_idx_gen::0.151*0.98] collected minimizers`),e.print(`[M::mm_idx_set::0.211*1.05] applied heuristic cutoff`),await new Promise(e=>setTimeout(e,600)),e.print(`[M::map_opt] read 50000 sequences`),e.print(`[M::worker_pipeline::1.250*2.88] mapped 50000 sequences`),e.print(`[main] Version: 2.24-r1122\n[main] CMD: minimap2 ${e.args.join(` `)}\n[main] Real time: 1.304 sec; CPU: 3.652 sec`)}},{name:`star`,description:`Spliced Transcripts Alignment to a Reference`,help:`STAR --genomeDir [dir] --readFilesIn [fastq]
+Especialmente bom para reads longos (PacBio/Nanopore) ou genomas completos.`,execute:async e=>{e.print(`[main] Version: 2.24-r1122\n[main] CMD: minimap2 ${e.args.join(` `)}\n[main] Real time: 1.304 sec`)}},{name:`star`,description:`Spliced Transcripts Alignment to a Reference`,help:`STAR --genomeDir [dir] --readFilesIn [fastq]
 
-Alinhador ultra-rápido otimizado para dados de RNA-Seq.`,execute:async e=>{e.print(`STAR --runThreadN 4 --genomeDir ref/ --readFilesIn reads.fastq`),e.print(`Apr 23 14:00:01 ..... started STAR run`),e.print(`Apr 23 14:00:05 ..... loading genome`),await new Promise(e=>setTimeout(e,800)),e.print(`Apr 23 14:00:20 ..... started mapping`),e.print(`Apr 23 14:00:45 ..... finished mapping`),e.print(`Apr 23 14:00:46 ..... finished successfully`)}},{name:`samtools`,description:`Ferramentas para manipular alinhamentos de sequências (SAM/BAM/CRAM)`,help:`samtools [COMANDO] [OPÇÕES]
-
-Suite para conversão, ordenação, indexação e visualização de alinhamentos.
+Alinhador ultra-rápido otimizado para dados de RNA-Seq.`,execute:async e=>{e.print(`Apr 23 14:00:46 ..... finished successfully`)}},{name:`samtools`,description:`Ferramentas para manipular alinhamentos de sequências (SAM/BAM/CRAM)`,help:`samtools [COMANDO] [OPÇÕES]
 
 Comandos:
   view       Exibe ou converte arquivos SAM/BAM
   sort       Ordena um arquivo BAM
-  index      Cria um índice (.bai) para um BAM ordenado
-  flagstat   Resumo estatístico do mapeamento`,execute:async e=>{let t=e.args[0];t===`view`?(e.print(`r001	163	chr1	7	30	8M2I4M	=	37	39	TTAGATAAAGAGG	*`),e.print(`r002	0	chr1	9	30	3S6M1P1I4M	*	0	0	AAAAGATAAGGATA	*`)):t===`sort`?e.print(`[bam_sort_core] merging from 0 files and 4 in-memory blocks...`):t===`index`?e.print(`[samtools index] successfully generated index.`):t===`flagstat`?e.print(`100000 + 0 in total (QC-passed reads + QC-failed reads)
-0 + 0 secondary
-0 + 0 supplementary
-0 + 0 duplicates
-95000 + 0 mapped (95.00% : N/A)`):e.print(`Program: samtools (Tools for alignments in the SAM format)
-Usage: samtools <command> [options]`)}},{name:`picard`,description:`Conjunto de ferramentas para manipular formatos de dados HTS`,help:`picard [Ferramenta] [Opções...]
-
-Ferramentas em Java para manipular arquivos SAM/BAM/CRAM e VCF.
+  index      Cria um índice (.bai)
+  flagstat   Resumo estatístico`,execute:async e=>{let t=e.args[0];t===`view`?e.print(`r001	163	chr1	7	30	8M2I4M	*`):t===`flagstat`?e.print(`100000 + 0 in total
+95000 + 0 mapped (95.00%)`):e.print(`Usage: samtools <command> [options]`)}},{name:`picard`,description:`Conjunto de ferramentas para manipular formatos de dados HTS`,help:`picard [Ferramenta] [Opções...]
 
 Exemplo:
-  picard MarkDuplicates I=input.bam O=marked.bam M=metrics.txt`,execute:async e=>{let t=e.args[0];if(!t){e.print(`USAGE: PicardCommandLine <program name> [-h]`);return}e.print(`INFO    2026-04-23 14:10:00     PicardCommandLine       Invoking ${t}`),e.print(`INFO    2026-04-23 14:10:01     ${t}       Start of processing`),await new Promise(e=>setTimeout(e,600)),t===`MarkDuplicates`&&e.print(`INFO    2026-04-23 14:10:05     MarkDuplicates  Read 100000 records. 2000 duplicates found.`),e.print(`INFO    2026-04-23 14:10:06     ${t}       Successfully completed!`)}},{name:`gatk`,description:`Genome Analysis Toolkit (Chamada de variantes e genotipagem)`,help:`gatk [Ferramenta] [Opções]
+  picard MarkDuplicates I=input.bam O=marked.bam M=metrics.txt`,execute:async e=>{e.print(`INFO    PicardCommandLine       Invoking ${e.args[0]||`Help`}\nINFO    Successfully completed!`)}},{name:`gatk`,description:`Genome Analysis Toolkit (Chamada de variantes e genotipagem)`,help:`gatk [Ferramenta] [Opções]
 
-Desenvolvido pelo Broad Institute, padrão-ouro para análise de variantes em DNA e RNA.`,execute:async e=>{let t=e.args[0]||`HaplotypeCaller`;e.print(`Using GATK jar /usr/local/gatk/gatk-package-4.3.0.0-local.jar`),e.print(`Running: java -Djava.io.tmpdir=/tmp -jar gatk.jar ${t} ${e.args.slice(1).join(` `)}`),e.print(`14:15:00.123 INFO  ${t} - ------------------------------------------------------------`),e.print(`14:15:00.125 INFO  ${t} - The Genome Analysis Toolkit (GATK) v4.3.0.0`),await new Promise(e=>setTimeout(e,1e3)),t===`HaplotypeCaller`&&(e.print(`14:15:20.500 INFO  HaplotypeCaller - 100000 read(s) filtered by: MappingQualityReadFilter`),e.print(`14:15:25.000 INFO  HaplotypeCaller - 5000 active regions processed`)),e.print(`14:15:30.000 INFO  ${t} - Shutting down engine`),e.print(`[23 April 2026 14:15:30] org.broadinstitute.hellbender.tools.${t} done. Elapsed time: 0.50 minutes.`)}},{name:`bcftools`,description:`Utilitários para chamar e manipular arquivos VCF e BCF`,help:`bcftools [COMANDO] [OPÇÕES]
+Desenvolvido pelo Broad Institute, padrão-ouro para análise de variantes.`,execute:async e=>{e.print(`14:15:30.000 INFO  GATK - Shutting down engine
+Elapsed time: 0.50 minutes.`)}},{name:`bcftools`,description:`Utilitários para chamar e manipular arquivos VCF e BCF`,help:`bcftools [COMANDO] [OPÇÕES]
 
-Comandos:
-  mpileup   Gera genótipos probabilísticos
-  call      Faz a chamada de variantes (SNPs/Indels)
-  view      Exibe, filtra e converte arquivos VCF/BCF`,execute:async e=>{let t=e.args[0];t===`mpileup`?e.print(`[mpileup] 1 samples in 1 input files
-[mpileup] maximum number of reads per input file set to -d 250`):t===`call`?e.print(`Note: none of --samples-file, --ploidy or --ploidy-file given, assuming all sites are diploid`):t===`view`?e.print(`##fileformat=VCFv4.2
-##FILTER=<ID=PASS,Description="All filters passed">
-#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
-chr1	10000	.	A	G	50.5	PASS	DP=20`):e.print(`Program: bcftools (Tools for variant calling and manipulating VCFs and BCFs)
-Usage: bcftools [--version|--version-only] [--help] <command> <argument>`)}},{name:`freebayes`,description:`Chamador genético de variantes baseado em haplótipos (Bayesiano)`,help:`freebayes -f ref.fa aln.bam > var.vcf
+Comandos: mpileup, call, view, filter.`,execute:async e=>{e.print(`Program: bcftools (Tools for variant calling and manipulating VCFs)`)}},{name:`freebayes`,description:`Chamador genético de variantes baseado em haplótipos (Bayesiano)`,help:`freebayes -f ref.fa aln.bam > var.vcf
 
-Descobre SNPs, Indels, MNPs e variantes complexas em genomas e populações.`,execute:async e=>{e.print(`##fileformat=VCFv4.2
-##source=freeBayes v1.3.6
-##reference=ref.fa`),e.print(`#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample1`),e.print(`chr1	15000	.	T	C	1050.2	.	AB=1;DP=40	GT:DP	1/1:40`),e.print(`chr1	15500	.	G	GA	85.5	.	AB=0.5;DP=30	GT:DP	0/1:30`)}},{name:`vcftools`,description:`Ferramentas de análise de arquivos VCF`,help:`vcftools --vcf input.vcf [opções de filtro] --recode
+Descobre SNPs, Indels e variantes complexas.`,execute:async e=>{e.print(`##fileformat=VCFv4.2
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO`)}},{name:`vcftools`,description:`Ferramentas de análise de arquivos VCF`,help:`vcftools --vcf input.vcf [opções] --recode
 
-Analisa, filtra e manipula dados de genotipagem em formato VCF.`,execute:async e=>{e.print(`VCFtools - 0.1.16`),e.print(`(C) Adam Auton and Anthony Marcketta 2009`),e.print(`Parameters as interpreted:`),e.print(`	--vcf input.vcf
-	--recode`),await new Promise(e=>setTimeout(e,400)),e.print(`After filtering, kept 1 out of 1 Individuals`),e.print(`After filtering, kept 12500 out of a possible 15000 Sites`),e.print(`Run Time = 1.00 seconds`)}},{name:`snpeff`,description:`Anotação genética e predição de efeitos de variantes`,help:`snpeff [Genoma] variantes.vcf > anotadas.vcf
+Analisa, filtra e manipula dados de genotipagem.`,execute:async e=>{e.print(`After filtering, kept 12500 out of a possible 15000 Sites`)}},{name:`snpeff`,description:`Anotação genética e predição de efeitos de variantes`,help:`snpeff [Genoma] variantes.vcf > anotadas.vcf
 
-Anota o impacto das variantes no genoma (ex: missense, nonsense, frameshift).`,execute:async e=>{e.print(`SnpEff version SnpEff 5.1d (build 2022-04-19 15:50)`),e.print(`Reading database for genome version 'GRCh38.105' (this might take a while)...`),await new Promise(e=>setTimeout(e,900)),e.print(`Building interval forest... Done.`),e.print(`Predicting variants effects...`),e.print(`Done.
-Logging...`)}},{name:`spades`,description:`SPAdes: St. Petersburg genome assembler`,help:`spades.py -1 R1.fastq -2 R2.fastq -o output_dir
+Anota o impacto das variantes no genoma.`,execute:async e=>{e.print(`Done. Predicted effects for 12500 variants.`)}},{name:`spades`,description:`SPAdes: St. Petersburg genome assembler`,help:`spades.py -1 R1.fastq -2 R2.fastq -o output_dir
 
-Montador de genomas de-novo para dados Illumina e IonTorrent/PacBio.`,execute:async e=>{e.print(`SPAdes genome assembler v3.15.5`),e.print(`Command line: spades.py ${e.args.join(` `)}`),e.print(`System information:
-  SPAdes is running on 8 cores`),await new Promise(e=>setTimeout(e,800)),e.print(`===== Assembling started =====`),e.print(`===== K-mer size: 21, 33, 55, 77 =====`),e.print(`===== Assembly finished =====`),e.print(` * Corrected reads are in output_dir/corrected/`),e.print(` * Assembled contigs are in output_dir/contigs.fasta`),e.print(` * Assembled scaffolds are in output_dir/scaffolds.fasta`),e.print(`SPAdes log can be found here: output_dir/spades.log`)}},{name:`megahit`,description:`Montador de-novo ultra-rápido para metagenômica`,help:`megahit -1 R1.fq -2 R2.fq -o out_dir
+Montador de genomas de-novo.`,execute:async e=>{e.print(`===== Assembly finished =====
+ * Assembled contigs are in output_dir/contigs.fasta`)}},{name:`megahit`,description:`Montador de-novo ultra-rápido para metagenômica`,help:`megahit -1 R1.fq -2 R2.fq -o out_dir
 
-Otimizado para amostras metagenômicas complexas.`,execute:async e=>{e.print(`MEGAHIT v1.2.9`),e.print(`--- [Mon Apr 23 15:00:00 2026] Start assembly ---`),e.print(`--- [Mon Apr 23 15:00:02 2026] Extracting solid (k+1)-mers ---`),await new Promise(e=>setTimeout(e,600)),e.print(`--- [Mon Apr 23 15:00:15 2026] Assembling contigs ---`),e.print(`--- [Mon Apr 23 15:00:30 2026] Merging to output ---`),e.print(`1500 contigs, total 2500000 bp, min 200 bp, max 55000 bp, avg 1666 bp, N50 18000 bp`),e.print(`--- [Mon Apr 23 15:00:31 2026] ALL DONE. Time elapsed: 31.023 seconds ---`)}},{name:`quast`,description:`Quality Assessment Tool for Genome Assemblies`,help:`quast contigs.fasta -r reference.fasta -o quast_results
+Otimizado para amostras metagenômicas complexas.`,execute:async e=>{e.print(`1500 contigs, N50 18000 bp
+--- ALL DONE ---`)}},{name:`quast`,description:`Quality Assessment Tool for Genome Assemblies`,help:`quast contigs.fasta -r reference.fasta -o quast_results
 
-Avalia a qualidade de montagens gerando relatórios abrangentes.`,execute:async e=>{e.print(`QUAST started: /usr/local/bin/quast ${e.args.join(` `)}`),e.print(`Version: 5.2.0`),e.print(`System information: OS Linux, 8 CPU(s)`),e.print(`
-Running Basic statistics processor...`),await new Promise(e=>setTimeout(e,500)),e.print(`  Contig files: 1
-  Reference: 1`),e.print(`
-Generating reports...`),e.print(`  HTML report saved to quast_results/report.html`),e.print(`  TXT report saved to quast_results/report.txt`),e.print(`
-Assembly: contigs
+Avalia a qualidade de montagens.`,execute:async e=>{e.print(`Assembly: contigs
 # contigs: 1500
-Total length: 2500000
-Largest contig: 55000
-GC (%): 45.20
 N50: 18000
-L50: 45`)}},{name:`prokka`,description:`Anotação rápida de genomas procariotos`,help:`prokka contigs.fasta --outdir prokka_out
+GC (%): 45.20`)}},{name:`prokka`,description:`Anotação rápida de genomas procariotos`,help:`prokka contigs.fasta --outdir prokka_out
 
-Identifica e anota genes em genomas de bactérias e vírus.`,execute:async e=>{e.print(`[15:10:00] This is prokka 1.14.6`),e.print(`[15:10:00] Looking for 'aragorn' - found /usr/bin/aragorn`),e.print(`[15:10:00] Looking for 'blastp' - found /usr/bin/blastp`),e.print(`[15:10:01] Predicting tRNAs and tmRNAs`),await new Promise(e=>setTimeout(e,700)),e.print(`[15:10:10] Predicting coding sequences`),e.print(`[15:10:15] Annotating CDS, please be patient.`),e.print(`[15:10:20] Found 2300 CDS`),e.print(`[15:10:21] Writing annotation files to prokka_out/`),e.print(`[15:10:22] Annotation finished successfully.`)}},{name:`busco`,description:`Avaliação quantitativa da completude do genoma usando ortólogos de cópia única`,help:`busco -i genome.fasta -o output_name -l bacteria_odb10 -m genome
+Identifica e anota genes em genomas de bactérias.`,execute:async e=>{e.print(`Found 2300 CDS
+Annotation finished successfully.`)}},{name:`busco`,description:`Avaliação da completude do genoma usando ortólogos`,help:`busco -i genome.fasta -o output -l bacteria_odb10 -m genome
 
-Avalia a qualidade do genoma ou transcriptoma.`,execute:async e=>{e.print(`INFO:   BUSCO version is: 5.4.4`),e.print(`INFO:   Downloading information on the target lineage bacteria_odb10...`),e.print(`INFO:   Running tblastn on 124 ortholog groups...`),await new Promise(e=>setTimeout(e,900)),e.print(`INFO:   Running HMMER on candidates...`),e.print(`
-C:98.4%[S:98.4%,D:0.0%],F:0.8%,M:0.8%,n:124`),e.print(`    122 Complete BUSCOs (C)`),e.print(`    122 Complete and single-copy BUSCOs (S)`),e.print(`    0   Complete and duplicated BUSCOs (D)`),e.print(`    1   Fragmented BUSCOs (F)`),e.print(`    1   Missing BUSCOs (M)`),e.print(`    124 Total BUSCO groups searched`)}},{name:`salmon`,description:`Quantificação rápida e sensível de expressão de transcritos`,help:`salmon quant -i index -l A -1 R1.fq -2 R2.fq -o transcripts_quant
+Avalia a qualidade do genoma.`,execute:async e=>{e.print(`C:98.4%[S:98.4%,D:0.0%],F:0.8%,M:0.8%,n:124`)}},{name:`iqtree`,description:`Software de filogenia por máxima verossimilhança ultra-rápido`,help:`iqtree -s alignment.phy -m MFP -bb 1000
 
-Quantifica abundância de RNA-seq (mapeamento quase-ótimo).`,execute:async e=>{e.print(`Version Info: This is the most recent version of salmon.`),e.print(`[2026-04-23 15:20:00.123] [jointLog] [info] Fragment incompatibility prior below threshold.`),await new Promise(e=>setTimeout(e,600)),e.print(`[2026-04-23 15:20:05.456] [jointLog] [info] Mapping rate = 85.234%`),e.print(`[2026-04-23 15:20:06.000] [jointLog] [info] Finished quantifying. Output written to directory transcripts_quant/`)}},{name:`kallisto`,description:`Quantificação quase ótima de RNA-seq`,help:`kallisto quant -i index.idx -o output R1.fq R2.fq
+Reconstrói árvores filogenéticas a partir de alinhamentos.`,execute:async e=>{e.print(`IQ-TREE 2.2.0.3 built May 2026
+Reading alignment file alignment.phy... 100 taxa with 1500 sites
+Best-fit model: GTR+F+I+G4 chosen via BIC`),await new Promise(e=>setTimeout(e,600)),e.print(`Total log-likelihood: -12450.56
+Optimal tree written to alignment.phy.treefile`)}},{name:`mafft`,description:`Programa de alinhamento múltiplo de sequências (MSA)`,help:`mafft input.fasta > alignment.fasta
 
-Alternativa ao salmon para quantificação ultra-rápida.`,execute:async e=>{e.print(`[quant] fragment length distribution will be estimated from the data`),e.print(`[index] k-mer length: 31`),e.print(`[index] number of targets: 180000`),e.print(`[index] number of k-mers: 105000000`),await new Promise(e=>setTimeout(e,500)),e.print(`[quant] running in paired-end mode`),e.print(`[quant] 1000000 reads processed`),e.print(`[quant] 850000 reads pseudoaligned`)}},{name:`featurecounts`,description:`Programa para atribuir leituras de sequenciamento a regiões genômicas`,help:`featureCounts -a annotation.gtf -o counts.txt input.bam
+Alinha múltiplas sequências de DNA ou Proteínas.`,execute:async e=>{e.print(`nthread = 0
+stacksize: 8192 kb
+100 x 1500bp
+Making a distance matrix...
+Gap extension penalty = 0.123
+DONE.`)}},{name:`raxml`,description:`Randomized Axelerated Maximum Likelihood (Filogenia)`,help:`raxmlHPC -s alg.fasta -n out -m GTRGAMMA -p 12345
 
-Conta quantas reads caem dentro de genes/exons.`,execute:async e=>{e.print(`==========     _____ _    _ ____  _____  ______       ==========`),e.print(`==========    / ____| |  | |  _ \\|  __ \\|  ____|      ==========`),e.print(`==========   | (___ | |  | | |_) | |__) | |__         ==========`),e.print(`==========    \\___ \\| |  | |  _ <|  _  /|  __|        ==========`),e.print(`==========    ____) | |__| | |_) | | \\ \\| |____       ==========`),e.print(`==========   |_____/ \\____/|____/|_|  \\_\\______| v2.0.3 ==========`),e.print(`
-//========================== featureCounts setting ===========================\\\\`),e.print(`||             Input files : 1 BAM file                                       ||`),e.print(`||             Annotation : annotation.gtf (GTF)                              ||`),e.print(`\\\\============================================================================//`),await new Promise(e=>setTimeout(e,600)),e.print(`
-//================================= Summary ==================================\\\\`),e.print(`|| Total alignments : 1000000                                                 ||`),e.print(`|| Successfully assigned alignments : 820000 (82.0%)                          ||`),e.print(`|| Running time : 0.25 minutes                                                ||`),e.print(`\\\\============================================================================//`)}},{name:`kraken2`,description:`Classificação taxonômica rápida usando k-mers exatos`,help:`kraken2 --db database --report report.txt --paired R1.fq R2.fq
+Uma das ferramentas mais usadas para inferência filogenética.`,execute:async e=>{e.print(`This is RAxML version 8.2.12
+Final GAMMA-based Likelihood: -15678.9
+Time for 100 bootstrap iterations: 12s`)}},{name:`salmon`,description:`Quantificação de expressão de transcritos`,help:`salmon quant -i index -l A -1 R1.fq -2 R2.fq -o transcripts_quant`,execute:async e=>{e.print(`Mapping rate = 85.234%
+Finished quantifying.`)}},{name:`kallisto`,description:`Quantificação quase ótima de RNA-seq`,help:`kallisto quant -i index.idx -o output R1.fq R2.fq`,execute:async e=>{e.print(`1000000 reads processed
+850000 reads pseudoaligned`)}},{name:`featurecounts`,description:`Atribui leituras a regiões genômicas`,help:`featureCounts -a annotation.gtf -o counts.txt input.bam`,execute:async e=>{e.print(`Successfully assigned alignments : 820000 (82.0%)`)}},{name:`kraken2`,description:`Classificação taxonômica rápida`,help:`kraken2 --db database --report report.txt --paired R1.fq R2.fq`,execute:async e=>{e.print(`850000 sequences classified (85.00%)
+150000 sequences unclassified (15.00%)`)}},{name:`bracken`,description:`Reestimativa de abundância metagenômica`,help:`bracken -d database -i kraken_report.txt -o bracken_out.txt`,execute:async e=>{e.print(`Bracken complete. Results in bracken_out.txt`)}},{name:`metabat2`,description:`Metagenome Binning baseado na composição e abundância`,help:`metabat2 -i contigs.fasta -o bins/bin
 
-Atribui reads a táxons usando um banco de dados de referência.`,execute:async e=>{e.print(`Loading database information... done.`),e.print(`1000000 sequences (150.00 Mbp) processed in 5.250s (11.4 Kseq/m, 1.72 Mbp/m).`),e.print(`  850000 sequences classified (85.00%)`),e.print(`  150000 sequences unclassified (15.00%)`)}},{name:`bracken`,description:`Bayesian Reestimation of Abundance with KrakEN`,help:`bracken -d database -i kraken_report.txt -o bracken_out.txt
+Agrupa contigs de metagenomas em "bins" (genomas potenciais).`,execute:async e=>{e.print(`MetaBAT 2 (v2.12.1) using 4 threads
+Reading 1500 contigs... done
+Binning contigs... done
+12 bins (4.5 MB total) were written to bins/`)}},{name:`checkm`,description:`Avaliação de linhagem para genomas (metagenômicos)`,help:`checkm lineage_wf bins/ checkm_out/
 
-Estima a abundância relativa em amostras metagenômicas a partir de resultados do Kraken.`,execute:async e=>{e.print(`>> Checking provided report file...`),e.print(`>> Filtering taxonomic classifications...`),e.print(`>> Estimating species-level abundances...`),await new Promise(e=>setTimeout(e,400)),e.print(`>> Writing Bracken output to bracken_out.txt...`),e.print(`Bracken complete.`)}},{name:`seqtk`,description:`Ferramenta rápida e leve para processamento de sequências (FASTA/Q)`,help:`seqtk [COMANDO] [OPÇÕES]
+Avalia a qualidade (completude e contaminação) de bins metagenômicos.`,execute:async e=>{e.print(`[CheckM v1.1.3] CheckM lineage_wf
+Bin Id     Marker lineage     Completeness  Contamination`),e.print(`bin.1      o__Enterobacteriales   98.5%         1.2%`),e.print(`bin.2      o__Bacteroidales       92.1%         0.5%`)}},{name:`plink`,description:`Ferramenta de análise de associação genômica (GWAS)`,help:`plink --bfile data --assoc --out results
 
-Comandos úteis:
-  seq      formata e transforma sequências
-  sample   amostra aleatoriamente sequências
-  subseq   extrai sequências baseado em nomes`,execute:async e=>{let t=e.args[0];t===`sample`?e.print(`@read_1_sampled
-ACGTACGTACGT
-+
-IIIIIIIIIIII`):t===`seq`?e.print(`>seq1
-ACGTACGTACGT`):e.print(`Usage: seqtk <command> <arguments>
-Command:
-  seq       common transformation of FASTA/Q
-  comp      get the nucleotide composition of FASTA/Q
-  sample    subsample sequences
-  subseq    extract subsequences from FASTA/Q`)}},{name:`seqkit`,description:`Canivete suíço multiplataforma e ultra-rápido para FASTA/Q`,help:`seqkit [COMANDO] [OPÇÕES]
+O canivete suíço da genética de populações e GWAS.`,execute:async e=>{e.print(`PLINK v1.90b6.21 64-bit (19 Oct 2020)
+120 samples (60 cases, 60 controls) loaded.
+500000 variants loaded.
+Writing association results to results.assoc ... done.`)}},{name:`admixture`,description:`Estimativa de ancestralidade individual a partir de SNPs`,help:`admixture data.bed 3
 
-Ferramenta em Go, muito mais rica em opções que seqtk.
+Calcula proporções de ancestralidade para K populações.`,execute:async e=>{e.print(`ADMIXTURE Version 1.3.0
+Log-likelihood: -145678.9
+Finished iteration 100
+Q file written to data.3.Q`)}},{name:`igv`,description:`Integrative Genomics Viewer (Simulado)`,help:`igv data.bam
 
-Comandos úteis:
-  stats    Estatísticas simples
-  grep     Busca sequências por ID ou motivo`,execute:async e=>{let t=e.args[0];t===`stats`?(e.print(`file       format  type  num_seqs  sum_len  min_len  avg_len  max_len`),e.print(`reads.fq   FASTQ   DNA   100,000   15.0M    150      150      150`)):t===`grep`?e.print(`>matched_seq
-ATGCGTACGTG`):e.print(`seqkit - a cross-platform and ultrafast toolkit for FASTA/Q file manipulation
-Usage:
-  seqkit [command]`)}},{name:`makeblastdb`,description:`Cria bancos de dados locais para o BLAST`,help:`makeblastdb -in ref.fa -dbtype nucl -out mydb
-
-Indexa um arquivo FASTA para buscas rápidas pelo BLAST.`,execute:async e=>{e.print(`Building a new DB, current time: 04/23/2026 15:30:00`),e.print(`New DB name:   /home/dayhoff/mydb`),e.print(`New DB title:  ref.fa`),e.print(`Sequence type: Nucleotide`),await new Promise(e=>setTimeout(e,400)),e.print(`Adding sequences from FASTA; added 5000 sequences in 0.25 seconds.`)}},{name:`blastn`,description:`Busca de similaridade em sequências de nucleotídeos`,help:`blastn -query ARQUIVO -db DATABASE
-
-Realiza busca local de alinhamento de nucleotídeos.`,execute:async e=>{let t=e.args[e.args.indexOf(`-query`)+1]||`query.fa`;e.print(`BLASTN 2.13.0+\nQuery= ${t}\nLength=150`),e.print(`
-Sequences producing significant alignments:                          E-Value  Bit-score`),e.print(`chr1_segment_A                                                     2e-45    120`),e.print(`chrX_homolog_1                                                     1e-12    56.5`)}},{name:`blastp`,description:`Busca de similaridade em sequências de proteínas`,help:`blastp -query ARQUIVO -db DATABASE
-
-Compara uma proteína query com um banco de proteínas.`,execute:async e=>{let t=e.args[e.args.indexOf(`-query`)+1]||`protein.faa`;e.print(`BLASTP 2.13.0+\nQuery= ${t}\nLength=300 amino acids`),e.print(`
-Sequences producing significant alignments:                          E-Value  Bit-score`),e.print(`sp|P12345|KIN1_HUMAN Kinase 1                                      0.0      600`),e.print(`sp|Q67890|KIN2_MOUSE Kinase 2                                      1e-50    150`)}},{name:`blastx`,description:`Busca de similaridade de nucleotídeo (traduzido) contra proteína`,help:`blastx -query ARQUIVO -db DATABASE
-
-Traduz o nucleotídeo nas 6 janelas de leitura contra um banco de proteínas.`,execute:async e=>{let t=e.args[e.args.indexOf(`-query`)+1]||`transcript.fa`;e.print(`BLASTX 2.13.0+\nQuery= ${t}\nLength=450`),e.print(`
-Sequences producing significant alignments:                          E-Value  Bit-score`),e.print(`sp|P12345|KIN1_HUMAN Kinase 1                                      1e-80    280`)}},{name:`bedtools`,description:`Suíte de ferramentas para manipulação de arquivos genômicos (BED/GFF/VCF)`,help:`bedtools [SUBCOMANDO] [OPÇÕES]
-
-Operações aritméticas genômicas.
-
-Subcomandos comuns:
-  intersect   Encontra sobreposições entre arquivos`,execute:async e=>{e.args[0]===`intersect`?e.print(`chr1	100	200	geneA	chr1	150	250	exon1`):e.print(`bedtools: a powerful toolset for genome arithmetic.
-Usage: bedtools <subcommand> [options]`)}}],lc=[{name:`wget`,description:`O recuperador de arquivos não interativo`,help:`wget URL
+Abre visualizador genômico interativo.`,execute:async e=>{e.print(`Starting IGV visualizer interface...\n[INFO] Loading genome: hg38\n[INFO] Loading track: ${e.args[0]||`none`}\n\x1b[1;30m(Interface gráfica simulada - visualize no seu cérebro por enquanto)\x1b[0m`)}},{name:`seqkit`,description:`Canivete suíço para arquivos FASTA/Q`,help:`seqkit stats reads.fq`,execute:async e=>{e.print(`file       format  type  num_seqs  sum_len
+reads.fq   FASTQ   DNA   100,000   15.0M`)}},{name:`bedtools`,description:`Suíte para manipulação de arquivos genômicos`,help:`bedtools intersect -a a.bed -b b.bed`,execute:async e=>{e.print(`chr1	100	200	geneA	chr1	150	250	exon1`)}},{name:`multiqc`,description:`Agrega relatórios de bioinformática`,help:`multiqc .`,execute:async e=>{e.print(`[INFO   ] multiqc : Search complete. Report: multiqc_report.html`)}}],lc=[{name:`wget`,description:`O recuperador de arquivos não interativo`,help:`wget URL
 
 Simula o download de um arquivo a partir de uma URL.`,execute:async e=>{let t=e.args[0];if(!t){e.printError(`wget: URL ausente`);return}e.print(`--${new Date().toISOString()}--  ${t}\nConectando... OK\nRequisição HTTP enviada, aguardando resposta... 200 OK\nSalvando em: '${t.split(`/`).pop()||`index.html`}'`)}},{name:`curl`,description:`Transfere dados de ou para um servidor`,help:`curl [OPÇÃO]... URL
 
@@ -337,12 +290,21 @@ Opções:
   -I, --head    exibe apenas os cabeçalhos da resposta
   -v, --verbose torna a operação detalhada`,execute:async e=>{let t=e.args.find(e=>!e.startsWith(`-`));if(!t){e.printError(`curl: use --help para mais informações`);return}e.args.includes(`-v`)&&e.print(`*   Trying 127.0.0.1:80...\n* Connected to ${t} port 80`),e.print(`<html><body>Simulando resposta de ${t}</body></html>`)}},{name:`tar`,description:`Utilitário de arquivamento`,help:`tar [OPÇÃO]... [ARQUIVO]...
 
-Opções:
-  -c           cria um novo arquivo
-  -x           extrai arquivos
-  -v           detalhado
-  -z           comprime com gzip
-  -f           especifica o arquivo`,execute:async e=>{e.print(`Arquivado com sucesso.`)}},{name:`sed`,description:`Editor de fluxo para filtrar e transformar texto`,help:`sed EXPRESSÃO [ARQUIVO]
+Opções: -c (criar), -x (extrair), -v (detalhado), -z (gzip), -f (arquivo)`,execute:async e=>{e.print(`Arquivado com sucesso.`)}},{name:`grep`,description:`Busca padrões em arquivos usando expressões regulares`,help:`grep [OPÇÃO]... PADRÃO [ARQUIVO]...
+
+Exemplo:
+  grep "seq1" genome.fa`,execute:async e=>{e.print(`seq1: ATGCGTACGTG
+seq10: GCTAGCTAGCT`)}},{name:`find`,description:`Busca arquivos em uma hierarquia de diretórios`,help:`find [CAMINHO] [EXPRESSÃO]
+
+Exemplo:
+  find . -name "*.fa"`,execute:async e=>{e.print(`./data/seq1.fa
+./data/seq2.fa
+./ref/genome.fa`)}},{name:`diff`,description:`Compara arquivos linha por linha`,help:`diff ARQUIVO1 ARQUIVO2
+
+Exibe as diferenças entre dois arquivos.`,execute:async e=>{e.print(`--- arquivo1
++++ arquivo2
+- ATGC
++ ATGG`)}},{name:`sed`,description:`Editor de fluxo para filtrar e transformar texto`,help:`sed EXPRESSÃO [ARQUIVO]
 
 Exemplo:
   sed "s/antigo/novo/g" arquivo.txt`,execute:async e=>{e.print(`Simulando transformação de fluxo...`)}},{name:`awk`,description:`Linguagem de busca e processamento de padrões`,help:`awk 'PADRÃO { AÇÃO }' [ARQUIVO]
@@ -372,7 +334,14 @@ HOME=/home/dayhoff`)}},{name:`sleep`,description:`Atrasa por uma quantidade de t
 
 Pausa a execução por N segundos.`,execute:async e=>{let t=parseInt(e.args[0]||`1`);await new Promise(e=>setTimeout(e,Math.min(t*1e3,3e3)))}},{name:`which`,description:`Localiza um comando`,help:`which COMANDO
 
-Mostra o caminho completo do executável.`,execute:async e=>{e.print(`/usr/bin/${e.args[0]||`bash`}`)}}],uc=()=>JSON.parse(localStorage.getItem(`terminal_envs`)||`["base"]`),dc=e=>{let t=uc();t.includes(e)||(t.push(e),localStorage.setItem(`terminal_envs`,JSON.stringify(t)))},fc=e=>JSON.parse(localStorage.getItem(`pkgs_${e}`)||`["python", "pip", "bash"]`),pc=(e,t)=>{let n=fc(e);n.includes(t)||(n.push(t),localStorage.setItem(`pkgs_${e}`,JSON.stringify(n)))},mc=[{name:`conda`,description:`Gerenciador de pacotes e ambientes (Conda)`,help:`conda [COMANDO] [OPÇÕES]
+Mostra o caminho completo do executável.`,execute:async e=>{e.print(`/usr/bin/${e.args[0]||`bash`}`)}},{name:`locate`,description:`Busca arquivos pelo nome em um banco de dados`,help:`locate NOME
+
+Exemplo:
+  locate samtools`,execute:async e=>{e.print(`/usr/bin/samtools
+/usr/share/man/man1/samtools.1.gz`)}},{name:`xargs`,description:`Constrói e executa comandos a partir da entrada padrão`,help:`xargs [COMANDO]
+
+Exemplo:
+  find . -name "*.txt" | xargs rm`,execute:async e=>{e.print(`Simulando execução em lote...`)}}],uc=()=>JSON.parse(localStorage.getItem(`terminal_envs`)||`["base"]`),dc=e=>{let t=uc();t.includes(e)||(t.push(e),localStorage.setItem(`terminal_envs`,JSON.stringify(t)))},fc=e=>JSON.parse(localStorage.getItem(`pkgs_${e}`)||`["python", "pip", "bash"]`),pc=(e,t)=>{let n=fc(e);n.includes(t)||(n.push(t),localStorage.setItem(`pkgs_${e}`,JSON.stringify(n)))},mc=[{name:`conda`,description:`Gerenciador de pacotes e ambientes (Conda)`,help:`conda [COMANDO] [OPÇÕES]
 
 Gerencia ambientes virtuais e pacotes.
 
