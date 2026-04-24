@@ -4,19 +4,17 @@ import { focaCommands } from './focaCommands';
 import { bioCommands } from './bioCommands';
 import { extendedCommands } from './extendedCommands';
 import { packageManagerCommands } from './packageManagerCommands';
-import { funCommands } from './funCommands';
 
 export class CommandRegistry {
   private commands: Map<string, Command> = new Map();
 
-  constructor() {
+  constructor(onGame?: (game: string) => void) {
     [
       ...basicCommands, 
       ...focaCommands, 
       ...bioCommands, 
       ...extendedCommands, 
-      ...packageManagerCommands,
-      ...funCommands
+      ...packageManagerCommands
     ].forEach(cmd => {
       this.commands.set(cmd.name, cmd);
     });
@@ -51,12 +49,26 @@ export class CommandRegistry {
         
         ctx.print('\n\x1b[1;33mDicas Rápidas:\x1b[0m');
         ctx.print('  \x1b[1;36mmissao\x1b[0m      - Ver o objetivo educacional atual');
-        ctx.print('  \x1b[1;36mcmatrix\x1b[0m     - Sair do sistema (virtualmente)');
+        ctx.print('  \x1b[1;36mtema\x1b[0m        - Mudar estilo do terminal');
         ctx.print('  \x1b[1;36mclear\x1b[0m       - Limpar a tela');
       }
     };
     this.commands.set('ajuda', helpCommand);
     this.commands.set('help', helpCommand);
+
+    // Comandos Ocultos (Easter Eggs)
+    if (onGame) {
+      this.commands.set('doom', { 
+        name: 'doom', 
+        description: 'Executa o simulador de hardware gráfico 1993', 
+        execute: async () => { onGame('doom'); } 
+      });
+      this.commands.set('dukenukem', { 
+        name: 'dukenukem', 
+        description: 'Executa o simulador de hardware gráfico 1996', 
+        execute: async () => { onGame('duke'); } 
+      });
+    }
 
     // Comandos internos tratados no TerminalEngine.ts
     this.commands.set('tema', { name: 'tema', description: 'Muda o estilo visual do terminal', execute: async () => {} });

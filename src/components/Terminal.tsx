@@ -17,6 +17,7 @@ const Terminal: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [expandedGroups, setExpandedGroups] = useState<Record<number, boolean>>({});
+  const [activeGame, setActiveGame] = useState<string | null>(null);
 
   const toggleGroup = (index: number) => {
     setExpandedGroups(prev => ({ ...prev, [index]: !prev[index] }));
@@ -73,7 +74,11 @@ const Terminal: React.FC = () => {
       }
     };
 
-    engineRef.current = new TerminalEngine(xterm, updateUI);
+    const handleGame = (game: string) => {
+      setActiveGame(game);
+    };
+
+    engineRef.current = new TerminalEngine(xterm, updateUI, handleGame);
     updateUI();
 
     setTimeout(() => fitAddon.fit(), 100);
@@ -159,17 +164,14 @@ const Terminal: React.FC = () => {
         { name: 'head/tail', desc: 'Início ou fim do arquivo', example: 'head -n 20 data.txt' },
         { name: 'vim', desc: 'Editor de texto', example: 'vim config.yaml' },
       ]
-    },
-    {
-      title: '✨ Extras & Diversão',
-      commands: [
-        { name: 'cmatrix', desc: 'Efeito Matrix clássico', example: 'cmatrix' },
-        { name: 'foca-bio', desc: 'Segredo evolutivo', example: 'foca-bio' },
-        { name: 'samara', desc: 'Não recomendado...', example: 'samara' },
-        { name: 'ajuda', desc: 'Sobre o ARAMAS', example: 'ajuda' },
-      ]
     }
   ];
+
+  const getGameUrl = () => {
+    if (activeGame === 'doom') return 'https://js-dos.com/DOOM/';
+    if (activeGame === 'duke') return 'https://js-dos.com/Duke%20Nukem%203d/';
+    return '';
+  };
 
   return (
     <div style={{ 
@@ -283,7 +285,6 @@ const Terminal: React.FC = () => {
             ))}
           </div>
 
-          {/* Rodapé da Sidebar com Créditos e Licença */}
           <div style={{ padding: '15px', backgroundColor: '#0a0a0b', borderTop: '1px solid #333' }}>
             <div style={{ fontSize: '10px', color: '#666', lineHeight: '1.4' }}>
               <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>ARAMAS v1.0</div>
@@ -310,6 +311,55 @@ const Terminal: React.FC = () => {
               overflow: 'hidden'
             }} 
           />
+
+          {/* Overlay de Jogo (Oculto) */}
+          {activeGame && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#000',
+              zIndex: 1000,
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <div style={{
+                height: '40px',
+                backgroundColor: '#1a1a1b',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0 15px',
+                borderBottom: '1px solid #333'
+              }}>
+                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#0dbc79' }}>
+                  SIMULADOR DE HARDWARE GRÁFICO RETRÔ - {activeGame.toUpperCase()}
+                </span>
+                <button 
+                  onClick={() => setActiveGame(null)}
+                  style={{
+                    background: '#cc0000',
+                    border: 'none',
+                    color: '#fff',
+                    padding: '4px 10px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  FECHAR (ESC)
+                </button>
+              </div>
+              <iframe 
+                src={getGameUrl()} 
+                style={{ flex: 1, border: 'none' }}
+                title="Retro Game"
+              />
+            </div>
+          )}
         </main>
       </div>
     </div>
