@@ -30,7 +30,7 @@ export class TerminalEngine {
     
     this.registry = new CommandRegistry();
 
-    this.questManager = new QuestManager(this.vfs);
+    this.questManager = new QuestManager();
 
     const savedStyle = localStorage.getItem('prompt_style') as PromptStyle;
     if (savedStyle) this.promptStyle = savedStyle;

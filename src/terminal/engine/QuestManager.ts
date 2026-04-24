@@ -150,7 +150,7 @@ export class QuestManager {
   private totalXp: number = 0;
   private stats = { sudoCount: 0, pipeCount: 0, envCount: 1 };
 
-  constructor(_vfs?: VFSManager) {
+  constructor() {
     this.loadState();
   }
 
