@@ -19,9 +19,6 @@ export class CommandRegistry {
       description: 'Exibe informações sobre os comandos disponíveis',
       help: 'ajuda\n\nLista todos os comandos registrados e exibe dicas de uso para iniciantes.',
       execute: async (ctx) => {
-        ctx.print('\x1b[1;32mComandos disponíveis:\x1b[0m');
-        
-        // Pegar apenas comandos únicos (evitar duplicatas de apelidos como 'help' e 'ajuda')
         const uniqueCommands = new Map<string, Command>();
         this.commands.forEach((cmd) => {
           if (!uniqueCommands.has(cmd.name)) {
@@ -31,18 +28,19 @@ export class CommandRegistry {
 
         const sortedCommands = Array.from(uniqueCommands.values()).sort((a, b) => a.name.localeCompare(b.name));
         
+        ctx.print(`\x1b[1;32m=== AMBIENTE LABIOMICS - AJUDA ===\x1b[0m`);
+        ctx.print(`Total de comandos disponíveis: \x1b[1;36m${sortedCommands.length}\x1b[0m`);
+        ctx.print(`\nDigite \x1b[1;33mcomando --help\x1b[0m para detalhes de uso.\n`);
+
         for (const cmd of sortedCommands) {
-          const name = cmd.name.padEnd(12);
+          const name = cmd.name.padEnd(15);
           ctx.print(`  \x1b[1;36m${name}\x1b[0m - ${cmd.description}`);
         }
         
-        ctx.print('\n\x1b[1;33mDicas de Uso:\x1b[0m');
-        ctx.print('  \x1b[1;36mls -la\x1b[0m      - Lista tudo (incluindo ocultos) com detalhes');
-        ctx.print('  \x1b[1;36mgrep -i "A"\x1b[0m  - Busca ignorando maiúsculas/minúsculas');
-        ctx.print('  \x1b[1;36mdf -h\x1b[0m       - Mostra espaço em disco em formato legível');
-        ctx.print('  \x1b[1;36mhead -n 5\x1b[0m   - Mostra as primeiras 5 linhas');
-        ctx.print('  \x1b[1;36mhistory\x1b[0m     - Veja seus últimos comandos');
-        ctx.print('  \x1b[1;36mmissao\x1b[0m      - Mostra o que você deve fazer agora');
+        ctx.print('\n\x1b[1;33mDicas Rápidas:\x1b[0m');
+        ctx.print('  \x1b[1;36mmissao\x1b[0m      - Ver o que fazer agora');
+        ctx.print('  \x1b[1;36mtema\x1b[0m        - Mudar visual do prompt');
+        ctx.print('  \x1b[1;36mclear\x1b[0m       - Limpar o terminal');
       }
     };
     this.commands.set('ajuda', helpCommand);
