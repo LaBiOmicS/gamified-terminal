@@ -58,11 +58,14 @@ CMD ["samtools"]`}},cwd:`/home/dayhoff`};let t=this.state.nodes[`/home/dayhoff`]
 
 Imprime o caminho absoluto do diretório de trabalho atual.`,execute:async e=>{e.print(e.vfs.getCwd())}},{name:`ls`,description:`Lista o conteúdo do diretório`,help:`ls [OPÇÃO]... [DIRETÓRIO]...
 
-Lista informações sobre os arquivos (o diretório atual por padrão).
+Lista informações sobre os arquivos.
 
 Opções:
-  -a, --all    não ignora entradas iniciadas com .
-  -l           usa um formato de listagem longa`,execute:async e=>{let t=e.args.some(e=>e.includes(`a`)&&e.startsWith(`-`)),n=e.args.some(e=>e.includes(`l`)&&e.startsWith(`-`)),r=e.args.find(e=>!e.startsWith(`-`))||e.vfs.getCwd(),i=e.vfs.listDirectory(r,e.user);if(i){let a=t?[`.`,`..`,...i]:i.filter(e=>!e.startsWith(`.`));if(n){e.print(`total `+a.length*4);for(let t of a){let n;if(n=t===`.`?e.vfs.getNode(r):t===`..`?e.vfs.getNode(e.vfs.resolvePath(r+`/..`)):e.vfs.getNode(e.vfs.resolvePath(r+`/`+t)),n){let r=n.type===`directory`?`d`:`-`,i=new Date(n.modifiedAt).toLocaleDateString(`pt-BR`,{month:`short`,day:`2-digit`,hour:`2-digit`,minute:`2-digit`});e.print(`${r}${n.permissions} 1 ${n.owner} ${n.group} 4096 ${i} ${t}`)}}}else e.print(a.join(`  `))}else e.printError(`ls: não foi possível acessar '${r}': Permissão negada ou Diretório não encontrado`)}},{name:`cd`,description:`Muda o diretório de trabalho`,help:`cd [DIRETÓRIO]
+  -a, --all    exibe arquivos ocultos
+  -l           formato de listagem longa
+  -h, --human  tamanhos em formato legível
+  -R           recursivo
+  -t           ordena por tempo de modificação`,execute:async e=>{let t=e.args.some(e=>(e.includes(`a`)||e===`--all`)&&e.startsWith(`-`)),n=e.args.some(e=>e.includes(`l`)&&e.startsWith(`-`)),r=e.args.find(e=>!e.startsWith(`-`))||e.vfs.getCwd(),i=e.vfs.listDirectory(r,e.user);if(i){let a=t?[`.`,`..`,...i]:i.filter(e=>!e.startsWith(`.`));if(n){e.print(`total `+a.length*4);for(let t of a){let n;if(n=t===`.`?e.vfs.getNode(r):t===`..`?e.vfs.getNode(e.vfs.resolvePath(r+`/..`)):e.vfs.getNode(e.vfs.resolvePath(r+`/`+t)),n){let r=n.type===`directory`?`d`:`-`,i=new Date(n.modifiedAt).toLocaleDateString(`pt-BR`,{month:`short`,day:`2-digit`,hour:`2-digit`,minute:`2-digit`});e.print(`${r}${n.permissions} 1 ${n.owner} ${n.group} 4096 ${i} ${t}`)}}}else e.print(a.join(`  `))}else e.printError(`ls: não foi possível acessar '${r}': Permissão negada ou Diretório não encontrado`)}},{name:`cd`,description:`Muda o diretório de trabalho`,help:`cd [DIRETÓRIO]
 
 Muda o diretório atual para DIRETÓRIO. Se nenhum diretório for especificado, muda para o diretório home do usuário.`,execute:async e=>{let t=e.args[0]||`/home/dayhoff`;e.vfs.setCwd(t,e.user)||e.printError(`cd: ${t}: Permissão negada ou Arquivo ou diretório não encontrado`)}},{name:`cat`,description:`Concatena arquivos e imprime na saída padrão`,help:`cat [ARQUIVO]...
 
@@ -71,13 +74,15 @@ Lê o conteúdo de ARQUIVO(s) e o exibe no terminal.`,execute:async e=>{if(e.arg
 Cria o(s) DIRETÓRIO(s), se ainda não existirem.
 
 Opções:
-  -p, --parents     cria diretórios pais, se necessário`,execute:async e=>{let t=e.args.includes(`-p`),n=e.args.filter(e=>!e.startsWith(`-`));if(n.length===0){e.printError(`mkdir: operando ausente`);return}for(let r of n)if(t){let t=e.vfs.resolvePath(r).split(`/`).filter(Boolean),n=``;for(let r of t)n+=`/`+r,e.vfs.getNode(n)||e.vfs.mkdir(n,e.user)}else e.vfs.mkdir(r,e.user)||e.printError(`mkdir: não foi possível criar o diretório '${r}': Permissão negada ou arquivo já existe`)}},{name:`rm`,description:`Remove arquivos ou diretórios`,help:`rm [OPÇÃO]... ARQUIVO...
+  -p, --parents     cria diretórios pais, se necessário
+  -v, --verbose     exibe mensagem para cada diretório criado`,execute:async e=>{let t=e.args.includes(`-p`)||e.args.includes(`--parents`),n=e.args.includes(`-v`)||e.args.includes(`--verbose`),r=e.args.filter(e=>!e.startsWith(`-`));if(r.length===0){e.printError(`mkdir: operando ausente`);return}for(let i of r)if(t){let t=e.vfs.resolvePath(i).split(`/`).filter(Boolean),r=``;for(let i of t)r+=`/`+i,e.vfs.getNode(r)||(e.vfs.mkdir(r,e.user),n&&e.print(`mkdir: diretório criado '${r}'`))}else e.vfs.mkdir(i,e.user)?n&&e.print(`mkdir: diretório criado '${i}'`):e.printError(`mkdir: não foi possível criar o diretório '${i}': Permissão negada ou arquivo já existe`)}},{name:`rm`,description:`Remove arquivos ou diretórios`,help:`rm [OPÇÃO]... ARQUIVO...
 
 Remove (apaga) o(s) ARQUIVO(s).
 
 Opções:
   -r, -R, --recursive   remove diretórios e seus conteúdos recursivamente
-  -f, --force           ignora arquivos inexistentes e nunca pergunta`,execute:async e=>{let t=!1,n=!1,r=[];for(let i of e.args)i.startsWith(`-`)?(i.includes(`r`)&&(t=!0),i.includes(`f`)&&(n=!0)):r.push(i);if(r.length===0){n||e.printError(`rm: operando ausente`);return}for(let i of r)e.vfs.rm(i,e.user,t)||n||e.printError(`rm: não foi possível remover '${i}': Permissão negada ou diretório não vazio`)}},{name:`echo`,description:`Exibe uma linha de texto`,help:`echo [STRING]... [>|>> ARQUIVO]
+  -f, --force           ignora arquivos inexistentes e nunca pergunta
+  -v, --verbose         explica o que está sendo feito`,execute:async e=>{let t=!1,n=!1,r=!1,i=[];for(let a of e.args)a.startsWith(`-`)?(a.includes(`r`)&&(t=!0),a.includes(`f`)&&(n=!0),a.includes(`v`)&&(r=!0)):i.push(a);if(i.length===0){n||e.printError(`rm: operando ausente`);return}for(let a of i)e.vfs.rm(a,e.user,t)?r&&e.print(`removido '${a}'`):n||e.printError(`rm: não foi possível remover '${a}': Permissão negada ou diretório não vazio`)}},{name:`echo`,description:`Exibe uma linha de texto`,help:`echo [STRING]... [>|>> ARQUIVO]
 
 Exibe a STRING na saída padrão ou a redireciona para um ARQUIVO.
 
@@ -95,40 +100,99 @@ Copia o arquivo ORIGEM para o arquivo ou diretório DESTINO.`,execute:async e=>{
 
 Cria um ARQUIVO vazio se ele não existir, ou atualiza o timestamp se existir.`,execute:async e=>{if(e.args.length===0){e.printError(`touch: operando de arquivo ausente`);return}for(let t of e.args){let n=e.vfs.readFile(t,e.user);n===null?e.vfs.writeFile(t,``,e.user):n===`Permissão negada`?e.printError(`touch: ${t}: Permissão negada`):e.vfs.writeFile(t,n,e.user)}}},{name:`mv`,description:`Move (renomeia) arquivos`,help:`mv ORIGEM DESTINO
 
-Renomeia ORIGEM para DESTINO, ou move ORIGEM para o diretório DESTINO.`,execute:async e=>{if(e.args.length<2){e.printError(`mv: operando de arquivo ausente`);return}let t=e.args[0],n=e.args[1],r=e.vfs.readFile(t,e.user);r!==null&&r!==`Permissão negada`?e.vfs.writeFile(n,r,e.user)?e.vfs.rm(t,e.user):e.printError(`mv: não foi possível mover '${t}' para '${n}': Permissão negada`):e.printError(`mv: não foi possível obter estado de '${t}': Permissão negada ou Arquivo não encontrado`)}}],cc=[{name:`man`,description:`Interface para os manuais de referência do sistema`,execute:async e=>{let t=e.args[0];if(!t){e.print(`Qual página de manual você deseja?`);return}let n={ls:`LS(1) - lista o conteúdo do diretório
+Renomeia ORIGEM para DESTINO, ou move ORIGEM para o diretório DESTINO.`,execute:async e=>{if(e.args.length<2){e.printError(`mv: operando de arquivo ausente`);return}let t=e.args[0],n=e.args[1],r=e.vfs.readFile(t,e.user);r!==null&&r!==`Permissão negada`?e.vfs.writeFile(n,r,e.user)?e.vfs.rm(t,e.user):e.printError(`mv: não foi possível mover '${t}' para '${n}': Permissão negada`):e.printError(`mv: não foi possível obter estado de '${t}': Permissão negada ou Arquivo não encontrado`)}}],cc=[{name:`man`,description:`Interface para os manuais de referência do sistema`,help:`man COMANDO
+
+Exibe a página de manual do sistema para o COMANDO especificado.`,execute:async e=>{let t=e.args[0];if(!t){e.print(`Qual página de manual você deseja?`);return}e.print({ls:`LS(1) - lista o conteúdo do diretório
 
 SINOPSE: ls [ARQUIVO]...
-DESCRIÇÃO: Lista informações sobre os ARQUIVOS (o diretório atual por padrão).`,cd:`CD(1) - muda o diretório de trabalho
+DESCRIÇÃO: Lista informações sobre os ARQUIVOS.`,chmod:`CHMOD(1) - altera permissões de acesso a arquivos
 
-SINOPSE: cd [DIR]
-DESCRIÇÃO: Muda o diretório atual para DIR.`,cat:`CAT(1) - concatena arquivos e imprime na saída padrão
+SINOPSE: chmod [OPÇÃO]... MODO[,MODO]... ARQUIVO...`,ip:`IP(8) - exibe/manipula roteamento, dispositivos e túneis
 
-SINOPSE: cat [ARQUIVO]...
-DESCRIÇÃO: Concatena ARQUIVO(s) para a saída padrão.`,pwd:`PWD(1) - imprime o nome do diretório atual
+SINOPSE: ip [OPÇÕES] OBJETO {COMANDO | help}`}[t]||`Nenhuma entrada de manual para ${t}`)}},{name:`chmod`,description:`Altera as permissões de acesso a arquivos`,help:`chmod [OPÇÃO]... MODO[,MODO]... ARQUIVO...
 
-SINOPSE: pwd
-DESCRIÇÃO: Imprime o nome completo do diretório de trabalho atual.`,mkdir:`MKDIR(1) - cria diretórios
+Modifica as permissões de cada ARQUIVO de acordo com MODO.
 
-SINOPSE: mkdir DIRETÓRIO...
-DESCRIÇÃO: Cria o(s) DIRETÓRIO(s), se ainda não existirem.`,rm:`RM(1) - remove arquivos ou diretórios
+Opções:
+  -R, --recursive        modifica arquivos e diretórios recursivamente
+  -v, --verbose          exibe um diagnóstico para cada arquivo processado
 
-SINOPSE: rm [OPÇÃO]... [ARQUIVO]...
-DESCRIÇÃO: rm remove cada arquivo especificado.`,grep:`GREP(1) - imprime linhas que combinam com padrões
+Exemplos:
+  chmod 755 script.sh
+  chmod u+x,g-w arquivo.txt`,execute:async e=>{if(e.args.length<2){e.printError(`chmod: operando ausente`);return}let t=e.args.find(e=>!e.startsWith(`-`)),n=e.args.find(e=>!e.startsWith(`-`)&&e!==t);n&&e.vfs.chmod(n,t||`644`,e.user)?e.args.includes(`-v`)&&e.print(`o modo de '${n}' foi alterado para ${t}`):e.printError(`chmod: não foi possível acessar '${n}': Arquivo não encontrado`)}},{name:`chown`,description:`Altera o dono e o grupo de arquivos`,help:`chown [OPÇÃO]... [DONO][:[GRUPO]] ARQUIVO...
 
-SINOPSE: grep PADRÃO [ARQUIVO]...
-DESCRIÇÃO: grep busca pelo PADRÃO em cada ARQUIVO.`};n[t]?e.print(n[t]):e.print(`Nenhuma entrada de manual para ${t}`)}},{name:`grep`,description:`Imprime linhas que combinam com padrões`,execute:async e=>{let t=e.args.some(e=>e.includes(`i`)&&e.startsWith(`-`)),n=e.args.some(e=>e.includes(`v`)&&e.startsWith(`-`)),r=e.args.some(e=>e.includes(`n`)&&e.startsWith(`-`)),i=e.args.find(e=>!e.startsWith(`-`)),a=e.args.filter(e=>!e.startsWith(`-`)&&e!==i);if(!i){e.printError(`Uso: grep [OPÇÃO]... PADRÃO [ARQUIVO]...`);return}if(a.length===0){e.printError(`grep: operando de arquivo ausente`);return}for(let o of a){let a=e.vfs.readFile(o,e.user);a!==null&&a!==`Permissão negada`?a.split(`
-`).forEach((a,o)=>{let s=t?a.toLowerCase().includes(i.toLowerCase()):a.includes(i);if(n&&(s=!s),s){let t=r?`\x1b[1;32m${o+1}:\x1b[0m`:``;e.print(`${t}${a}`)}}):e.printError(`grep: ${o}: Permissão negada ou Arquivo não encontrado`)}}},{name:`find`,description:`Busca por arquivos em uma hierarquia de diretórios`,execute:async e=>{let t=e.args.find(e=>!e.startsWith(`-`))||`.`,n=e.args[e.args.indexOf(`-name`)+1],r=e.vfs.findNodes(t,n);e.print(r.join(`
-`))}},{name:`df`,description:`Relata o uso de espaço em disco do sistema de arquivos`,execute:async e=>{let t=e.args.includes(`-h`);e.print(`Sist. Arq.      Tam.   Usado  Disp. Uso% Montado em`),t?(e.print(`/dev/sda1        50G    12G    38G  24% /`),e.print(`tmpfs           3.9G     0G   3.9G   0% /dev/shm`)):(e.print(`/dev/sda1   52428800 12582912 39845888  24% /`),e.print(`tmpfs        40894464        0 40894464   0% /dev/shm`))}},{name:`du`,description:`Estima o uso de espaço de arquivos`,execute:async e=>{let t=e.args.includes(`-h`),n=e.args.find(e=>!e.startsWith(`-`))||`.`;e.print((t?`4.0K`:`4`)+`    `+n)}},{name:`history`,description:`Exibe a lista de comandos executados`,execute:async e=>{e.print(`  1  pwd
-  2  ls -la
-  3  mkdir pratica
-  4  history`)}},{name:`sudo`,description:`Executa um comando como superusuário`,execute:async e=>{if(e.args.length===0){e.print(`usage: sudo -h | -K | -k | -V`),e.print(`
-Para executar um comando como root, use: sudo [comando]`);return}}},{name:`groups`,description:`Exibe os grupos aos quais o usuário pertence`,execute:async e=>{e.user===`root`?e.print(`root`):e.print(`dayhoff sudo student labiomics`)}},{name:`id`,description:`Exibe os IDs de usuário e grupo reais e efetivos`,execute:async e=>{e.user===`root`?e.print(`uid=0(root) gid=0(root) grupos=0(root)`):e.print(`uid=1000(dayhoff) gid=1000(dayhoff) grupos=1000(dayhoff),27(sudo),1001(labiomics)`)}},{name:`ssh`,description:`Cliente de login remoto OpenSSH`,execute:async e=>{let t=e.args[0];if(!t){e.print(`Uso: ssh usuario@host`);return}e.print(`Conectando-se a ${t}...`),e.print(`The authenticity of host cannot be established.`),e.print(`Are you sure you want to continue connecting (yes/no/[fingerprint])?`)}},{name:`wc`,description:`Imprime contagem de linhas, palavras e bytes`,execute:async e=>{let t=e.args.includes(`-l`),n=e.args.includes(`-w`),r=e.args.includes(`-c`),i=!t&&!n&&!r,a=e.args.filter(e=>!e.startsWith(`-`));if(a.length===0&&!e.stdin){e.printError(`wc: operando de arquivo ausente`);return}let o=(a,o)=>{let s=a.split(`
-`).filter(e=>e.length>0).length,c=a.trim().split(/\s+/).filter(Boolean).length,l=a.length,u=``;(i||t)&&(u+=`${s} `),(i||n)&&(u+=`${c} `),(i||r)&&(u+=`${l} `),e.print(`${u}${o}`)};if(!(e.stdin&&(o(e.stdin,``),a.length===0)))for(let t of a){let n=e.vfs.readFile(t,e.user);n!==null&&n!==`Permissão negada`?o(n,t):e.printError(`wc: ${t}: Permissão negada ou Arquivo não encontrado`)}}},{name:`ps`,description:`Relatório do status dos processos atuais`,execute:async e=>{let t=e.args.includes(`aux`),n=e.args.includes(`-ef`);t?(e.print(`USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND`),e.print(`root         1  0.0  0.1  168320  9612 ?        Ss   Apr22   0:02 /sbin/init`),e.print(`dayhoff   1234  0.1  0.5  543200 42100 pts/0    Ss   12:00   0:01 /bin/bash`),e.print(`dayhoff   5678  0.0  0.0   12344  2100 pts/0    R+   12:35   0:00 ps aux`)):n?(e.print(`UID        PID  PPID  C STIME TTY          TIME CMD`),e.print(`root         1     0  0 Apr22 ?        00:00:02 /sbin/init`),e.print(`dayhoff   1234     1  0 12:00 pts/0    00:00:01 /bin/bash`)):e.print(`  PID TTY          TIME CMD
- 1234 pts/0    00:00:01 bash
- 5678 pts/0    00:00:00 ps`)}},{name:`top`,description:`Exibe processos do Linux`,execute:async e=>{e.print(`\x1B[H\x1B[J`),e.print(`top - 12:35:42 up 1 day, 2:31,  1 user,  load average: 0.08, 0.03, 0.05`),e.print(`Tasks: 125 total,   1 running, 124 sleeping,   0 stopped,   0 zombie`),e.print(`%Cpu(s):  0.3 us,  0.3 sy,  0.0 ni, 99.3 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st`),e.print(`MiB Mem :   7956.1 total,   3124.5 free,   2456.8 used,   2374.8 buff/cache`),e.print(`
-  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND`),e.print(` 1234 dayhoff   20   0  543200  42100  32400 S   0.3   0.5   0:01.45 bash`),e.print(` 5678 dayhoff   20   0   12345   6789   1234 R   0.0   0.1   0:00.01 top`)}},{name:`free`,description:`Exibe quantidade de memória livre e usada no sistema`,execute:async e=>{e.args.includes(`-h`)?(e.print(`              total        used        free      shared  buff/cache   available`),e.print(`Mem:           7.8G        2.4G        3.1G        100M        2.3G        5.1G`),e.print(`Swap:          2.0G          0B        2.0G`)):e.print(`              total        used        free      shared  buff/cache   available
-Mem:        8192000     2048000     4096000      102400     2048000     6144000
-Swap:       2048000           0     2048000`)}},{name:`uptime`,description:`Informa há quanto tempo o sistema está ligado`,execute:async e=>{e.print(` 12:34:56 up 1 day, 2:30,  1 user,  load average: 0.00, 0.01, 0.05`)}},{name:`chmod`,description:`Altera as permissões de acesso a arquivos`,execute:async e=>{if(e.args.length<2){e.printError(`chmod: operando ausente`);return}let t=e.args[0],n=e.args[1];e.vfs.chmod(n,t,e.user)||e.printError(`chmod: não foi possível mudar permissões de '${n}': Permissão negada ou Arquivo não encontrado`)}},{name:`chown`,description:`Altera o dono e o grupo de arquivos`,execute:async e=>{if(e.args.length<2){e.printError(`chown: operando ausente`);return}let t=e.args[0],n=e.args[1];e.vfs.chown(n,t,e.user)||e.printError(`chown: não foi possível mudar o dono de '${n}': Apenas o root pode fazer isso`)}},{name:`apt`,description:`Ferramenta de gerenciamento de pacotes`,execute:async e=>{let t=e.args[0],n=e.args[1];t===`install`&&n?(e.print(`Lendo listas de pacotes... Pronto`),e.print(`Construindo árvore de dependências... Pronto`),e.print(`Os seguintes pacotes NOVOS serão instalados: ${n}`),e.print(`0 atualizados, 1 novos instalados, 0 a serem removidos.`),e.print(`Instalando ${n}... [OK]`)):t===`update`?(e.print(`Atingido:1 http://br.archive.ubuntu.com/ubuntu jammy InRelease`),e.print(`Lendo listas de pacotes... Pronto`)):e.print(`Uso: apt [install|update] [pacote]`)}},{name:`ping`,description:`Envia pacotes ICMP ECHO_REQUEST para hosts da rede`,execute:async e=>{let t=e.args[0];if(!t){e.printError(`ping: host ausente`);return}e.print(`PING ${t} (127.0.0.1) 56(84) bytes of data.`),e.print(`64 bytes from ${t} (127.0.0.1): icmp_seq=1 ttl=64 time=0.045 ms`),e.print(`64 bytes from ${t} (127.0.0.1): icmp_seq=2 ttl=64 time=0.048 ms`),e.print(`--- ${t} ping statistics ---`),e.print(`2 packets transmitted, 2 received, 0% packet loss, time 1001ms`)}},{name:`tracert`,description:`Rastreia a rota para um host (alias para traceroute)`,execute:async e=>{let t=e.args[0];if(!t){e.printError(`tracert: host ausente`);return}e.print(`traceroute to ${t} (127.0.0.1), 30 hops max, 60 byte packets`),e.print(` 1  gateway (192.168.1.1)  0.521 ms  0.498 ms  0.472 ms`),e.print(` 2  ${t} (127.0.0.1)  0.589 ms  0.564 ms  0.541 ms`)}}],lc=[{name:`bio-count`,description:`Conta a frequência de bases (A, T, C, G) em uma sequência ou arquivo`,help:`bio-count [SEQUÊNCIA | ARQUIVO]
+Altera o proprietário e/ou grupo de cada ARQUIVO.
+
+Opções:
+  -R, --recursive        opera em arquivos e diretórios recursivamente
+
+Exemplo:
+  chown root:root /etc/passwd`,execute:async e=>{if(e.args.length<2){e.printError(`chown: operando ausente`);return}let t=e.args.find(e=>!e.startsWith(`-`)),n=e.args.find(e=>!e.startsWith(`-`)&&e!==t);n&&e.vfs.chown(n,t?.split(`:`)[0]||`root`,e.user)?e.print(`Propriedade de '${n}' alterada.`):e.printError(`chown: alteração falhou para '${n}'`)}},{name:`ps`,description:`Relatório do status dos processos atuais`,help:`ps [OPÇÕES]
+
+Exibe informações sobre os processos ativos.
+
+Opções:
+  aux      exibe todos os processos de todos os usuários
+  -ef      exibe todos os processos em formato completo
+  --tree   exibe processos em formato de árvore`,execute:async e=>{e.args.includes(`aux`)?(e.print(`USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND`),e.print(`root         1  0.0  0.1  168M  9612 ?        Ss   Apr22   0:02 /sbin/init`),e.print(`dayhoff    124  0.1  0.5  543M 42100 pts/0    Ss   12:00   0:01 /bin/bash`),e.print(`dayhoff    567  0.0  0.0  123M  2100 pts/0    R+   12:35   0:00 ps aux`)):e.args.includes(`-ef`)?(e.print(`UID        PID  PPID  C STIME TTY          TIME CMD`),e.print(`root         1     0  0 Apr22 ?        00:00:02 /sbin/init`),e.print(`dayhoff    124     1  0 12:00 pts/0    00:00:01 /bin/bash`)):e.print(`  PID TTY          TIME CMD
+  124 pts/0    00:00:01 bash
+  568 pts/0    00:00:00 ps`)}},{name:`top`,description:`Exibe processos do Linux de forma dinâmica`,help:`top
+
+Exibe uma visão em tempo real dos processos do sistema.`,execute:async e=>{e.print(`\x1B[H\x1B[Jtop - 12:35:42 up 1 day, 2:31,  1 user,  load average: 0.08, 0.03, 0.05`),e.print(`Tasks: 125 total,   1 running, 124 sleeping,   0 stopped,   0 zombie`),e.print(`%Cpu(s):  0.3 us,  0.3 sy,  0.0 ni, 99.3 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st`),e.print(`MiB Mem :   7956.1 total,   3124.5 free,   2456.8 used,   2374.8 buff/cache`),e.print(`
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND`),e.print(`  124 dayhoff   20   0  543200  42100  32400 S   0.3   0.5   0:01.45 bash`),e.print(`  569 dayhoff   20   0   12345   6789   1234 R   0.0   0.1   0:00.01 top`)}},{name:`free`,description:`Exibe quantidade de memória livre e usada`,help:`free [OPÇÃO]
+
+Exibe a quantidade total de memória física e de swap livre e usada.
+
+Opções:
+  -h, --human   exibe em formato legível (GB, MB)
+  -m, --mega    exibe em megabytes`,execute:async e=>{let t=e.args.includes(`-h`);e.print(`              total        used        free      shared  buff/cache   available`),t?(e.print(`Mem:           7.8G        2.4G        3.1G        100M        2.3G        5.1G`),e.print(`Swap:          2.0G          0B        2.0G`)):(e.print(`Mem:        8192000     2048000     4096000      102400     2048000     6144000`),e.print(`Swap:       2048000           0     2048000`))}},{name:`ip`,description:`Exibe ou manipula roteamento, dispositivos e interfaces`,help:`ip [OPÇÕES] OBJETO {COMANDO}
+
+Objetos:
+  address (a)    endereços IP nas interfaces
+  link (l)       dispositivos de rede
+  route (r)      tabela de roteamento
+
+Exemplos:
+  ip addr show
+  ip link set eth0 up`,execute:async e=>{let t=e.args[0];t===`addr`||t===`a`?e.print(`1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default
+    link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.10/24 brd 192.168.1.255 scope global dynamic eth0`):t===`link`||t===`l`?e.print(`1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 state UNKNOWN
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP`):e.print(`Usage: ip [ OPTIONS ] OBJECT { COMMAND | help }`)}},{name:`netstat`,description:`Exibe conexões de rede e estatísticas`,help:`netstat [OPÇÕES]
+
+Opções:
+  -a, --all        exibe todos os sockets
+  -t               exibe conexões TCP
+  -u               exibe conexões UDP
+  -l               exibe sockets em escuta
+  -p               exibe o PID/Nome do programa`,execute:async e=>{e.print(`Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name`),e.print(`tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      842/nginx: master`),e.print(`tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      711/sshd`),e.print(`udp        0      0 0.0.0.0:68              0.0.0.0:*                           620/dhclient`)}},{name:`df`,description:`Relata o uso de espaço em disco`,help:`df [OPÇÃO]... [ARQUIVO]...
+
+Opções:
+  -h, --human-readable   exibe tamanhos em formato legível (ex: 1K 234M 2G)
+  -T, --print-type       exibe o tipo do sistema de arquivos`,execute:async e=>{let t=e.args.includes(`-h`);e.print(`Sist. Arq.      Tam.   Usado  Disp. Uso% Montado em`),t?(e.print(`/dev/sda1        50G    12G    38G  24% /`),e.print(`tmpfs           3.9G     0G   3.9G   0% /dev/shm`)):(e.print(`/dev/sda1   52428800 12582912 39845888  24% /`),e.print(`tmpfs        40894464        0 40894464   0% /dev/shm`))}},{name:`nmap`,description:`Exploração de rede e scanner de segurança`,help:`nmap [Tipo de Scan] [Opções] {alvo}
+
+Exemplos:
+  nmap localhost
+  nmap -p 80,443 192.168.1.1`,execute:async e=>{let t=e.args.find(e=>!e.startsWith(`-`))||`localhost`;e.print(`Starting Nmap 7.93 at ${new Date().toISOString()}`),e.print(`Nmap scan report for ${t} (127.0.0.1)\nHost is up (0.00004s latency).`),e.print(`PORT     STATE SERVICE
+22/tcp   open  ssh
+80/tcp   open  http
+443/tcp  open  https
+3306/tcp open  mysql`),e.print(`
+Nmap done: 1 IP address (1 host up) scanned in 0.05 seconds`)}},{name:`mem`,description:`Alias para free -h`,help:`mem
+
+Exibe informações de memória em formato legível.`,execute:async e=>{let t=cc.find(e=>e.name===`free`);t&&await t.execute({...e,args:[`-h`]})}},{name:`nslookup`,description:`Consulta servidores de nomes de domínio interativamente`,help:`nslookup [HOST]
+
+Exemplo:
+  nslookup google.com`,execute:async e=>{let t=e.args[0]||`google.com`;e.print(`Server:         127.0.0.53\nAddress:        127.0.0.53#53\n\nNon-authoritative answer:\nName:   ${t}\nAddress: 142.250.191.46`)}},{name:`dig`,description:`Utilitário de busca DNS`,help:`dig [HOST]
+
+Exemplo:
+  dig labiomics.com`,execute:async e=>{let t=e.args[0]||`example.com`;e.print(`; <<>> DiG 9.18.12 <<>> ${t}\n;; global options: +cmd\n;; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 12345\n\n;; ANSWER SECTION:\n${t}.   300 IN  A   93.184.216.34`)}},{name:`lsblk`,description:`Lista dispositivos de bloco`,help:`lsblk [OPÇÕES]
+
+Lista informações sobre todos os dispositivos de bloco disponíveis.`,execute:async e=>{e.print(`NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINTS`),e.print(`sda      8:0    0    50G  0 disk 
+└─sda1   8:1    0    50G  0 part /`),e.print(`sr0     11:0    1  1024M  0 rom`)}}],lc=[{name:`bio-count`,description:`Conta a frequência de bases (A, T, C, G) em uma sequência ou arquivo`,help:`bio-count [SEQUÊNCIA | ARQUIVO]
 
 Calcula a frequência de nucleotídeos, total de pares de bases e conteúdo GC.
 Se o argumento for um arquivo existente, lê o arquivo; caso contrário, processa a string fornecida.`,execute:async e=>{let t=e.args[0];if(!t){e.printError(`Uso: bio-count [sequência ou arquivo]`);return}let n=(e.vfs.readFile(t)||t).toUpperCase(),r={A:0,T:0,C:0,G:0,N:0};for(let e of n)r[e]===void 0?/[A-Z]/.test(e)&&r.N++:r[e]++;e.print(`\x1B[1;32mRelatório de Sequência:\x1B[0m`),e.print(`  A: ${r.A}`),e.print(`  T: ${r.T}`),e.print(`  C: ${r.C}`),e.print(`  G: ${r.G}`),r.N>0&&e.print(`  Outros/N: ${r.N}`);let i=r.A+r.T+r.C+r.G+r.N,a=((r.G+r.C)/(r.A+r.T+r.C+r.G)*100).toFixed(2);e.print(`  Total: ${i} bp`),e.print(`  Conteúdo GC: ${a}%`)}},{name:`bio-rev-comp`,description:`Gera o complemento reverso de uma sequência de DNA`,help:`bio-rev-comp [SEQUÊNCIA | ARQUIVO]
