@@ -25,9 +25,33 @@ export const extendedCommands: Command[] = [
   {
     name: 'tar',
     description: 'Utilitário de arquivamento',
-    help: 'tar [OPÇÃO]... [ARQUIVO]...\n\nOpções:\n  -c           cria um novo arquivo\n  -x           extrai arquivos\n  -v           detalhado\n  -z           comprime com gzip\n  -f           especifica o arquivo',
+    help: 'tar [OPÇÃO]... [ARQUIVO]...\n\nOpções: -c (criar), -x (extrair), -v (detalhado), -z (gzip), -f (arquivo)',
     execute: async (ctx) => {
       ctx.print(`Arquivado com sucesso.`);
+    }
+  },
+  {
+    name: 'grep',
+    description: 'Busca padrões em arquivos usando expressões regulares',
+    help: 'grep [OPÇÃO]... PADRÃO [ARQUIVO]...\n\nExemplo:\n  grep "seq1" genome.fa',
+    execute: async (ctx) => {
+      ctx.print('seq1: ATGCGTACGTG\nseq10: GCTAGCTAGCT');
+    }
+  },
+  {
+    name: 'find',
+    description: 'Busca arquivos em uma hierarquia de diretórios',
+    help: 'find [CAMINHO] [EXPRESSÃO]\n\nExemplo:\n  find . -name "*.fa"',
+    execute: async (ctx) => {
+      ctx.print('./data/seq1.fa\n./data/seq2.fa\n./ref/genome.fa');
+    }
+  },
+  {
+    name: 'diff',
+    description: 'Compara arquivos linha por linha',
+    help: 'diff ARQUIVO1 ARQUIVO2\n\nExibe as diferenças entre dois arquivos.',
+    execute: async (ctx) => {
+      ctx.print('--- arquivo1\n+++ arquivo2\n- ATGC\n+ ATGG');
     }
   },
   {
@@ -98,5 +122,17 @@ export const extendedCommands: Command[] = [
     description: 'Localiza um comando',
     help: 'which COMANDO\n\nMostra o caminho completo do executável.',
     execute: async (ctx) => { ctx.print(`/usr/bin/${ctx.args[0] || 'bash'}`); }
+  },
+  {
+    name: 'locate',
+    description: 'Busca arquivos pelo nome em um banco de dados',
+    help: 'locate NOME\n\nExemplo:\n  locate samtools',
+    execute: async (ctx) => { ctx.print('/usr/bin/samtools\n/usr/share/man/man1/samtools.1.gz'); }
+  },
+  {
+    name: 'xargs',
+    description: 'Constrói e executa comandos a partir da entrada padrão',
+    help: 'xargs [COMANDO]\n\nExemplo:\n  find . -name "*.txt" | xargs rm',
+    execute: async (ctx) => { ctx.print('Simulando execução em lote...'); }
   }
 ];
