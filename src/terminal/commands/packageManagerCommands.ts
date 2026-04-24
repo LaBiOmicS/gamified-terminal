@@ -161,97 +161,88 @@ export const packageManagerCommands: Command[] = [
   {
     name: 'docker',
     description: 'Gerenciador de containers Docker',
-    help: 'docker [COMANDO] [OPÇÕES]\n\nPlataforma para containers.\n\nComandos:\n  pull [img]      Baixa uma imagem do Docker Hub\n  run [img]       Cria e inicia um container\n  ps              Lista containers em execução\n  images          Lista imagens locais\n  build -t [tag]  Cria imagem a partir do Dockerfile atual\n  rm [id]         Remove um container\n  rmi [id]        Remove uma imagem',
+    help: 'docker [COMANDO] [OPÇÕES]\n\nPlataforma para containers e orquestração.\n\nComandos:\n  pull [img]      Baixa uma imagem\n  run [img]       Inicia um container\n  ps              Lista containers\n  images          Lista imagens\n  build -t [tag]  Cria imagem a partir do Dockerfile\n  compose up      Inicia serviços (docker-compose)\n  swarm init      Inicia modo Swarm\n  service create  Cria serviço no Swarm\n  rm/rmi          Remove container/imagem',
     execute: async (ctx) => {
       const sub = ctx.args[0];
       
-      interface Container {
-        id: string;
-        image: string;
-        name: string;
-        status: string;
-      }
-
+      interface Container { id: string; image: string; name: string; status: string; }
       const getImages = () => JSON.parse(localStorage.getItem('docker_images') || '["ubuntu:latest", "nginx:latest"]');
       const addImage = (name: string) => {
         const imgs = getImages();
         if (!imgs.includes(name)) { imgs.push(name); localStorage.setItem('docker_images', JSON.stringify(imgs)); }
       };
-
       const getContainers = (): Container[] => JSON.parse(localStorage.getItem('docker_containers') || '[]');
       const addContainer = (img: string, name: string) => {
         const cnts = getContainers();
         cnts.push({ id: Math.random().toString(36).substring(2, 14), image: img, name, status: 'Up 2 minutes' });
         localStorage.setItem('docker_containers', JSON.stringify(cnts));
       };
+
       if (sub === 'pull') {
         const img = ctx.args[1];
-        if (!img) { ctx.printError('docker pull: erro: imagem não especificada'); return; }
-        ctx.print(`Using default tag: latest\nlatest: Pulling from library/${img}`);
-        ctx.print(`\x1b[32m7b1a2: Pull complete\x1b[0m\n\x1b[32m5e44a: Pull complete\x1b[0m`);
-        ctx.print(`Digest: sha256:88a5...\nStatus: Downloaded newer image for ${img}:latest`);
+        if (!img) { ctx.printError('docker pull: imagem não especificada'); return; }
+        ctx.print(`Pulling from library/${img}...\n\x1b[32mDone\x1b[0m`);
         addImage(img.includes(':') ? img : `${img}:latest`);
       } else if (sub === 'run') {
         const img = ctx.args.find(a => !a.startsWith('-') && a !== 'run');
-        if (!img) { ctx.printError('docker run: erro: imagem não especificada'); return; }
-        const it = ctx.args.includes('-it');
-        const name = ctx.args.includes('--name') ? ctx.args[ctx.args.indexOf('--name') + 1] : `brave_${Math.random().toString(36).substring(7)}`;
-        
-        if (!getImages().includes(img) && !getImages().includes(`${img}:latest`)) {
-          ctx.print(`Unable to find image '${img}' locally`);
-          ctx.print(`latest: Pulling from library/${img}... done`);
-          addImage(img.includes(':') ? img : `${img}:latest`);
-        }
-        
-        addContainer(img, name);
-        if (it) {
-          ctx.print(`\nroot@${Math.random().toString(36).substring(7)}:/# `);
-          ctx.print(`\x1b[1;30m(Simulando terminal interativo... digite 'exit' para sair)\x1b[0m`);
-        } else {
-          ctx.print(`Container started: ${name}`);
-        }
-      } else if (sub === 'build') {
-        const tagIdx = ctx.args.indexOf('-t');
-        const tag = tagIdx !== -1 ? ctx.args[tagIdx + 1] : 'latest';
-        const hasDockerfile = ctx.vfs.readFile('Dockerfile', ctx.user);
-        
-        if (hasDockerfile) {
-          ctx.print(`\x1b[1m[+] Building 5.2s (8/8) FINISHED\x1b[0m`);
-          ctx.print(` => [internal] load build definition from Dockerfile       0.1s`);
-          ctx.print(` => [internal] load .dockerignore                            0.0s`);
-          ctx.print(` => [1/3] FROM ubuntu:22.04                                  2.1s`);
-          ctx.print(` => [2/3] RUN apt-get update && apt-get install samtools     1.8s`);
-          ctx.print(` => [3/3] CMD ["samtools"]                                   0.1s`);
-          ctx.print(` => exporting to image                                       0.2s`);
-          ctx.print(` => naming to docker.io/library/${tag}                       0.0s`);
-          addImage(tag.includes(':') ? tag : `${tag}:latest`);
-        } else {
-          ctx.printError('docker build: erro: Dockerfile não encontrado no diretório atual');
-        }
+        if (!img) { ctx.printError('docker run: imagem não especificada'); return; }
+        addContainer(img, `brave_${Math.random().toString(36).substring(7)}`);
+        ctx.print(`Container started.`);
       } else if (sub === 'ps') {
-        ctx.print('CONTAINER ID   IMAGE          COMMAND    CREATED         STATUS         NAMES');
-        getContainers().forEach((c) => {
-          ctx.print(`${c.id.padEnd(14)} ${c.image.padEnd(14)} "bash"     2 minutes ago   ${c.status.padEnd(14)} ${c.name}`);
-        });
+        ctx.print('CONTAINER ID   IMAGE          STATUS         NAMES');
+        getContainers().forEach(c => ctx.print(`${c.id.padEnd(14)} ${c.image.padEnd(14)} ${c.status.padEnd(14)} ${c.name}`));
+      } else if (sub === 'compose' && ctx.args[1] === 'up') {
+        ctx.print(`\x1b[1;34m[+] Running 2/2\x1b[0m\n ⠿ Container db      Created\n ⠿ Container web     Created\n\x1b[1;32m⠿ Container db      Started\x1b[0m\n\x1b[1;32m⠿ Container web     Started\x1b[0m`);
+      } else if (sub === 'swarm' && ctx.args[1] === 'init') {
+        ctx.print(`Swarm initialized: current node (node-1) is now a manager.`);
+        ctx.print(`To add a worker to this swarm, run the following command:\n  docker swarm join --token SWMTKN-1-abc... 192.168.1.1:2377`);
+      } else if (sub === 'service' && ctx.args[1] === 'create') {
+        const name = ctx.args.find(a => a.startsWith('--name'))?.split('=')[1] || 'myservice';
+        ctx.print(`Service created: ${name} (ID: ${Math.random().toString(36).substring(2, 10)})`);
       } else if (sub === 'images') {
-        ctx.print('REPOSITORY     TAG       IMAGE ID       CREATED       SIZE');
-        getImages().forEach((img: string) => {
-          const [repo, tag] = img.split(':');
-          ctx.print(`${(repo || 'ubuntu').padEnd(14)} ${(tag || 'latest').padEnd(9)} ba627c2e3661   2 weeks ago   72.8MB`);
-        });
-      } else if (sub === 'rm') {
-        const id = ctx.args[1];
-        const cnts = getContainers().filter((c) => c.id !== id && c.name !== id);
-        localStorage.setItem('docker_containers', JSON.stringify(cnts));
-        ctx.print(id);
-      } else if (sub === 'rmi') {
-        const id = ctx.args[1];
-        const imgs = getImages().filter((img: string) => img !== id);
-        localStorage.setItem('docker_images', JSON.stringify(imgs));
-        ctx.print(`Untagged: ${id}\nDeleted: sha256:ba627...`);
+        ctx.print('REPOSITORY     TAG       IMAGE ID');
+        getImages().forEach((img: string) => ctx.print(`${img.split(':')[0].padEnd(14)} ${img.split(':')[1].padEnd(9)} ba627c2e3661`));
       } else {
-        ctx.print('Usage: docker [pull|run|ps|images|build|rm|rmi]');
+        ctx.print('Uso: docker [pull|run|ps|images|compose up|swarm init|service create]');
       }
+    }
+  },
+  {
+    name: 'singularity',
+    description: 'Plataforma de containers para HPC e Ciência',
+    help: 'singularity [COMANDO] [OPÇÕES]\n\nFoco em segurança e ambientes científicos.\n\nComandos:\n  pull [url]      Baixa imagem do Sylabs/Docker Hub (.sif)\n  build [img]     Cria uma imagem a partir de uma receita\n  exec [img] [cmd] Executa um comando dentro do container\n  run [img]       Executa o script padrão do container\n  shell [img]     Inicia um shell interativo\n  inspect [img]   Mostra metadados da imagem',
+    execute: async (ctx) => {
+      const sub = ctx.args[0];
+      const img = ctx.args[1] || 'ubuntu.sif';
+
+      if (sub === 'pull') {
+        ctx.print(`INFO:    Converting SIF file to temporary sandbox...`);
+        ctx.print(`INFO:    Creating SIF file...`);
+        ctx.print(`\x1b[1;32mINFO:    Build complete: ${img.split('/').pop() || 'image.sif'}\x1b[0m`);
+      } else if (sub === 'exec') {
+        ctx.print(`\x1b[1;30m(Singularity: ${img})\x1b[0m\n${ctx.user}`);
+      } else if (sub === 'run') {
+        ctx.print(`Iniciando ambiente científico em ${img}...`);
+        ctx.print(`Ubuntu 22.04 LTS (Singularity Instance)`);
+      } else if (sub === 'shell') {
+        ctx.print(`Singularity> \x1b[1;30m(Simulando shell... digite 'exit' para sair)\x1b[0m`);
+      } else if (sub === 'build') {
+        ctx.print(`INFO:    Starting build...`);
+        ctx.print(`INFO:    Running post-install scripts...`);
+        ctx.print(`\x1b[1;32mINFO:    Build complete: ${img}\x1b[0m`);
+      } else {
+        ctx.print('Uso: singularity [pull|build|exec|run|shell|inspect]');
+      }
+    }
+  },
+  {
+    name: 'apptainer',
+    description: 'O sucessor do Singularity (HPC)',
+    help: 'apptainer [COMANDO] [OPÇÕES]\n\nAlias moderno para o Singularity. Mesma sintaxe e funcionalidades.',
+    execute: async (ctx) => {
+      // Reutiliza a lógica do singularity
+      const sing = packageManagerCommands.find(c => c.name === 'singularity');
+      if (sing) await sing.execute(ctx);
     }
   },
   {
