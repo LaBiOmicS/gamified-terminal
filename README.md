@@ -164,21 +164,4 @@ O projeto **ARAMAS** é uma iniciativa acadêmica desenvolvida no âmbito da Bio
 Este projeto está licenciado sob a **Licença MIT** - consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ---
-
-## 📝 Citação
-
-Se você utilizar o **ARAMAS** em sua pesquisa ou ensino, por favor, cite-o conforme as instruções no arquivo [CITATION.cff](CITATION.cff).
-
-```bibtex
-@article{Menegidio2026ARAMAS,
-  title={ARAMAS: A Gamified Terminal Simulator for Learning Linux and Bioinformatics},
-  author={Menegidio, Fabiano B.},
-  journal={Journal of Open Source Software (Submitted)},
-  year={2026}
-}
-```
-
-Para mais detalhes sobre a fundamentação teórica e implementação, consulte o [artigo do software](paper.md).
-
----
 *ARAMAS - Dominando o Terminal, Conquistando a Ciência.*
