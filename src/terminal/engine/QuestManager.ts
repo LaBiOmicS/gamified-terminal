@@ -27,7 +27,12 @@ export interface Quest {
   completionMessage: string;
 }
 
-export const RANKS = [
+export interface Rank {
+  name: string;
+  minXp: number;
+}
+
+export const RANKS: Rank[] = [
   { name: 'Novato(a)', minXp: 0 },
   { name: 'Iniciante', minXp: 1000 },
   { name: 'Intermediário(a)', minXp: 3000 },
