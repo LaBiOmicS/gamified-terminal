@@ -1,6 +1,14 @@
 # ARAMAS v1.0.0
 ### Ambiente Remoto para o Aprendizado e Manipulação de Arquivos e Sistemas
 
+<p align="center">
+  <img src="icon.png" alt="ARAMAS Logo" width="70%">
+</p>
+
+[![University: UMC](https://img.shields.io/badge/University-UMC-0D47A1.svg)](https://www.umc.br/)
+[![Laboratory: LaBiOmicS](https://img.shields.io/badge/Laboratory-LaBiOmicS-7B1FA2.svg)](https://github.com/LaBiOmicS)
+[![Bioinformatics](https://img.shields.io/badge/Bioinformatics-lncRNA-green.svg)](https://github.com/LaBiOmicS/metaLncRNA)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-v22.22.2-green.svg)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
