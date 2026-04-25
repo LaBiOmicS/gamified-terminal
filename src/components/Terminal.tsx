@@ -195,8 +195,8 @@ const Terminal: React.FC = () => {
   ];
 
   const getGameUrl = () => {
-    if (activeGame === 'doom') return 'https://dos.zone/player/?bundleUrl=' + encodeURIComponent('https://js-dos.com/cdn/upload/DOOM-@evilution.zip') + '&anonymous=1';
-    if (activeGame === 'duke') return 'https://dos.zone/player/?bundleUrl=' + encodeURIComponent('https://js-dos.com/cdn/upload/DUKE3D.zip') + '&anonymous=1';
+    if (activeGame === 'doom') return './game.html?game=doom';
+    if (activeGame === 'duke') return './game.html?game=duke';
     return '';
   };
 
