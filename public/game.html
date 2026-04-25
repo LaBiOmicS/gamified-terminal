@@ -12,37 +12,32 @@
         height: 100%; 
         overflow: hidden; 
         background: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
       #dosbox { 
         width: 100%; 
         height: 100%; 
       }
+      .dosbox-container { width: 100%; height: 100%; }
       .loading {
         color: #0dbc79;
         font-family: monospace;
         position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         text-align: center;
         z-index: 10;
-      }
-      canvas {
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: contain;
       }
     </style>
   </head>
   <body>
     <div id="dosbox"></div>
     <div id="status" class="loading">
-      [ CARREGANDO SIMULADOR ]<br>
-      <small>Pressione qualquer tecla para interagir se necessário</small>
+      [ CARREGANDO SIMULADOR ]
     </div>
 
-    <!-- Usando a versão estável 6.22 do js-dos -->
-    <script type="text/javascript" src="https://js-dos.com/6.22/current/js-dos.js"></script>
+    <!-- Usando o script legado solicitado que tem maior compatibilidade com os links de upload -->
+    <script type="text/javascript" src="https://js-dos.com/cdn/js-dos-api.js"></script>
     <script type="text/javascript">
       var params = new URLSearchParams(window.location.search);
       var game = params.get("game");
@@ -50,29 +45,26 @@
 
       var games = {
         "doom": {
-          zip: "https://js-dos.com/cdn/upload/DOOM-@evilution.zip",
-          exe: "DOOM.EXE",
-          dir: "DOOM"
+          url: "upload/DOOM-@evilution.zip",
+          exe: "./DOOM.EXE"
         },
         "duke": {
-          zip: "https://js-dos.com/cdn/upload/DUKE3D.zip",
-          exe: "DUKE3D.EXE",
-          dir: "DUKE3D"
+          url: "upload/DUKE3D.zip",
+          exe: "./DUKE3D.EXE"
         }
       };
 
       if (games[game]) {
-        Dos(document.getElementById("dosbox"), {
-          wdosboxUrl: "https://js-dos.com/6.22/current/wdosbox.js"
-        }).ready(function (fs, main) {
-          fs.extract(games[game].zip).then(function () {
+        var dosbox = new Dosbox({
+          id: "dosbox",
+          onload: function (dosbox) {
             status.style.display = "none";
-            // Executa o comando para entrar na pasta e rodar o executável
-            main(["-c", "cd " + games[game].dir, "-c", games[game].exe]).then(function (ci) {
-              console.log("Simulador iniciado com sucesso.");
-              window.ci = ci;
-            });
-          });
+            // O caminho no script legado é relativo a https://js-dos.com/
+            dosbox.run(games[game].url, games[game].exe);
+          },
+          onrun: function (dosbox, app) {
+            console.log("App '" + app + "' iniciado");
+          }
         });
       } else {
         status.innerHTML = "<span style='color: #ff4d4d'>ERRO: JOGO NÃO ENCONTRADO</span>";
