@@ -58,6 +58,14 @@ Acesse a plataforma agora: [https://labiomics.github.io/aramas/](https://labiomi
 
 ---
 
+## 🎯 Statement of Need
+
+Modern bioinformatics relies heavily on command-line proficiency. However, the initial learning curve for the Linux terminal can be steep for students from life sciences backgrounds. Existing educational resources often fall into two categories: static tutorials that lack interactivity, or full virtual machines that require complex setup and resources.
+
+`ARAMAS` fills this gap by offering a zero-install, lightweight simulation that runs entirely in the browser. It is specifically tailored for bioinformatics, simulating the behavior of industry-standard tools and providing an integrated gamification engine that rewards progress, increasing student engagement and retention.
+
+---
+
 ## 📚 Estrutura Educacional (Módulos)
 
 1.  **Sistemas Operacionais:** Navegação, manipulação de arquivos, permissões e administração básica.
@@ -143,6 +151,23 @@ O projeto **ARAMAS** é uma iniciativa acadêmica desenvolvida no âmbito da Bio
 ## 📄 Licença
 
 Este projeto está licenciado sob a **Licença MIT** - consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+## 📝 Citação
+
+Se você utilizar o **ARAMAS** em sua pesquisa ou ensino, por favor, cite-o conforme as instruções no arquivo [CITATION.cff](CITATION.cff).
+
+```bibtex
+@article{Menegidio2026ARAMAS,
+  title={ARAMAS: A Gamified Terminal Simulator for Learning Linux and Bioinformatics},
+  author={Menegidio, Fabiano B.},
+  journal={Journal of Open Source Software (Submitted)},
+  year={2026}
+}
+```
+
+Para mais detalhes sobre a fundamentação teórica e implementação, consulte o [artigo do software](paper.md).
 
 ---
 *ARAMAS - Dominando o Terminal, Conquistando a Ciência.*

@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Menegidio"
+  given-names: "Fabiano B."
+  orcid: "https://orcid.org/0000-0002-3558-8121"
+title: "ARAMAS: Ambiente Remoto para o Aprendizado e Manipulação de Arquivos e Sistemas"
+version: 1.0.0
+doi: 10.5281/zenodo.XXXXX
+date-published: 2026-04-25
+url: "https://github.com/LaBiOmicS/aramas"
+repository-code: "https://github.com/LaBiOmicS/aramas"
+keywords:
+  - Linux
+  - Bioinformatics
+  - Education
+  - Gamification
+  - Terminal Simulation
+license: MIT
