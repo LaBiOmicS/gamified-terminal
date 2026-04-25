@@ -8,7 +8,7 @@ import { packageManagerCommands } from './packageManagerCommands';
 export class CommandRegistry {
   private commands: Map<string, Command> = new Map();
 
-  constructor(onGame?: (game: string) => void) {
+  constructor() {
     [
       ...basicCommands, 
       ...focaCommands, 
@@ -56,20 +56,6 @@ export class CommandRegistry {
     };
     this.commands.set('ajuda', helpCommand);
     this.commands.set('help', helpCommand);
-
-    // Comandos Ocultos (Easter Eggs)
-    if (onGame) {
-      this.commands.set('doom', { 
-        name: 'doom', 
-        description: 'Executa o simulador de hardware gráfico 1993', 
-        execute: async () => { onGame('doom'); } 
-      });
-      this.commands.set('dukenukem', { 
-        name: 'dukenukem', 
-        description: 'Executa o simulador de hardware gráfico 1996', 
-        execute: async () => { onGame('duke'); } 
-      });
-    }
 
     // Comandos internos tratados no TerminalEngine.ts
     this.commands.set('tema', { name: 'tema', description: 'Muda o estilo visual do terminal', execute: async () => {} });

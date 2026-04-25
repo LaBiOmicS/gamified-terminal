@@ -5,6 +5,7 @@ import './App.css';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const repoUrl = "https://github.com/LaBiOmicS/aramas";
 
   return (
     <div className="landing-page">
@@ -21,9 +22,14 @@ const LandingPage: React.FC = () => {
               <span className="badge">Bioinformática</span>
               <span className="badge">Gamificado</span>
             </div>
-            <button className="cta-button" onClick={() => navigate('/terminal')}>
-              ACESSAR TERMINAL <span className="arrow">→</span>
-            </button>
+            <div className="cta-group" style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+              <button className="cta-button" onClick={() => navigate('/terminal')}>
+                ACESSAR TERMINAL <span className="arrow">→</span>
+              </button>
+              <button className="cta-button secondary" onClick={() => window.open(repoUrl, '_blank')}>
+                REPOSITÓRIO GITHUB
+              </button>
+            </div>
           </div>
           <div className="hero-visual">
             <div className="terminal-mockup">

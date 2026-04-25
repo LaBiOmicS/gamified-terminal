@@ -21,7 +21,7 @@ export class TerminalEngine {
   private currentUser: string = 'dayhoff';
   private currentEnv: string = '';
 
-  constructor(terminal: Terminal, onStateChange?: () => void, onGame?: (game: string) => void) {
+  constructor(terminal: Terminal, onStateChange?: () => void) {
     this.terminal = terminal;
     this.onStateChange = onStateChange;
     
@@ -29,7 +29,7 @@ export class TerminalEngine {
     const savedVFS = localStorage.getItem('vfs_state');
     this.vfs = new VFSManager(savedVFS ? JSON.parse(savedVFS) : undefined);
     
-    this.registry = new CommandRegistry(onGame);
+    this.registry = new CommandRegistry();
 
     this.questManager = new QuestManager();
 

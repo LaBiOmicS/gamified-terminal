@@ -95,6 +95,17 @@ body {
   box-shadow: 0 10px 20px rgba(0, 122, 204, 0.3);
 }
 
+.cta-button.secondary {
+  background: transparent;
+  border: 2px solid var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.cta-button.secondary:hover {
+  background: rgba(0, 122, 204, 0.1);
+  color: #fff;
+}
+
 .hero-visual {
   flex: 1;
 }

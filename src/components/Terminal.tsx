@@ -17,7 +17,6 @@ const Terminal: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [expandedGroups, setExpandedGroups] = useState<Record<number, boolean>>({});
-  const [activeGame, setActiveGame] = useState<string | null>(null);
 
   const toggleGroup = (index: number) => {
     setExpandedGroups(prev => ({ ...prev, [index]: !prev[index] }));
@@ -85,11 +84,7 @@ const Terminal: React.FC = () => {
       }
     };
 
-    const handleGame = (game: string) => {
-      setActiveGame(game);
-    };
-
-    engineRef.current = new TerminalEngine(xterm, updateUI, handleGame);
+    engineRef.current = new TerminalEngine(xterm, updateUI);
     updateUI();
 
     const timer = setTimeout(safeFit, 100);
@@ -193,12 +188,6 @@ const Terminal: React.FC = () => {
       ]
     }
   ];
-
-  const getGameUrl = () => {
-    if (activeGame === 'doom') return './game.html?game=doom';
-    if (activeGame === 'duke') return './game.html?game=duke';
-    return '';
-  };
 
   return (
     <div style={{ 
@@ -444,54 +433,6 @@ const Terminal: React.FC = () => {
               overflow: 'hidden'
             }} 
           />
-
-          {activeGame && (
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundColor: '#000',
-              zIndex: 1000,
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
-              <div style={{
-                height: '40px',
-                backgroundColor: '#1a1a1b',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0 15px',
-                borderBottom: '1px solid #333'
-              }}>
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#0dbc79' }}>
-                  SIMULADOR - {activeGame.toUpperCase()}
-                </span>
-                <button 
-                  onClick={() => setActiveGame(null)}
-                  style={{
-                    background: '#cc0000',
-                    border: 'none',
-                    color: '#fff',
-                    padding: '4px 10px',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '11px',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  FECHAR (ESC)
-                </button>
-              </div>
-              <iframe 
-                src={getGameUrl()} 
-                style={{ flex: 1, border: 'none' }}
-                title="Retro Game"
-              />
-            </div>
-          )}
         </main>
       </div>
     </div>
