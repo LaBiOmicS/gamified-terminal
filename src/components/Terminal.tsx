@@ -195,8 +195,8 @@ const Terminal: React.FC = () => {
   ];
 
   const getGameUrl = () => {
-    if (activeGame === 'doom') return 'https://js-dos.com/DOOM/';
-    if (activeGame === 'duke') return 'https://js-dos.com/Duke%20Nukem%203d/';
+    if (activeGame === 'doom') return './game.html?game=doom';
+    if (activeGame === 'duke') return './game.html?game=duke';
     return '';
   };
 
@@ -205,7 +205,6 @@ const Terminal: React.FC = () => {
       display: 'flex', 
       flexDirection: 'column', 
       width: '100vw', 
-      height: '100vh', 
       height: '100dvh', 
       backgroundColor: '#0a0a0a', 
       color: '#d4d4d4', 
