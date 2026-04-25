@@ -112,7 +112,6 @@ const Terminal: React.FC = () => {
       }
     };
 
-    // Múltiplos frames para garantir o fit durante e após a transição
     const timers = [
       setTimeout(safeFit, 50),
       setTimeout(safeFit, 150),
@@ -207,13 +206,14 @@ const Terminal: React.FC = () => {
       flexDirection: 'column', 
       width: '100vw', 
       height: '100vh', 
+      height: '100dvh', 
       backgroundColor: '#0a0a0a', 
       color: '#d4d4d4', 
       overflow: 'hidden',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}>
       <header style={{ 
-        height: '50px', 
+        height: isMobile ? '60px' : '50px', 
         backgroundColor: '#1a1a1b', 
         display: 'flex', 
         alignItems: 'center', 
@@ -226,32 +226,38 @@ const Terminal: React.FC = () => {
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
             style={{
-              background: 'none',
-              border: 'none',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid #444',
               color: '#fff',
               fontSize: '20px',
               cursor: 'pointer',
               marginRight: '15px',
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              borderRadius: '6px'
             }}
           >
             {sidebarOpen ? '✕' : '☰'}
           </button>
-          <div style={{ fontWeight: 600, fontSize: '14px', letterSpacing: '0.5px' }}>
-            ARAMAS <span style={{ color: '#007acc', fontWeight: 400 }}>| LABIOMICS</span>
+          <div style={{ fontWeight: 600, fontSize: isMobile ? '16px' : '14px', letterSpacing: '0.5px' }}>
+            ARAMAS <span style={{ color: '#007acc', fontWeight: 400, display: isMobile ? 'none' : 'inline' }}>| LABIOMICS</span>
           </div>
         </div>
         
-        {isMobile && currentQuest && (
-          <div style={{ fontSize: '11px', color: '#0dbc79' }}>
-            {currentQuest.progress}
+        {currentQuest && (
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: isMobile ? '10px' : '11px', color: '#0dbc79', fontWeight: 700 }}>
+              {isMobile ? '🎯' : 'MISSÃO:'} {currentQuest.progress}
+            </div>
+            {!isMobile && <div style={{ fontSize: '10px', color: '#888' }}>{currentQuest.title}</div>}
           </div>
         )}
       </header>
 
       <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}>
-        {/* Overlay para fechar o menu no mobile ao clicar fora */}
         {isMobile && sidebarOpen && (
           <div 
             onClick={() => setSidebarOpen(false)}
@@ -261,21 +267,24 @@ const Terminal: React.FC = () => {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.5)',
+              backgroundColor: 'rgba(0,0,0,0.7)',
               zIndex: 90,
               cursor: 'pointer',
+              backdropFilter: 'blur(2px)',
+              WebkitBackdropFilter: 'blur(2px)',
               animation: 'fadeIn 0.3s ease'
             }}
           />
         )}
 
         <aside style={{ 
-          width: isMobile ? '280px' : (sidebarOpen ? '300px' : '0px'), 
+          width: isMobile ? '85%' : (sidebarOpen ? '300px' : '0px'), 
+          maxWidth: '320px',
           flex: '0 0 auto',
           height: '100%', 
           backgroundColor: '#111112', 
           borderRight: (sidebarOpen || !isMobile) ? '1px solid #333' : 'none',
-          transition: isMobile ? 'transform 0.3s ease' : 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -284,51 +293,51 @@ const Terminal: React.FC = () => {
           left: 0,
           top: 0,
           transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
-          boxShadow: isMobile && sidebarOpen ? '10px 0 15px rgba(0,0,0,0.5)' : 'none',
+          boxShadow: isMobile && sidebarOpen ? '10px 0 25px rgba(0,0,0,0.8)' : 'none',
           pointerEvents: isMobile && !sidebarOpen ? 'none' : 'auto'
         }}>
           <div style={{ padding: '20px 15px', backgroundColor: '#1a1a1b', borderBottom: '1px solid #333' }}>
-            <div style={{ fontSize: '10px', color: '#888', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase' }}>Perfil do Estudante</div>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ fontSize: '10px', color: '#888', fontWeight: 700, marginBottom: '12px', textTransform: 'uppercase' }}>Perfil do Estudante</div>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
               <div style={{ 
-                width: '40px', 
-                height: '40px', 
+                width: '44px', 
+                height: '44px', 
                 backgroundColor: '#007acc', 
-                borderRadius: '50%', 
+                borderRadius: '12px', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
                 marginRight: '12px',
-                fontSize: '18px'
+                fontSize: '20px'
               }}>
                 🎓
               </div>
               <div>
-                <div style={{ fontSize: '14px', color: '#fff', fontWeight: 600 }}>{userProfile.rank}</div>
-                <div style={{ fontSize: '11px', color: '#007acc' }}>{userProfile.xp} XP acumulados</div>
+                <div style={{ fontSize: '15px', color: '#fff', fontWeight: 600 }}>{userProfile.rank}</div>
+                <div style={{ fontSize: '12px', color: '#007acc' }}>{userProfile.xp} XP</div>
               </div>
             </div>
             
-            <div style={{ marginTop: '15px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#aaa', marginBottom: '4px' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#aaa', marginBottom: '6px' }}>
                 <span>Progresso Geral</span>
-                <span>{userProfile.percent}%</span>
+                <span style={{ color: '#0dbc79' }}>{userProfile.percent}%</span>
               </div>
-              <div style={{ width: '100%', height: '6px', backgroundColor: '#333', borderRadius: '3px', overflow: 'hidden' }}>
-                <div style={{ width: `${userProfile.percent}%`, height: '100%', backgroundColor: '#0dbc79', transition: 'width 0.5s ease' }}></div>
+              <div style={{ width: '100%', height: '8px', backgroundColor: '#333', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: `${userProfile.percent}%`, height: '100%', backgroundColor: '#0dbc79', transition: 'width 0.8s ease' }}></div>
               </div>
             </div>
           </div>
 
           {currentQuest && (
-            <div style={{ padding: '15px', backgroundColor: '#161617', borderBottom: '1px solid #333' }}>
-              <div style={{ fontSize: '10px', color: '#0dbc79', fontWeight: 700, marginBottom: '5px', textTransform: 'uppercase' }}>Missão Atual</div>
-              <div style={{ fontSize: '13px', color: '#eee', fontWeight: 600, marginBottom: '2px' }}>{currentQuest.title}</div>
-              <div style={{ fontSize: '11px', color: '#888', fontStyle: 'italic' }}>{currentQuest.category}</div>
+            <div style={{ padding: '18px 15px', backgroundColor: '#161617', borderBottom: '1px solid #333' }}>
+              <div style={{ fontSize: '10px', color: '#0dbc79', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>Missão Atual</div>
+              <div style={{ fontSize: '14px', color: '#eee', fontWeight: 600, marginBottom: '4px' }}>{currentQuest.title}</div>
+              <div style={{ fontSize: '12px', color: '#888', fontStyle: 'italic' }}>{currentQuest.category}</div>
             </div>
           )}
 
-          <div style={{ padding: '15px 15px 5px', fontSize: '11px', fontWeight: 700, color: '#007acc', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          <div style={{ padding: '20px 15px 10px', fontSize: '11px', fontWeight: 700, color: '#007acc', textTransform: 'uppercase' }}>
             Guia de Comandos
           </div>
           
@@ -339,30 +348,32 @@ const Terminal: React.FC = () => {
                   onClick={() => toggleGroup(i)}
                   style={{
                     width: '100%',
-                    padding: '12px 15px',
+                    padding: '14px 15px',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    background: expandedGroups[i] ? '#1a1a1b' : 'none',
+                    background: expandedGroups[i] ? 'rgba(13, 188, 121, 0.05)' : 'none',
                     border: 'none',
                     color: expandedGroups[i] ? '#0dbc79' : '#ccc',
-                    fontSize: '12px',
+                    fontSize: '13px',
                     fontWeight: 600,
                     cursor: 'pointer',
                     textAlign: 'left'
                   }}
                 >
                   <span>{group.title}</span>
-                  <span style={{ fontSize: '10px' }}>{expandedGroups[i] ? '▼' : '▶'}</span>
+                  <span style={{ fontSize: '10px', transform: expandedGroups[i] ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>▼</span>
                 </button>
                 
                 {expandedGroups[i] && (
-                  <div style={{ padding: '10px 15px', backgroundColor: '#0f0f10' }}>
+                  <div style={{ padding: '12px 15px', backgroundColor: '#0f0f10' }}>
                     {group.commands.map((cmd, j) => (
-                      <div key={j} style={{ marginBottom: '12px' }}>
-                        <div style={{ fontSize: '12px', color: '#eee', fontFamily: 'monospace', fontWeight: 'bold' }}>{cmd.name}</div>
-                        <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>{cmd.desc}</div>
-                        <div style={{ fontSize: '10px', color: '#444', fontStyle: 'italic', marginTop: '1px' }}>Ex: {cmd.example}</div>
+                      <div key={j} style={{ marginBottom: '16px' }}>
+                        <div style={{ fontSize: '13px', color: '#eee', fontFamily: 'monospace', fontWeight: 'bold' }}>{cmd.name}</div>
+                        <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px' }}>{cmd.desc}</div>
+                        <div style={{ fontSize: '11px', color: '#555', marginTop: '4px', padding: '4px 8px', backgroundColor: '#050505', borderRadius: '4px', border: '1px solid #1a1a1b', fontFamily: 'monospace' }}>
+                          {cmd.example}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -380,40 +391,48 @@ const Terminal: React.FC = () => {
               }}
               style={{
                 width: '100%',
-                padding: '10px',
-                backgroundColor: 'rgba(204, 0, 0, 0.1)',
-                border: '1px solid #cc0000',
-                color: '#cc0000',
-                fontSize: '11px',
+                padding: '12px',
+                backgroundColor: 'rgba(204, 0, 0, 0.05)',
+                border: '1px solid rgba(204, 0, 0, 0.3)',
+                color: '#ff4d4d',
+                fontSize: '12px',
                 fontWeight: 'bold',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                marginBottom: '12px',
-                transition: 'all 0.2s',
+                marginBottom: '15px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px'
+                gap: '10px'
               }}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#cc0000'; e.currentTarget.style.color = '#fff'; }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(204, 0, 0, 0.1)'; e.currentTarget.style.color = '#cc0000'; }}
             >
               <span>🔄</span> REINICIAR JORNADA
             </button>
-            <div style={{ fontSize: '10px', color: '#666', lineHeight: '1.4' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>ARAMAS v1.0</div>
-              Coordenado por: <span style={{ color: '#007acc' }}>Fabiano B. Menegidio</span>
-              <br/>Desenvolvido pelo <span style={{ color: '#007acc' }}>LaBiOmicS - UMC</span>
-              <br/>Recurso Pedagógico
-              <br/>Licença MIT
+            <div style={{ fontSize: '10px', color: '#555', lineHeight: '1.5' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>ARAMAS v1.0.0</div>
+              Coordenação: <span style={{ color: '#007acc' }}>Fabiano B. Menegidio</span>
+              <br/>Desenvolvimento: <span style={{ color: '#007acc' }}>LaBiOmics - UMC</span>
             </div>
           </div>
         </aside>
 
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#151515', position: 'relative' }}>
-          <div style={{ height: '35px', backgroundColor: '#1a1a1b', display: 'flex', alignItems: 'center', padding: '0 15px', fontSize: '11px', color: '#888', borderBottom: '1px solid #111' }}>
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#151515', position: 'relative', width: '100%' }}>
+          <div style={{ 
+            height: '35px', 
+            backgroundColor: '#1a1a1b', 
+            display: 'flex', 
+            alignItems: 'center', 
+            padding: '0 15px', 
+            fontSize: '11px', 
+            color: '#777', 
+            borderBottom: '1px solid #111',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap'
+          }}>
             <span style={{ color: '#0dbc79', marginRight: '8px' }}>➜</span>
-            ARAMAS — bash — dayhoff@UMC
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {isMobile ? 'dayhoff@ARAMAS' : 'ARAMAS — bash — dayhoff@UMC'}
+            </span>
           </div>
           <div 
             ref={terminalRef} 
@@ -427,7 +446,6 @@ const Terminal: React.FC = () => {
             }} 
           />
 
-          {/* Overlay de Jogo (Oculto) */}
           {activeGame && (
             <div style={{
               position: 'absolute',
@@ -450,7 +468,7 @@ const Terminal: React.FC = () => {
                 borderBottom: '1px solid #333'
               }}>
                 <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#0dbc79' }}>
-                  SIMULADOR DE HARDWARE GRÁFICO RETRÔ - {activeGame.toUpperCase()}
+                  SIMULADOR - {activeGame.toUpperCase()}
                 </span>
                 <button 
                   onClick={() => setActiveGame(null)}

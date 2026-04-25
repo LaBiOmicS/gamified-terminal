@@ -314,14 +314,114 @@ body {
 
 /* Responsive */
 @media (max-width: 968px) {
-  .hero .container { flex-direction: column; text-align: center; }
-  .subtitle { margin-left: auto; margin-right: auto; }
-  .cta-button { margin-left: auto; margin-right: auto; }
-  .feature-grid { grid-template-columns: 1fr; }
-  .command-categories { grid-template-columns: repeat(2, 1fr); }
-  .rank-list { flex-direction: column; gap: 30px; }
+  .hero {
+    padding: 60px 0;
+    min-height: auto;
+  }
+
+  .hero .container { 
+    flex-direction: column; 
+    text-align: center; 
+    gap: 40px;
+  }
+
+  .hero-content {
+    order: 2;
+  }
+
+  .hero-visual {
+    order: 1;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .glitch-text { 
+    font-size: 48px; 
+    letter-spacing: -1px;
+  }
+
+  .subtitle { 
+    margin-left: auto; 
+    margin-right: auto; 
+    font-size: 18px;
+    padding: 0 10px;
+  }
+
+  .badges {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cta-button { 
+    margin-left: auto; 
+    margin-right: auto; 
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+
+  .features {
+    padding: 60px 0;
+  }
+
+  .features h2 {
+    font-size: 26px;
+    padding: 0 20px;
+  }
+
+  .feature-grid { 
+    grid-template-columns: 1fr; 
+    padding: 0 10px;
+  }
+
+  .commands-preview {
+    padding: 60px 0;
+  }
+
+  .command-categories { 
+    grid-template-columns: 1fr; 
+    padding: 0 10px;
+  }
+
+  .ranks-info {
+    padding: 60px 0;
+  }
+
+  .rank-list { 
+    flex-direction: column; 
+    gap: 20px; 
+  }
+
   .rank-list::before { display: none; }
-  .footer-content { flex-direction: column; gap: 30px; text-align: center; align-items: center; }
-  .footer-credits { text-align: center; }
-  .glitch-text { font-size: 50px; }
+
+  .rank-item {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .footer-content { 
+    flex-direction: column; 
+    gap: 30px; 
+    text-align: center; 
+    align-items: center; 
+  }
+
+  .footer-credits { 
+    text-align: center; 
+  }
+}
+
+@media (max-width: 480px) {
+  .glitch-text {
+    font-size: 36px;
+  }
+  
+  .hero {
+    padding: 40px 0;
+  }
+
+  .terminal-body {
+    font-size: 12px;
+    padding: 15px;
+  }
 }
