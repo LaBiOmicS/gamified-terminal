@@ -205,7 +205,7 @@ O projeto **ARAMAS** é uma iniciativa acadêmica desenvolvida no âmbito da Bio
 
 Se você utilizar o **ARAMAS** em seu trabalho acadêmico ou pedagógico, por favor, cite-o utilizando o DOI do Zenodo:
 
-> Menegidio, F. B. (2026). ARAMAS: Ambiente Remoto para o Aprendizado e Manipulação de Arquivos e Sistemas (v1.0.2). Zenodo. https://doi.org/10.5281/zenodo.19768375
+> Menegidio, F. B. (2026). ARAMAS: Ambiente Remoto para o Aprendizado e Manipulação de Arquivos e Sistemas (v1.0.3). Zenodo. https://doi.org/10.5281/zenodo.19768375
 
 ---
 
