@@ -441,7 +441,7 @@ const Terminal: React.FC = () => {
               <span>🔄</span> REINICIAR JORNADA
             </button>
             <div style={{ fontSize: '10px', color: '#555', lineHeight: '1.5' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>ARAMAS v1.1.0</div>
+              <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>ARAMAS v1.1.1</div>
               Coordenação: <span style={{ color: '#007acc' }}>Fabiano B. Menegidio</span>
               <br/>Desenvolvimento: <span style={{ color: '#007acc' }}>LaBiOmics - UMC</span>
             </div>

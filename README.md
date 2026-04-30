@@ -1,4 +1,4 @@
-# ARAMAS v1.1.0
+# ARAMAS v1.1.1
 ### Ambiente Remoto para o Aprendizado e Manipulação de Arquivos e Sistemas
 
 <p align="center">
