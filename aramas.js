@@ -11820,7 +11820,7 @@ var Es = class {
 		let s = (e, t = "0") => `# \x1b[${t}m${e}\x1b[0m${" ".repeat(Math.max(0, 61 - e.length))} #`, c = [
 			"#".repeat(65),
 			"# " + " ".repeat(61) + " #",
-			s("ARAMAS v1.0.0", "1;33"),
+			s("ARAMAS v1.1.0", "1;33"),
 			s("Ambiente Remoto para o Aprendizado e Manipulação", "1"),
 			s("de Arquivos e Sistemas", "1"),
 			"# " + " ".repeat(61) + " #",
@@ -12957,7 +12957,7 @@ var Es = class {
 												fontWeight: "bold",
 												marginBottom: "2px"
 											},
-											children: "ARAMAS v1.0.0"
+											children: "ARAMAS v1.1.0"
 										}),
 										"Coordenação: ",
 										/* @__PURE__ */ (0, $.jsx)("span", {
