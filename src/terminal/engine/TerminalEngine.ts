@@ -61,7 +61,7 @@ export class TerminalEngine {
     const banner = [
       '#'.repeat(totalWidth),
       '# ' + ' '.repeat(totalWidth - 4) + ' #',
-      formatLine('ARAMAS v1.0.0', '1;33'),
+      formatLine('ARAMAS v1.1.0', '1;33'),
       formatLine('Ambiente Remoto para o Aprendizado e Manipulação', '1'),
       formatLine('de Arquivos e Sistemas', '1'),
       '# ' + ' '.repeat(totalWidth - 4) + ' #',
