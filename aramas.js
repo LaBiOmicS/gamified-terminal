@@ -10924,7 +10924,108 @@ var Es = class {
 			e.setEnv(""), e.print("Ambiente desativado.");
 		}
 	}
-], Js = class {
+], Js = [{
+	name: "git",
+	description: "O sistema de controle de versão distribuído",
+	help: "git [subcomando] [opções]\n\nSubcomandos comuns:\n  init      Inicializa um repositório\n  status    Mostra o estado do diretório de trabalho\n  add       Adiciona arquivos ao índice (staging)\n  commit    Grava as alterações no repositório\n  log       Exibe o histórico de commits\n  remote    Gerencia repositórios remotos\n  push      Envia alterações para o remoto\n  pull      Recebe alterações do remoto\n  clone     Clona um repositório existente",
+	execute: async (e) => {
+		let t = e.args[0], n = e.args.slice(1);
+		if (!t) {
+			e.print("uso: git <comando> [<args>]\n\nDigite 'git --help' para ver os comandos disponíveis.");
+			return;
+		}
+		let r = () => JSON.parse(localStorage.getItem("git_state") || "{\"init\": false, \"staged\": [], \"commits\": [], \"remotes\": {}}"), i = (e) => localStorage.setItem("git_state", JSON.stringify(e)), a = r();
+		switch (t) {
+			case "init":
+				a.init = !0, i(a), e.vfs.mkdir(e.vfs.resolvePath(".git")), e.print("Repositório Git vazio inicializado em /home/dayhoff/.git/");
+				break;
+			case "status":
+				if (!a.init) {
+					e.printError("fatal: nem um repositório git (nem qualquer um dos diretórios pai): .git");
+					return;
+				}
+				e.print("No ramo main"), a.staged.length === 0 ? e.print("Nada para registrar, diretório de trabalho limpo (ou arquivos não rastreados)") : (e.print("Mudanças para serem registradas:"), a.staged.forEach((t) => e.print(`  \x1b[32mmodificado:   ${t}\x1b[0m`)));
+				break;
+			case "add":
+				if (!a.init) {
+					e.printError("fatal: nem um repositório git");
+					return;
+				}
+				let r = n[0] || ".";
+				a.staged.push(r), i(a), e.print(`Arquivos adicionados ao índice: ${r}`);
+				break;
+			case "commit":
+				if (!a.init) {
+					e.printError("fatal: nem um repositório git");
+					return;
+				}
+				let o = n.indexOf("-m"), s = o === -1 ? "Commit sem mensagem" : n[o + 1];
+				if (a.staged.length === 0) {
+					e.print("Nada para registrar (índice vazio)");
+					return;
+				}
+				let c = {
+					id: Math.random().toString(16).substring(2, 9),
+					msg: s,
+					date: (/* @__PURE__ */ new Date()).toISOString()
+				};
+				a.commits.push(c), a.staged = [], i(a), e.print(`[main ${c.id}] ${s}\n 1 file changed, 1 insertion(+)`);
+				break;
+			case "log":
+				if (!a.init) {
+					e.printError("fatal: nem um repositório git");
+					return;
+				}
+				if (a.commits.length === 0) {
+					e.print("fatal: seu ramo atual 'main' não possui nenhum commit ainda");
+					return;
+				}
+				a.commits.slice().reverse().forEach((t) => {
+					e.print(`\x1b[33mcommit ${t.id}\x1b[0m\nAuthor: dayhoff <dayhoff@labiomics.com>\nDate:   ${t.date}\n\n    ${t.msg}\n`);
+				});
+				break;
+			case "remote":
+				if (!a.init) {
+					e.printError("fatal: nem um repositório git");
+					return;
+				}
+				if (n[0] === "add") {
+					let t = n[1], r = n[2];
+					a.remotes[t] = r, i(a), e.print(`Remoto ${t} adicionado: ${r}`);
+				} else Object.keys(a.remotes).forEach((t) => e.print(t));
+				break;
+			case "push":
+				if (!a.init) {
+					e.printError("fatal: nem um repositório git");
+					return;
+				}
+				let l = n[0] || "origin";
+				if (!a.remotes[l]) {
+					e.printError(`fatal: \'${l}\' não parece ser um repositório git`);
+					return;
+				}
+				e.print(`Enumerando objetos: 5, concluído.\nContando objetos: 100% (5/5), concluído.\nDelta compression using up to 8 threads\nCompressing objects: 100% (3/3), concluído.\nWriting objects: 100% (3/3), 324 bytes | 324.00 KiB/s, concluído.\nTotal 3 (delta 1), reused 0 (delta 0), pack-reused 0\nTo ${a.remotes[l]}\n   ${a.commits[a.commits.length - 1]?.id || "initial"}..main  main -> main`);
+				break;
+			case "clone":
+				let u = n[0];
+				if (!u) {
+					e.printError("fatal: você deve especificar um repositório para clonar");
+					return;
+				}
+				let d = u.split("/").pop()?.replace(".git", "") || "repo";
+				e.print(`Clonando em \'${d}\'...\nremote: Enumerating objects: 12, done.\nremote: Counting objects: 100% (12/12), done.\nremote: Compressing objects: 100% (8/8), done.\nremote: Total 12 (delta 2), reused 10 (delta 1), pack-reused 0\nRecebendo objetos: 100% (12/12), 4.56 KiB | 4.56 MiB/s, concluído.`), e.vfs.mkdir(e.vfs.resolvePath(d));
+				break;
+			case "pull":
+				if (!a.init) {
+					e.printError("fatal: nem um repositório git");
+					return;
+				}
+				e.print("Atualizando branch main...\nremote: Enumerating objects: 4, done.\nremote: Counting objects: 100% (4/4), done.\nUnpacking objects: 100% (4/4), 1.23 KiB | 1.23 MiB/s, concluído.\nFrom github.com:user/repo\n   a1b2c3d..e5f6g7h  main       -> origin/main\nUpdating a1b2c3d..e5f6g7h\nFast-forward\n README.md | 2 +- \n 1 file changed, 1 insertion(+), 1 deletion(-)");
+				break;
+			default: e.print(`git: \'${t}\' não é um comando git. Veja \'git --help\'.`);
+		}
+	}
+}], Ys = class {
 	commands = /* @__PURE__ */ new Map();
 	constructor() {
 		[
@@ -10932,7 +11033,8 @@ var Es = class {
 			...Bs,
 			...Vs,
 			...Hs,
-			...qs
+			...qs,
+			...Js
 		].forEach((e) => {
 			this.commands.set(e.name, e);
 		});
@@ -10966,6 +11068,14 @@ var Es = class {
 			name: "missao",
 			description: "Mostra o objetivo atual",
 			execute: async () => {}
+		}), this.commands.set("exportar", {
+			name: "exportar",
+			description: "Salva seu progresso e arquivos em um backup JSON",
+			execute: async () => {}
+		}), this.commands.set("importar", {
+			name: "importar",
+			description: "Restaura seu progresso a partir de um backup JSON",
+			execute: async () => {}
 		});
 	}
 	getCommand(e) {
@@ -10974,7 +11084,7 @@ var Es = class {
 	getAllCommands() {
 		return Array.from(this.commands.values());
 	}
-}, Ys = [
+}, Xs = [
 	{
 		name: "Novato(a)",
 		minXp: 0
@@ -10999,173 +11109,173 @@ var Es = class {
 		name: "Mestre da Bioinformática",
 		minXp: 3e4
 	}
-], Xs = [
+], Zs = [
 	{
 		id: "so-1",
 		category: "Sistemas Operacionais",
 		title: "Exploração Inicial",
-		description: "Liste os arquivos do seu diretório atual para ver o que há por aqui.",
+		description: "Para começar, você precisa saber o que há no seu diretório atual. Liste os arquivos e pastas disponíveis.",
 		hint: "Use o comando 'ls'.",
 		xp: 100,
 		checkCondition: (e, t) => t === "ls",
-		completionMessage: "Primeiro passo dado!"
+		completionMessage: "Primeiro passo dado! O comando ls é fundamental."
 	},
 	{
 		id: "so-2",
 		category: "Sistemas Operacionais",
 		title: "Arquivos Invisíveis",
-		description: "No Linux, arquivos que começam com ponto (.) são ocultos. Liste todos eles.",
-		hint: "Tente 'ls -a'.",
+		description: "No Linux, arquivos que começam com ponto (.) são ocultos. Liste todos os arquivos, incluindo os ocultos.",
+		hint: "Tente adicionar a flag '-a' ao comando: 'ls -a'.",
 		xp: 150,
 		checkCondition: (e, t, n) => n.includes("ls") && n.includes("-a"),
-		completionMessage: "Você descobriu os segredos do sistema!"
+		completionMessage: "Você descobriu os segredos ocultos do sistema!"
 	},
 	{
 		id: "so-3",
 		category: "Sistemas Operacionais",
 		title: "Onde estou?",
-		description: "Descubra o caminho completo do diretório onde você está trabalhando agora.",
-		hint: "Use 'pwd'.",
+		description: "Às vezes nos perdemos entre pastas. Descubra o caminho completo (path) do diretório onde você está agora.",
+		hint: "Use o comando 'pwd' (Print Working Directory).",
 		xp: 100,
 		checkCondition: (e, t) => t === "pwd",
-		completionMessage: "Localização confirmada."
+		completionMessage: "Localização confirmada! Você está em /home/dayhoff."
 	},
 	{
 		id: "so-4",
 		category: "Sistemas Operacionais",
 		title: "Criando Espaço",
-		description: "Crie uma nova pasta chamada 'experimentos' para organizar seus arquivos.",
-		hint: "Use 'mkdir experimentos'.",
+		description: "Estando no seu diretório inicial (~), crie uma nova pasta chamada 'experimentos' para organizar seus arquivos.",
+		hint: "Use 'mkdir experimentos'. O comando mkdir cria diretórios.",
 		xp: 150,
 		checkCondition: (e) => e.getNode("/home/dayhoff/experimentos") !== null,
-		completionMessage: "Diretório criado com sucesso!"
+		completionMessage: "Diretório criado com sucesso! Organização é tudo."
 	},
 	{
 		id: "so-5",
 		category: "Sistemas Operacionais",
 		title: "Entrando na Pasta",
-		description: "Mude para o diretório 'experimentos' que você acabou de criar.",
-		hint: "Use 'cd experimentos'.",
+		description: "Agora que a pasta existe, mude o seu terminal para dentro do diretório 'experimentos'.",
+		hint: "Use 'cd experimentos'. O comando cd serve para mudar de diretório.",
 		xp: 100,
 		checkCondition: (e) => e.getCwd() === "/home/dayhoff/experimentos",
-		completionMessage: "Navegação concluída."
+		completionMessage: "Navegação concluída. Agora você está \"dentro\" da pasta."
 	},
 	{
 		id: "so-6",
 		category: "Sistemas Operacionais",
 		title: "Novo Registro",
-		description: "Crie um arquivo vazio chamado 'notas.txt' dentro da pasta atual.",
-		hint: "Use 'touch notas.txt'.",
+		description: "Certifique-se de estar dentro de 'experimentos'. Crie um arquivo vazio chamado 'notas.txt' para suas anotações.",
+		hint: "Use 'touch notas.txt'. O comando touch cria arquivos vazios.",
 		xp: 150,
 		checkCondition: (e) => e.getNode("/home/dayhoff/experimentos/notas.txt") !== null,
-		completionMessage: "Arquivo criado!"
+		completionMessage: "Arquivo criado! Você começou a documentar seu trabalho."
 	},
 	{
 		id: "so-7",
 		category: "Sistemas Operacionais",
 		title: "Voltando para Casa",
-		description: "Retorne ao diretório anterior ou ao seu diretório home (~).",
-		hint: "Use 'cd ..' ou apenas 'cd'.",
+		description: "Saia da pasta 'experimentos' e retorne ao seu diretório inicial (~).",
+		hint: "Use 'cd ..' para subir um nível ou apenas 'cd' para ir direto ao home.",
 		xp: 100,
 		checkCondition: (e) => e.getCwd() === "/home/dayhoff",
-		completionMessage: "Bem-vindo de volta."
+		completionMessage: "Bem-vindo de volta ao diretório principal."
 	},
 	{
 		id: "so-8",
 		category: "Sistemas Operacionais",
 		title: "Cópia de Segurança",
-		description: "Faça uma cópia do arquivo 'Dockerfile' para 'Dockerfile.bak'.",
-		hint: "Use 'cp Dockerfile Dockerfile.bak'.",
+		description: "Estando no seu diretório inicial (~), faça uma cópia do arquivo 'Dockerfile' com o nome de 'Dockerfile.bak'.",
+		hint: "A sintaxe é 'cp <origem> <destino>'. Tente 'cp Dockerfile Dockerfile.bak'.",
 		xp: 200,
 		checkCondition: (e) => e.getNode("/home/dayhoff/Dockerfile.bak") !== null,
-		completionMessage: "Backup garantido."
+		completionMessage: "Backup garantido. Sempre bom ter uma cópia!"
 	},
 	{
 		id: "so-9",
 		category: "Sistemas Operacionais",
 		title: "Renomeando",
-		description: "Mude o nome do arquivo 'notas.txt' (que está em experimentos) para 'projeto.txt'.",
-		hint: "Use 'mv experimentos/notas.txt experimentos/projeto.txt'.",
+		description: "Sem sair do seu diretório atual (~), mude o nome do arquivo 'notas.txt' (que está em experimentos) para 'projeto.txt'.",
+		hint: "O comando mv renomeia ou move arquivos. Use 'mv experimentos/notas.txt experimentos/projeto.txt'.",
 		xp: 200,
 		checkCondition: (e) => e.getNode("/home/dayhoff/experimentos/projeto.txt") !== null && e.getNode("/home/dayhoff/experimentos/notas.txt") === null,
-		completionMessage: "Arquivo renomeado."
+		completionMessage: "Arquivo renomeado com sucesso."
 	},
 	{
 		id: "so-10",
 		category: "Sistemas Operacionais",
 		title: "Limpeza Seletiva",
-		description: "Remova o arquivo de backup 'Dockerfile.bak'.",
-		hint: "Use 'rm Dockerfile.bak'.",
+		description: "Agora que você já sabe como copiar, remova o arquivo de backup 'Dockerfile.bak' que você criou anteriormente.",
+		hint: "Use 'rm Dockerfile.bak'. Cuidado: o comando rm é permanente!",
 		xp: 150,
 		checkCondition: (e) => e.getNode("/home/dayhoff/Dockerfile.bak") === null,
-		completionMessage: "Espaço liberado."
+		completionMessage: "Espaço liberado. O sistema agradece."
 	},
 	{
 		id: "so-11",
 		category: "Sistemas Operacionais",
 		title: "Lendo o Conteúdo",
-		description: "Exiba o conteúdo do arquivo 'environment.yml' na tela.",
-		hint: "Use 'cat environment.yml'.",
+		description: "Exiba o conteúdo completo do arquivo 'environment.yml' diretamente no terminal.",
+		hint: "Use o comando 'cat environment.yml'.",
 		xp: 150,
 		checkCondition: (e, t, n) => t === "cat" && n.includes("environment.yml"),
-		completionMessage: "Leitura concluída."
+		completionMessage: "Leitura concluída. Você viu as configurações do ambiente."
 	},
 	{
 		id: "so-12",
 		category: "Sistemas Operacionais",
 		title: "Primeiras Linhas",
-		description: "Veja apenas o topo (cabeçalho) do arquivo 'environment.yml'.",
-		hint: "Use 'head environment.yml'.",
+		description: "Para arquivos grandes, não queremos ler tudo. Veja apenas as primeiras 10 linhas do arquivo 'environment.yml'.",
+		hint: "Use 'head environment.yml'. Por padrão, o head mostra o topo do arquivo.",
 		xp: 150,
 		checkCondition: (e, t) => t === "head",
-		completionMessage: "Cabeçalho visualizado."
+		completionMessage: "Cabeçalho visualizado. Rápido e eficiente."
 	},
 	{
 		id: "so-13",
 		category: "Sistemas Operacionais",
 		title: "Poder de Root",
-		description: "Tente listar o conteúdo do diretório restrito '/root'.",
-		hint: "Use 'sudo ls /root'.",
+		description: "Tente listar o conteúdo do diretório restrito '/root'. Você precisará usar privilégios de administrador.",
+		hint: "Use 'sudo ls /root'. O sudo (superuser do) permite executar comandos como administrador.",
 		xp: 300,
 		checkCondition: (e, t, n) => t === "sudo" && n.includes("ls /root"),
-		completionMessage: "Privilégios administrativos utilizados!"
+		completionMessage: "Privilégios administrativos utilizados! Com grandes poderes..."
 	},
 	{
 		id: "so-14",
 		category: "Sistemas Operacionais",
 		title: "Identidade Digital",
-		description: "Verifique qual é o seu nome de usuário atual no sistema.",
-		hint: "Use 'whoami'.",
+		description: "Verifique qual é o seu nome de usuário atual no sistema para confirmar seus privilégios.",
+		hint: "Use o comando 'whoami'.",
 		xp: 100,
 		checkCondition: (e, t) => t === "whoami",
-		completionMessage: "Você é o dayhoff."
+		completionMessage: "Você é o usuário dayhoff. Identidade confirmada."
 	},
 	{
 		id: "so-15",
 		category: "Sistemas Operacionais",
 		title: "Permissão de Execução",
-		description: "Mude as permissões de 'Makefile' para permitir que seja executado.",
-		hint: "Use 'chmod +x Makefile'.",
+		description: "O arquivo 'Makefile' precisa ser executável. Adicione a permissão de execução (+x) para ele.",
+		hint: "Use 'chmod +x Makefile'. Chmod altera permissões (Change Mode).",
 		xp: 250,
 		checkCondition: (e, t, n) => t === "chmod" && n.includes("+x"),
-		completionMessage: "Agora o arquivo é executável."
+		completionMessage: "Agora o arquivo pode ser executado pelo sistema."
 	},
 	{
 		id: "so-16",
 		category: "Sistemas Operacionais",
 		title: "Saúde do Disco",
-		description: "Verifique o espaço disponível em disco em um formato legível para humanos.",
-		hint: "Use 'df -h'.",
+		description: "Verifique o espaço disponível em todas as partições do disco em um formato de fácil leitura.",
+		hint: "Use 'df -h'. A flag -h significa \"human-readable\" (legível para humanos).",
 		xp: 200,
 		checkCondition: (e, t, n) => t === "df" && n.includes("-h"),
-		completionMessage: "Relatório de armazenamento obtido."
+		completionMessage: "Relatório de armazenamento obtido. Tudo sob controle."
 	},
 	{
 		id: "so-17",
 		category: "Sistemas Operacionais",
 		title: "Uso de Memória",
-		description: "Verifique o consumo de memória RAM do sistema.",
-		hint: "Use 'free -h' ou 'mem'.",
+		description: "Verifique quanto de memória RAM o sistema está utilizando no momento.",
+		hint: "Use o comando 'free -h'. Novamente, o -h ajuda na leitura.",
 		xp: 200,
 		checkCondition: (e, t) => t === "free" || t === "mem",
 		completionMessage: "Status da memória verificado."
@@ -11174,336 +11284,426 @@ var Es = class {
 		id: "so-18",
 		category: "Sistemas Operacionais",
 		title: "Painel de Controle",
-		description: "Veja os processos em execução no sistema em tempo real.",
-		hint: "Use o comando 'top'.",
+		description: "Veja quais processos estão consumindo mais CPU e memória em tempo real.",
+		hint: "Use o comando 'top'. Pressione 'q' para sair do painel no Linux real.",
 		xp: 250,
 		checkCondition: (e, t) => t === "top",
-		completionMessage: "Gerenciador de tarefas aberto."
+		completionMessage: "Gerenciador de tarefas visualizado com sucesso."
 	},
 	{
 		id: "so-19",
 		category: "Sistemas Operacionais",
 		title: "Histórico de Comandos",
-		description: "Reveja os últimos comandos que você digitou nesta sessão.",
-		hint: "Use 'history'.",
+		description: "Esqueceu o que digitou? Reveja a lista dos últimos comandos executados nesta sessão.",
+		hint: "Use o comando 'history'.",
 		xp: 100,
 		checkCondition: (e, t) => t === "history",
-		completionMessage: "Memória do terminal consultada."
+		completionMessage: "Memória do terminal consultada. Útil para repetir tarefas."
 	},
 	{
 		id: "so-20",
 		category: "Sistemas Operacionais",
 		title: "Informações do Sistema",
-		description: "Descubra a versão do kernel e arquitetura do sistema.",
-		hint: "Use 'uname -a'.",
+		description: "Obtenha detalhes sobre a versão do kernel Linux e a arquitetura do processador.",
+		hint: "Use 'uname -a'. O -a mostra todas (all) as informações disponíveis.",
 		xp: 200,
 		checkCondition: (e, t, n) => t === "uname" && n.includes("-a"),
-		completionMessage: "Você conhece o hardware e o kernel agora."
+		completionMessage: "Você conhece o coração do sistema agora."
 	},
 	{
 		id: "data-1",
 		category: "Manipulação de Dados",
 		title: "Coleta Web",
-		description: "Faça o download de um arquivo da rede simulada.",
-		hint: "Use 'wget http://labiomics.com/data.zip'.",
+		description: "Faça o download de um arquivo de dados de um servidor remoto simulado.",
+		hint: "Use 'wget http://labiomics.com/data.zip'. Wget é um coletor web via terminal.",
 		xp: 200,
 		checkCondition: (e, t) => t === "wget" || t === "curl",
-		completionMessage: "Dados coletados com sucesso!"
+		completionMessage: "Dados coletados! Você sabe baixar arquivos via linha de comando."
 	},
 	{
 		id: "data-2",
 		category: "Manipulação de Dados",
 		title: "Compactando Projetos",
-		description: "Empacote a pasta 'experimentos' em um arquivo chamado 'backup.tar'.",
-		hint: "Use 'tar -cvf backup.tar experimentos'.",
+		description: "Estando no seu diretório inicial (~), compacte a pasta 'experimentos' inteira em um arquivo chamado 'backup.tar'.",
+		hint: "Use 'tar -cvf backup.tar experimentos'. Flags: -c (create), -v (verbose), -f (file).",
 		xp: 300,
 		checkCondition: (e, t, n) => t === "tar" && n.includes("-c"),
-		completionMessage: "Pasta empacotada."
+		completionMessage: "Pasta empacotada. Excelente para transferir múltiplos arquivos."
 	},
 	{
 		id: "data-3",
 		category: "Manipulação de Dados",
 		title: "Extração de Dados",
-		description: "Extraia o conteúdo do arquivo 'backup.tar'.",
-		hint: "Use 'tar -xvf backup.tar'.",
+		description: "Agora que você tem um pacote, extraia o conteúdo do arquivo 'backup.tar' no diretório atual.",
+		hint: "Use 'tar -xvf backup.tar'. A flag -x significa extract (extrair).",
 		xp: 300,
 		checkCondition: (e, t, n) => t === "tar" && n.includes("-x"),
-		completionMessage: "Dados extraídos."
+		completionMessage: "Dados extraídos com sucesso."
 	},
 	{
 		id: "data-4",
 		category: "Manipulação de Dados",
 		title: "Busca de Padrões",
-		description: "Encontre todas as ocorrências da palavra 'bioconda' no arquivo 'environment.yml'.",
-		hint: "Use 'grep bioconda environment.yml'.",
+		description: "Encontre todas as linhas que contenham a palavra 'bioconda' dentro do arquivo 'environment.yml'.",
+		hint: "Use 'grep bioconda environment.yml'. Grep é a ferramenta de busca de texto.",
 		xp: 250,
 		checkCondition: (e, t, n) => t === "grep" && n.includes("bioconda"),
-		completionMessage: "Padrão localizado!"
+		completionMessage: "Padrão localizado! Grep é indispensável na Bioinfo."
 	},
 	{
 		id: "data-5",
 		category: "Manipulação de Dados",
 		title: "Contagem de Itens",
-		description: "Conte quantas linhas existem no arquivo 'environment.yml'.",
-		hint: "Use 'wc -l environment.yml'.",
+		description: "Descubra quantas linhas de texto existem no arquivo 'environment.yml'.",
+		hint: "Use 'wc -l environment.yml'. O comando wc (word count) com -l conta linhas.",
 		xp: 200,
 		checkCondition: (e, t, n) => t === "wc" && n.includes("-l"),
-		completionMessage: "Contagem concluída."
+		completionMessage: "Contagem concluída. Você já sabe o tamanho do arquivo."
 	},
 	{
 		id: "data-6",
 		category: "Manipulação de Dados",
 		title: "Mestre dos Pipes",
-		description: "Combine grep e wc para contar quantas vezes a palavra 'samtools' aparece no arquivo.",
-		hint: "Use 'grep samtools environment.yml | wc -l'.",
+		description: "Combine os comandos grep e wc usando um Pipe (|) para contar quantas vezes 'samtools' aparece no arquivo.",
+		hint: "Tente 'grep samtools environment.yml | wc -l'. O Pipe passa a saída de um para o outro.",
 		xp: 400,
 		checkCondition: (e, t, n) => n.includes("|") && n.includes("grep") && n.includes("wc"),
-		completionMessage: "Encanamento (Pipes) dominado!"
+		completionMessage: "Mestre dos Pipes! Você aprendeu a criar fluxos de dados."
 	},
 	{
 		id: "data-7",
 		category: "Manipulação de Dados",
 		title: "Ordenação Alfabética",
-		description: "Ordene as linhas do arquivo 'environment.yml' alfabeticamente.",
-		hint: "Use 'sort environment.yml'.",
+		description: "Coloque as linhas do arquivo 'environment.yml' em ordem alfabética para facilitar a leitura.",
+		hint: "Use o comando 'sort environment.yml'.",
 		xp: 200,
 		checkCondition: (e, t) => t === "sort",
-		completionMessage: "Tudo em ordem."
+		completionMessage: "Tudo em ordem. Organização visual é importante."
 	},
 	{
 		id: "data-8",
 		category: "Manipulação de Dados",
 		title: "Removendo Duplicatas",
-		description: "Ordene e remova linhas repetidas de uma lista.",
-		hint: "Use 'sort lista.txt | uniq'.",
+		description: "Use um pipe para ordenar o arquivo 'lista.txt' e remover todas as linhas repetidas consecutivas.",
+		hint: "Use 'sort lista.txt | uniq'. O comando uniq remove duplicatas de listas ordenadas.",
 		xp: 300,
 		checkCondition: (e, t, n) => n.includes("sort") && n.includes("uniq"),
-		completionMessage: "Lista limpa e única."
+		completionMessage: "Lista limpa e sem duplicatas. Dados prontos para análise."
 	},
 	{
 		id: "data-9",
 		category: "Manipulação de Dados",
 		title: "Substituição de Texto",
-		description: "Troque a palavra 'samtools' por 'bcftools' na saída do texto.",
-		hint: "Use 'sed \"s/samtools/bcftools/g\" environment.yml'.",
+		description: "Substitua todas as ocorrências de 'samtools' por 'bcftools' na exibição do arquivo 'environment.yml'.",
+		hint: "Use 'sed \"s/samtools/bcftools/g\" environment.yml'. Sed é um editor de fluxo potente.",
 		xp: 350,
 		checkCondition: (e, t) => t === "sed",
-		completionMessage: "Edição de fluxo concluída."
+		completionMessage: "Edição de fluxo concluída. Você alterou o texto sem abrir um editor."
 	},
 	{
 		id: "data-10",
 		category: "Manipulação de Dados",
 		title: "Colunas de Dados",
-		description: "Use awk para imprimir apenas a primeira coluna de um texto.",
-		hint: "Use 'awk \"{print $1}\" environment.yml'.",
+		description: "Use a ferramenta awk para extrair e imprimir apenas a primeira coluna de cada linha do arquivo.",
+		hint: "Use 'awk \"{print $1}\" environment.yml'. Awk é excelente para arquivos em colunas.",
 		xp: 400,
 		checkCondition: (e, t) => t === "awk",
-		completionMessage: "Manipulação de colunas efetuada."
+		completionMessage: "Manipulação de colunas efetuada. Útil para arquivos TSV/CSV."
 	},
 	{
 		id: "data-11",
 		category: "Manipulação de Dados",
 		title: "Redirecionamento de Saída",
-		description: "Salve a saída do comando 'ls' em um arquivo chamado 'arquivos.txt'.",
-		hint: "Use 'ls > arquivos.txt'.",
+		description: "Execute o comando 'ls' e salve o resultado em um novo arquivo chamado 'arquivos.txt' em vez de exibir na tela.",
+		hint: "Use 'ls > arquivos.txt'. O símbolo '>' redireciona a saída para um arquivo.",
 		xp: 250,
 		checkCondition: (e) => e.getNode("/home/dayhoff/arquivos.txt") !== null,
-		completionMessage: "Saída capturada no arquivo."
+		completionMessage: "Saída capturada! Você aprendeu a salvar resultados de comandos."
 	},
 	{
 		id: "data-12",
 		category: "Manipulação de Dados",
 		title: "Diferenças de Arquivos",
-		description: "Compare dois arquivos e veja o que mudou entre eles.",
-		hint: "Use 'diff arq1 arq2'.",
+		description: "Compare os arquivos 'arq1' e 'arq2' e veja quais linhas foram alteradas ou adicionadas.",
+		hint: "Use o comando 'diff arq1 arq2'.",
 		xp: 250,
 		checkCondition: (e, t) => t === "diff",
-		completionMessage: "Diferenças detectadas."
+		completionMessage: "Diferenças detectadas. Ótimo para conferir versões de scripts."
 	},
 	{
 		id: "data-13",
 		category: "Manipulação de Dados",
 		title: "Busca de Arquivos",
-		description: "Encontre todos os arquivos com extensão '.yml' no sistema.",
-		hint: "Use 'find . -name \"*.yml\"'.",
+		description: "Encontre todos os arquivos que terminam com '.yml' em qualquer lugar abaixo do diretório atual.",
+		hint: "Use 'find . -name \"*.yml\"'. O ponto (.) indica o diretório atual.",
 		xp: 300,
 		checkCondition: (e, t) => t === "find",
-		completionMessage: "Localizado!"
+		completionMessage: "Localizado! O comando find é muito poderoso."
 	},
 	{
 		id: "data-14",
 		category: "Manipulação de Dados",
 		title: "Processamento em Lote",
-		description: "Use xargs para passar a lista de arquivos para outro comando.",
-		hint: "Use 'find . -name \"*.txt\" | xargs grep \"A\"'.",
+		description: "Use xargs para passar uma lista de nomes de arquivos como argumentos para o comando grep.",
+		hint: "Exemplo: 'find . -name \"*.txt\" | xargs grep \"bioconda\"'.",
 		xp: 450,
 		checkCondition: (e, t, n) => n.includes("xargs"),
-		completionMessage: "Automação avançada com xargs."
+		completionMessage: "Automação avançada! Você sabe processar múltiplos arquivos de uma vez."
 	},
 	{
 		id: "data-15",
 		category: "Manipulação de Dados",
 		title: "Build Automatizado",
-		description: "Use o comando make para compilar o projeto simulado.",
-		hint: "Basta digitar 'make'.",
+		description: "Execute o comando de build padrão para compilar o projeto simulado usando as instruções do Makefile.",
+		hint: "Basta digitar 'make'. O comando make lê o arquivo Makefile e executa as regras.",
 		xp: 500,
 		checkCondition: (e, t) => t === "make",
-		completionMessage: "Sistema compilado."
+		completionMessage: "Sistema compilado com sucesso via Makefile."
+	},
+	{
+		id: "git-1",
+		category: "Versionamento",
+		title: "Iniciando o Repositório",
+		description: "O primeiro passo para usar Git é transformar uma pasta comum em um repositório. Inicialize o Git no seu diretório atual.",
+		hint: "Use o comando 'git init'. Isso criará uma pasta oculta .git.",
+		xp: 200,
+		checkCondition: (e, t, n) => n.includes("git init"),
+		completionMessage: "Repositório inicializado! Agora o Git está vigiando suas mudanças."
+	},
+	{
+		id: "git-2",
+		category: "Versionamento",
+		title: "Verificando o Estado",
+		description: "É fundamental saber o que o Git está vendo. Verifique o estado atual do seu repositório.",
+		hint: "Use 'git status'. Ele mostrará arquivos modificados, novos ou prontos para commit.",
+		xp: 150,
+		checkCondition: (e, t, n) => n.includes("git status"),
+		completionMessage: "Estado verificado. O status é seu melhor amigo no Git."
+	},
+	{
+		id: "git-3",
+		category: "Versionamento",
+		title: "Preparando Arquivos",
+		description: "Antes de registrar uma mudança, você deve \"estagiar\" (stage) os arquivos. Adicione o arquivo 'environment.yml' ao índice.",
+		hint: "Use 'git add environment.yml'. O add prepara as mudanças para o commit.",
+		xp: 200,
+		checkCondition: (e, t, n) => n.includes("git add"),
+		completionMessage: "Arquivo estagiado! Ele está na \"área de preparação\"."
+	},
+	{
+		id: "git-4",
+		category: "Versionamento",
+		title: "Registrando Mudanças",
+		description: "Agora grave as mudanças estagiadas no histórico do repositório com uma mensagem descritiva.",
+		hint: "Use 'git commit -m \"Adicionando configurações\"'. O -m define a mensagem.",
+		xp: 300,
+		checkCondition: (e, t, n) => n.includes("git commit"),
+		completionMessage: "Commit realizado! Você criou um ponto na história do seu projeto."
+	},
+	{
+		id: "git-5",
+		category: "Versionamento",
+		title: "Histórico de Versões",
+		description: "Veja a lista de todos os commits (registros) feitos até agora no repositório.",
+		hint: "Use 'git log'. Cada commit tem um autor, data e um código único (hash).",
+		xp: 200,
+		checkCondition: (e, t, n) => n.includes("git log"),
+		completionMessage: "Logs visualizados. Você pode viajar no tempo com o Git!"
+	},
+	{
+		id: "git-6",
+		category: "Versionamento",
+		title: "Conectando ao GitHub",
+		description: "Para enviar seu código para o GitHub, você precisa adicionar um \"remoto\". Adicione um remoto chamado 'origin'.",
+		hint: "Use 'git remote add origin https://github.com/usuario/projeto.git'.",
+		xp: 300,
+		checkCondition: (e, t, n) => n.includes("git remote add"),
+		completionMessage: "Remoto configurado! Seu repositório local agora conhece o GitHub."
+	},
+	{
+		id: "git-7",
+		category: "Versionamento",
+		title: "Enviando para a Nuvem",
+		description: "Suba seus commits locais para o servidor remoto (GitHub) no ramo main.",
+		hint: "Use 'git push origin main'. Isso sincroniza seu trabalho com o mundo.",
+		xp: 400,
+		checkCondition: (e, t, n) => n.includes("git push"),
+		completionMessage: "Push concluído! Seu código agora está seguro no GitHub."
+	},
+	{
+		id: "git-8",
+		category: "Versionamento",
+		title: "Colaborando e Clonando",
+		description: "Baixe um projeto existente do GitHub para o seu computador criando uma cópia local.",
+		hint: "Use 'git clone https://github.com/outro/projeto.git'.",
+		xp: 350,
+		checkCondition: (e, t, n) => n.includes("git clone"),
+		completionMessage: "Repositório clonado! É assim que começamos a colaborar em projetos abertos."
+	},
+	{
+		id: "git-9",
+		category: "Versionamento",
+		title: "Sincronizando Mudanças",
+		description: "Traga as últimas atualizações do repositório remoto para a sua máquina local.",
+		hint: "Use 'git pull origin main'. Isso mantém seu código local atualizado.",
+		xp: 300,
+		checkCondition: (e, t, n) => n.includes("git pull"),
+		completionMessage: "Repositório atualizado! Você está em sincronia com a equipe."
 	},
 	{
 		id: "science-1",
 		category: "Computação Científica",
 		title: "Ambiente de Análise",
-		description: "Crie um ambiente virtual chamado 'genomica' usando mamba.",
-		hint: "Use 'mamba create -n genomica'.",
+		description: "Crie um novo ambiente virtual isolado chamado 'genomica' usando o gerenciador de pacotes mamba.",
+		hint: "Use 'mamba create -n genomica'. Ambientes isolados evitam conflitos de software.",
 		xp: 400,
 		checkCondition: () => JSON.parse(localStorage.getItem("terminal_envs") || "[]").includes("genomica"),
-		completionMessage: "Ambiente isolado pronto!"
+		completionMessage: "Ambiente criado! Isolamento é a chave para a reprodutibilidade."
 	},
 	{
 		id: "science-2",
 		category: "Computação Científica",
 		title: "Ativando Ferramentas",
-		description: "Ative o ambiente 'genomica' para usá-lo.",
-		hint: "Use 'conda activate genomica'.",
+		description: "Ative o ambiente 'genomica' que você acabou de criar para começar a instalar ferramentas bioinformáticas.",
+		hint: "Use 'conda activate genomica'. Note que o prompt mudará para indicar o ambiente ativo.",
 		xp: 300,
 		checkCondition: () => localStorage.getItem("current_env") === "genomica",
-		completionMessage: "Você está no ambiente genomica."
+		completionMessage: "Ambiente ativo. Agora as ferramentas instaladas ficarão aqui."
 	},
 	{
 		id: "science-3",
 		category: "Computação Científica",
 		title: "Instalando Samtools",
-		description: "Instale a ferramenta samtools no ambiente atual.",
-		hint: "Use 'mamba install samtools'.",
+		description: "Estando no ambiente 'genomica', instale a ferramenta 'samtools' usando o mamba.",
+		hint: "Use 'mamba install samtools'. Isso simula a instalação via repositório Bioconda.",
 		xp: 400,
 		checkCondition: () => {
 			let e = localStorage.getItem("current_env") || "base";
 			return JSON.parse(localStorage.getItem(`pkgs_${e}`) || "[]").includes("samtools");
 		},
-		completionMessage: "Software instalado com sucesso."
+		completionMessage: "Software instalado! Você agora tem o samtools disponível."
 	},
 	{
 		id: "science-4",
 		category: "Computação Científica",
 		title: "Sequências de DNA",
-		description: "Visualize a frequência de bases em uma sequência curta.",
-		hint: "Use 'bio-count ATGCATGC'.",
+		description: "Utilize a ferramenta bio-count para analisar a frequência de nucleotídeos (A, T, G, C) em uma sequência.",
+		hint: "Use 'bio-count ATGCATGC'. Tente com diferentes sequências!",
 		xp: 300,
 		checkCondition: (e, t) => t === "bio-count",
-		completionMessage: "Análise de nucleotídeos concluída."
+		completionMessage: "Análise concluída. Ferramentas específicas de bioinfo são o seu arsenal."
 	},
 	{
 		id: "science-5",
 		category: "Computação Científica",
 		title: "Visualizador Genômico",
-		description: "Abra um arquivo FASTA simulado no visualizador colorido.",
-		hint: "Use 'fasta-view genome.fa'.",
+		description: "Visualize o conteúdo formatado e colorido do arquivo de genoma 'ref.fa'.",
+		hint: "Use 'fasta-view ref.fa'. Essa ferramenta facilita a leitura visual de arquivos FASTA.",
 		xp: 300,
 		checkCondition: (e, t) => t === "fasta-view",
-		completionMessage: "Visualização completa."
+		completionMessage: "Visualização completa. Ver as sequências ajuda a entender os dados."
 	},
 	{
 		id: "science-6",
 		category: "Computação Científica",
 		title: "Qualidade de Reads",
-		description: "Execute o FastQC para checar a qualidade dos dados de sequenciamento.",
-		hint: "Use 'fastqc reads.fq'.",
+		description: "Execute o FastQC no arquivo de leituras 'reads.fq' para gerar um relatório de qualidade.",
+		hint: "Use 'fastqc reads.fq'. O controle de qualidade é sempre o primeiro passo.",
 		xp: 500,
 		checkCondition: (e, t) => t === "fastqc",
-		completionMessage: "Relatório de qualidade gerado."
+		completionMessage: "Controle de Qualidade executado. Analise os gráficos gerados!"
 	},
 	{
 		id: "science-7",
 		category: "Computação Científica",
-		title: "Trimming de Leituras",
-		description: "Use o fastp para limpar as leituras de baixa qualidade.",
-		hint: "Use 'fastp -i reads.fq -o clean.fq'.",
+		title: "Limpeza de Leituras",
+		description: "Use a ferramenta fastp para remover adaptadores e bases de baixa qualidade do arquivo 'reads.fq'.",
+		hint: "Use 'fastp -i reads.fq -o clean.fq'. Flags: -i (input), -o (output).",
 		xp: 500,
 		checkCondition: (e, t) => t === "fastp",
-		completionMessage: "Reads limpas."
+		completionMessage: "Leituras limpas (trimmed). Seus dados estão prontos para o alinhamento."
 	},
 	{
 		id: "science-8",
 		category: "Computação Científica",
 		title: "Indexação do Genoma",
-		description: "Prepare o índice do genoma de referência usando bwa.",
-		hint: "Use 'bwa index ref.fa'.",
+		description: "Antes de alinhar, você precisa criar um índice do genoma de referência ('ref.fa') usando a ferramenta bwa.",
+		hint: "Use 'bwa index ref.fa'. Isso cria arquivos auxiliares para acelerar o mapeamento.",
 		xp: 400,
 		checkCondition: (e, t, n) => t === "bwa" && n.includes("index"),
-		completionMessage: "Genoma indexado."
+		completionMessage: "Genoma indexado. O bwa agora sabe navegar rapidamente pela referência."
 	},
 	{
 		id: "science-9",
 		category: "Computação Científica",
 		title: "Alinhamento de Reads",
-		description: "Mapeie as reads contra o genoma de referência usando bwa mem.",
-		hint: "Use 'bwa mem ref.fa reads.fq > aln.sam'.",
+		description: "Mapeie as sequências ('reads.fq') contra a referência ('ref.fa') e salve o resultado em 'aln.sam'.",
+		hint: "Use 'bwa mem ref.fa reads.fq > aln.sam'. bwa mem é o padrão para alinhamento.",
 		xp: 600,
 		checkCondition: (e, t, n) => t === "bwa" && n.includes("mem"),
-		completionMessage: "Alinhamento concluído."
+		completionMessage: "Alinhamento concluído! Você mapeou as reads no genoma."
 	},
 	{
 		id: "science-10",
 		category: "Computação Científica",
 		title: "Ordenação de BAM",
-		description: "Use samtools para ordenar o arquivo de alinhamento.",
-		hint: "Use 'samtools sort aln.bam -o aln.sorted.bam'.",
+		description: "Converta e ordene seu arquivo de alinhamento para que ele possa ser processado com eficiência.",
+		hint: "Use 'samtools sort aln.sam -o aln.sorted.bam'. Arquivos BAM são versões binárias comprimidas de SAM.",
 		xp: 400,
 		checkCondition: (e, t, n) => t === "samtools" && n.includes("sort"),
-		completionMessage: "Arquivo BAM ordenado."
+		completionMessage: "Arquivo ordenado e convertido para BAM. Menor espaço e maior velocidade."
 	},
 	{
 		id: "science-11",
 		category: "Computação Científica",
 		title: "Chamada de Variantes",
-		description: "Use bcftools para identificar mutações (SNPs).",
-		hint: "Use 'bcftools call -mv aln.bam > var.vcf'.",
+		description: "Use o bcftools para identificar polimorfismos e mutações (SNPs) a partir do alinhamento ordenado.",
+		hint: "Use 'bcftools call -mv aln.sorted.bam > var.vcf'. O resultado é um arquivo VCF (Variant Call Format).",
 		xp: 700,
 		checkCondition: (e, t) => t === "bcftools",
-		completionMessage: "Variantes identificadas."
+		completionMessage: "Variantes identificadas! Você encontrou as diferenças genéticas."
 	},
 	{
 		id: "science-12",
 		category: "Computação Científica",
 		title: "Pipeline Snakemake",
-		description: "Simule a execução de um pipeline completo usando Snakemake.",
-		hint: "Use 'snakemake -n'.",
+		description: "Simule a execução de um pipeline de bioinformática completo definido no arquivo 'Snakefile'.",
+		hint: "Use 'snakemake -n'. A flag -n (dry-run) apenas mostra o que seria executado.",
 		xp: 800,
 		checkCondition: (e, t) => t === "snakemake",
-		completionMessage: "Workflow automatizado!"
+		completionMessage: "Workflow automatizado! Snakemake gerencia a complexidade para você."
 	},
 	{
 		id: "science-13",
 		category: "Computação Científica",
 		title: "Container Docker",
-		description: "Baixe uma imagem de software pronta do Docker Hub.",
-		hint: "Use 'docker pull bioconda/samtools'.",
+		description: "Baixe uma imagem de software pré-configurada do repositório Bioconda no Docker Hub.",
+		hint: "Use 'docker pull bioconda/samtools'. Containers garantem que o software rode igual em qualquer lugar.",
 		xp: 500,
 		checkCondition: (e, t, n) => t === "docker" && n.includes("pull"),
-		completionMessage: "Imagem baixada."
+		completionMessage: "Imagem Docker baixada. Você domina o uso de containers."
 	},
 	{
 		id: "science-14",
 		category: "Computação Científica",
 		title: "HPC com Singularity",
-		description: "Execute um shell dentro de um container Singularity (.sif).",
-		hint: "Use 'singularity shell image.sif'.",
+		description: "Abra um terminal interativo dentro de um container Singularity, comum em clusters de alto desempenho (HPC).",
+		hint: "Use 'singularity shell image.sif'. Singularity é a alternativa segura ao Docker para HPC.",
 		xp: 600,
 		checkCondition: (e, t) => t === "singularity" || t === "apptainer",
-		completionMessage: "Ambiente HPC isolado."
+		completionMessage: "Ambiente HPC isolado acessado com sucesso."
 	},
 	{
 		id: "science-15",
 		category: "Computação Científica",
 		title: "Fila do Cluster",
-		description: "Verifique os jobs que estão rodando no cluster HPC.",
-		hint: "Use o comando 'squeue'.",
+		description: "Verifique o status da fila de processamento do cluster Slurm para monitorar seus jobs.",
+		hint: "Use o comando 'squeue'. Ele lista todos os jobs aguardando ou rodando no cluster.",
 		xp: 400,
 		checkCondition: (e, t) => t === "squeue",
-		completionMessage: "Status do cluster verificado."
+		completionMessage: "Status do cluster verificado. Seu treinamento básico está completo!"
 	}
-], Zs = [
+], Qs = [
 	{
 		id: "admin_badge",
 		name: "Administrador(a)",
@@ -11525,7 +11725,7 @@ var Es = class {
 		icon: "🧪",
 		condition: (e) => e.envCount >= 2
 	}
-], Qs = class {
+], $s = class {
 	currentQuestIndex = 0;
 	totalXp = 0;
 	stats = {
@@ -11554,19 +11754,19 @@ var Es = class {
 		}));
 	}
 	getRank() {
-		return [...Ys].reverse().find((e) => this.totalXp >= e.minXp) || Ys[0];
+		return [...Xs].reverse().find((e) => this.totalXp >= e.minXp) || Xs[0];
 	}
 	getXP() {
 		return this.totalXp;
 	}
 	getProgressPercentage() {
-		return Math.round(this.currentQuestIndex / Xs.length * 100);
+		return Math.round(this.currentQuestIndex / Zs.length * 100);
 	}
 	getCurrentQuest() {
-		return this.currentQuestIndex < Xs.length ? Xs[this.currentQuestIndex] : null;
+		return this.currentQuestIndex < Zs.length ? Zs[this.currentQuestIndex] : null;
 	}
 	getAchievements() {
-		return Zs.filter((e) => e.condition(this.stats));
+		return Qs.filter((e) => e.condition(this.stats));
 	}
 	reset() {
 		this.isResetting = !0, this.currentQuestIndex = 0, this.totalXp = 0, this.stats = {
@@ -11590,7 +11790,7 @@ var Es = class {
 		}
 		return this.saveState(), null;
 	}
-}, $s = class {
+}, ec = class {
 	vfs;
 	registry;
 	questManager;
@@ -11601,34 +11801,38 @@ var Es = class {
 	onStateChange;
 	promptStyle = "bash";
 	isResetting = !1;
+	isMobile = !1;
+	lastInputTime = 0;
+	lastInputData = "";
+	customInputHandler = null;
 	currentUser = "dayhoff";
 	currentEnv = "";
-	constructor(e, t) {
-		this.terminal = e, this.onStateChange = t;
-		let n = localStorage.getItem("vfs_state");
-		this.vfs = new Rs(n ? JSON.parse(n) : void 0), this.registry = new Js(), this.questManager = new Qs();
-		let r = localStorage.getItem("prompt_style");
-		r && (this.promptStyle = r);
-		let i = localStorage.getItem("current_user");
-		i && (this.currentUser = i);
-		let a = localStorage.getItem("current_env");
-		a && (this.currentEnv = a), this.terminal.onData((e) => this.handleData(e));
-		let o = (e, t = "0") => `# \x1b[${t}m${e}\x1b[0m${" ".repeat(Math.max(0, 61 - e.length))} #`, s = [
+	constructor(e, t, n = !1) {
+		this.terminal = e, this.onStateChange = t, this.isMobile = n;
+		let r = localStorage.getItem("vfs_state");
+		this.vfs = new Rs(r ? JSON.parse(r) : void 0), this.registry = new Ys(), this.questManager = new $s();
+		let i = localStorage.getItem("prompt_style");
+		i && (this.promptStyle = i);
+		let a = localStorage.getItem("current_user");
+		a && (this.currentUser = a);
+		let o = localStorage.getItem("current_env");
+		o && (this.currentEnv = o), this.terminal.onData((e) => this.handleData(e));
+		let s = (e, t = "0") => `# \x1b[${t}m${e}\x1b[0m${" ".repeat(Math.max(0, 61 - e.length))} #`, c = [
 			"#".repeat(65),
 			"# " + " ".repeat(61) + " #",
-			o("ARAMAS v1.0.0", "1;33"),
-			o("Ambiente Remoto para o Aprendizado e Manipulação", "1"),
-			o("de Arquivos e Sistemas", "1"),
+			s("ARAMAS v1.0.0", "1;33"),
+			s("Ambiente Remoto para o Aprendizado e Manipulação", "1"),
+			s("de Arquivos e Sistemas", "1"),
 			"# " + " ".repeat(61) + " #",
-			o("Desenvolvido por: LaBiOmicS - UMC", "1;32"),
-			o("Terminal Educacional de Linux e Bioinformática", "1;32"),
+			s("Desenvolvido por: LaBiOmicS - UMC", "1;32"),
+			s("Terminal Educacional de Linux e Bioinformática", "1;32"),
 			"# " + " ".repeat(61) + " #",
-			o("Digite 'ajuda' para começar a explorar.", "1;36"),
-			o("Digite 'missao' para ver seus objetivos.", "1;36"),
+			s("Digite 'ajuda' para começar a explorar.", "1;36"),
+			s("Digite 'missao' para ver seus objetivos.", "1;36"),
 			"# " + " ".repeat(61) + " #",
 			"#".repeat(65)
 		];
-		this.terminal.write("\x1B[1;34m"), s.forEach((e) => this.terminal.write(e + "\r\n")), this.terminal.write("\x1B[0m"), this.printPrompt();
+		this.terminal.write("\x1B[1;34m"), c.forEach((e) => this.terminal.write(e + "\r\n")), this.terminal.write("\x1B[0m"), this.printPrompt();
 	}
 	getVFS() {
 		return this.vfs;
@@ -11646,7 +11850,7 @@ var Es = class {
 		this.terminal.write(e + "\r\n"), await this.executeCommand(e), this.printPrompt();
 	}
 	async resetSystem() {
-		this.isResetting = !0, this.questManager.reset(), localStorage.clear(), window.location.reload();
+		this.isResetting = !0, this.questManager.reset(), localStorage.clear(), localStorage.removeItem("git_state"), window.location.reload();
 	}
 	printPrompt() {
 		let e = this.vfs.getCwd().replace("/home/dayhoff", "~"), t = this.currentUser, n = this.currentEnv ? `(${this.currentEnv}) ` : "", r = t === "root" ? "#" : "$";
@@ -11666,10 +11870,21 @@ var Es = class {
 		this.terminal.scrollToBottom();
 	}
 	async handleData(e) {
+		if (this.isMobile) {
+			let t = Date.now();
+			if (e === this.lastInputData && t - this.lastInputTime < 50) return;
+			this.lastInputData = e, this.lastInputTime = t;
+		}
+		if (this.customInputHandler) {
+			await this.customInputHandler(e);
+			return;
+		}
 		switch (e) {
 			case "\r":
+			case "\n":
 				await this.handleEnter();
 				break;
+			case "\b":
 			case "":
 				this.handleBackspace();
 				break;
@@ -11679,7 +11894,7 @@ var Es = class {
 			case "\x1B[B":
 				this.handleHistory(1);
 				break;
-			default: e >= " " && e <= "~" && (this.currentLine += e, this.terminal.write(e));
+			default: (e >= " " || e.length === 1 && e.charCodeAt(0) > 127) && (this.currentLine += e, this.terminal.write(e));
 		}
 	}
 	saveState() {
@@ -11771,12 +11986,55 @@ var Es = class {
 			return;
 		}
 		if (i === "reset") {
-			this.terminal.write("\x1B[1;31m⚠ PERIGO: Esta ação apagará permanentemente todo o seu progresso, XP e arquivos.\x1B[0m\r\n"), this.terminal.write("Confirmar reinicialização do sistema? (s/n): ");
-			let e = async (e) => {
-				e.toLowerCase() === "s" ? await this.resetSystem() : (this.terminal.write("\r\n\x1B[1;32mOperação cancelada.\x1B[0m\r\n"), this.printPrompt()), this.terminal.onData((e) => this.handleData(e));
-			}, t = this.terminal.onData((n) => {
-				t.dispose(), e(n);
+			this.terminal.write("\x1B[1;31m⚠ PERIGO: Esta ação apagará permanentemente todo o seu progresso, XP e arquivos.\x1B[0m\r\n"), this.terminal.write("Confirmar reinicialização do sistema? (s/n): "), this.customInputHandler = async (e) => {
+				let t = e.toLowerCase();
+				t === "s" ? (this.customInputHandler = null, await this.resetSystem()) : (t === "n" || e === "\r" || e === "\n") && (this.customInputHandler = null, this.terminal.write("\r\n\x1B[1;32mOperação cancelada.\x1B[0m\r\n"), this.printPrompt());
+			};
+			return;
+		}
+		if (i === "exportar") {
+			this.terminal.write("\r\n\x1B[1;34mGerando backup do progresso...\x1B[0m\r\n");
+			let e = {};
+			[
+				"vfs_state",
+				"quest_manager_state",
+				"terminal_envs",
+				"current_env",
+				"prompt_style",
+				"current_user",
+				"git_state"
+			].forEach((t) => {
+				let n = localStorage.getItem(t);
+				n && (e[t] = n);
+			}), JSON.parse(localStorage.getItem("terminal_envs") || "[\"base\"]").forEach((t) => {
+				let n = `pkgs_${t}`, r = localStorage.getItem(n);
+				r && (e[n] = r);
 			});
+			let t = new Blob([JSON.stringify(e, null, 2)], { type: "application/json" }), n = URL.createObjectURL(t), r = document.createElement("a");
+			r.href = n, r.download = `aramas_backup_${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.json`, document.body.appendChild(r), r.click(), document.body.removeChild(r), URL.revokeObjectURL(n), this.terminal.write("\x1B[1;32m✅ Backup exportado com sucesso!\x1B[0m\r\n");
+			return;
+		}
+		if (i === "importar") {
+			this.terminal.write("\r\n\x1B[1;33mSelecione o arquivo de backup (.json) para restaurar.\x1B[0m\r\n");
+			let e = document.createElement("input");
+			e.type = "file", e.accept = ".json", e.onchange = (e) => {
+				let t = e.target.files[0];
+				if (!t) return;
+				let n = new FileReader();
+				n.onload = (e) => {
+					try {
+						let t = JSON.parse(e.target.result);
+						if (!t.vfs_state || !t.quest_manager_state) throw Error("Arquivo de backup inválido ou corrompido.");
+						this.terminal.write("\x1B[1;31m⚠ ATENÇÃO: Restaurar um backup irá sobrescrever todo o seu progresso atual.\x1B[0m\r\n"), this.terminal.write("Confirmar restauração? (s/n): "), this.customInputHandler = (e) => {
+							e.toLowerCase() === "s" ? (localStorage.clear(), Object.keys(t).forEach((e) => {
+								localStorage.setItem(e, t[e]);
+							}), this.terminal.write("\r\n\x1B[1;32mRestaurando sistema...\x1B[0m\r\n"), window.location.reload()) : (this.terminal.write("\r\n\x1B[1;34mOperação cancelada.\x1B[0m\r\n"), this.printPrompt()), this.customInputHandler = null;
+						};
+					} catch (e) {
+						this.terminal.write(`\r\n\x1b[1;31mErro ao importar: ${e}\x1b[0m\r\n`), this.printPrompt();
+					}
+				}, n.readAsText(t);
+			}, e.click();
 			return;
 		}
 		if (i === "tema") {
@@ -11816,7 +12074,7 @@ var Es = class {
 			}
 		} else this.terminal.write(`zsh: comando não encontrado: ${i}\r\n`);
 	}
-}, ec = /* @__PURE__ */ r(((e) => {
+}, tc = /* @__PURE__ */ r(((e) => {
 	var t = Symbol.for("react.transitional.element"), n = Symbol.for("react.fragment");
 	function r(e, n, r) {
 		var i = null;
@@ -11831,7 +12089,7 @@ var Es = class {
 		};
 	}
 	e.Fragment = n, e.jsx = r, e.jsxs = r;
-})), tc = /* @__PURE__ */ r(((e) => {
+})), nc = /* @__PURE__ */ r(((e) => {
 	process.env.NODE_ENV !== "production" && (function() {
 		function t(e) {
 			if (e == null) return null;
@@ -11990,10 +12248,10 @@ var Es = class {
 		};
 	})();
 })), $ = (/* @__PURE__ */ r(((e, t) => {
-	process.env.NODE_ENV === "production" ? t.exports = ec() : t.exports = tc();
-})))(), nc = () => {
+	process.env.NODE_ENV === "production" ? t.exports = tc() : t.exports = nc();
+})))(), rc = () => {
 	let r = t(null), i = t(null), a = t(null), o = t(null), [s, c] = n(null), [l, u] = n({
-		rank: Ys[0].name,
+		rank: Xs[0].name,
 		xp: 0,
 		achievements: [],
 		percent: 0
@@ -12025,7 +12283,8 @@ var Es = class {
 			},
 			fontFamily: "\"Fira Code\", Menlo, Monaco, \"Courier New\", monospace",
 			fontSize: p ? 12 : 14,
-			allowProposedApi: !0
+			allowProposedApi: !0,
+			screenReaderMode: p
 		}), s = new Ls();
 		n.loadAddon(s), n.open(r.current), requestAnimationFrame(e), i.current = n, a.current = s;
 		let l = () => {
@@ -12044,7 +12303,7 @@ var Es = class {
 				});
 			}
 		};
-		o.current = new $s(n, l), l();
+		o.current = new ec(n, l, p), l();
 		let d = setTimeout(e, 100);
 		return () => {
 			window.removeEventListener("resize", t), clearTimeout(d), n.dispose();
@@ -12619,54 +12878,101 @@ var Es = class {
 								backgroundColor: "#0a0a0b",
 								borderTop: "1px solid #333"
 							},
-							children: [/* @__PURE__ */ (0, $.jsxs)("button", {
-								onClick: () => {
-									o.current && window.confirm("Você tem certeza que deseja resetar todo o seu progresso? Isso apagará todos os arquivos criados e seu XP.") && o.current.resetSystem();
-								},
-								style: {
-									width: "100%",
-									padding: "12px",
-									backgroundColor: "rgba(204, 0, 0, 0.05)",
-									border: "1px solid rgba(204, 0, 0, 0.3)",
-									color: "#ff4d4d",
-									fontSize: "12px",
-									fontWeight: "bold",
-									borderRadius: "8px",
-									cursor: "pointer",
-									marginBottom: "15px",
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									gap: "10px"
-								},
-								children: [/* @__PURE__ */ (0, $.jsx)("span", { children: "🔄" }), " REINICIAR JORNADA"]
-							}), /* @__PURE__ */ (0, $.jsxs)("div", {
-								style: {
-									fontSize: "10px",
-									color: "#555",
-									lineHeight: "1.5"
-								},
-								children: [
-									/* @__PURE__ */ (0, $.jsx)("div", {
+							children: [
+								/* @__PURE__ */ (0, $.jsxs)("div", {
+									style: {
+										display: "flex",
+										gap: "10px",
+										marginBottom: "10px"
+									},
+									children: [/* @__PURE__ */ (0, $.jsx)("button", {
+										onClick: () => o.current?.triggerCommand("exportar"),
 										style: {
+											flex: 1,
+											padding: "10px",
+											backgroundColor: "rgba(0, 122, 204, 0.1)",
+											border: "1px solid rgba(0, 122, 204, 0.3)",
+											color: "#007acc",
+											fontSize: "11px",
 											fontWeight: "bold",
-											marginBottom: "2px"
+											borderRadius: "6px",
+											cursor: "pointer",
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+											gap: "5px"
 										},
-										children: "ARAMAS v1.0.0"
-									}),
-									"Coordenação: ",
-									/* @__PURE__ */ (0, $.jsx)("span", {
-										style: { color: "#007acc" },
-										children: "Fabiano B. Menegidio"
-									}),
-									/* @__PURE__ */ (0, $.jsx)("br", {}),
-									"Desenvolvimento: ",
-									/* @__PURE__ */ (0, $.jsx)("span", {
-										style: { color: "#007acc" },
-										children: "LaBiOmics - UMC"
-									})
-								]
-							})]
+										children: "💾 SALVAR"
+									}), /* @__PURE__ */ (0, $.jsx)("button", {
+										onClick: () => o.current?.triggerCommand("importar"),
+										style: {
+											flex: 1,
+											padding: "10px",
+											backgroundColor: "rgba(13, 188, 121, 0.1)",
+											border: "1px solid rgba(13, 188, 121, 0.3)",
+											color: "#0dbc79",
+											fontSize: "11px",
+											fontWeight: "bold",
+											borderRadius: "6px",
+											cursor: "pointer",
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+											gap: "5px"
+										},
+										children: "📂 CARREGAR"
+									})]
+								}),
+								/* @__PURE__ */ (0, $.jsxs)("button", {
+									onClick: () => {
+										o.current && window.confirm("Você tem certeza que deseja resetar todo o seu progresso? Isso apagará todos os arquivos criados e seu XP.") && o.current.resetSystem();
+									},
+									style: {
+										width: "100%",
+										padding: "12px",
+										backgroundColor: "rgba(204, 0, 0, 0.05)",
+										border: "1px solid rgba(204, 0, 0, 0.3)",
+										color: "#ff4d4d",
+										fontSize: "12px",
+										fontWeight: "bold",
+										borderRadius: "8px",
+										cursor: "pointer",
+										marginBottom: "15px",
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										gap: "10px"
+									},
+									children: [/* @__PURE__ */ (0, $.jsx)("span", { children: "🔄" }), " REINICIAR JORNADA"]
+								}),
+								/* @__PURE__ */ (0, $.jsxs)("div", {
+									style: {
+										fontSize: "10px",
+										color: "#555",
+										lineHeight: "1.5"
+									},
+									children: [
+										/* @__PURE__ */ (0, $.jsx)("div", {
+											style: {
+												fontWeight: "bold",
+												marginBottom: "2px"
+											},
+											children: "ARAMAS v1.0.0"
+										}),
+										"Coordenação: ",
+										/* @__PURE__ */ (0, $.jsx)("span", {
+											style: { color: "#007acc" },
+											children: "Fabiano B. Menegidio"
+										}),
+										/* @__PURE__ */ (0, $.jsx)("br", {}),
+										"Desenvolvimento: ",
+										/* @__PURE__ */ (0, $.jsx)("span", {
+											style: { color: "#007acc" },
+											children: "LaBiOmics - UMC"
+										})
+									]
+								})
+							]
 						})
 					]
 				}),
@@ -12722,4 +13028,4 @@ var Es = class {
 	});
 };
 //#endregion
-export { nc as AramasTerminal, Qs as QuestManager, Ys as RANKS, $s as TerminalEngine, Rs as VFSManager };
+export { rc as AramasTerminal, $s as QuestManager, Xs as RANKS, ec as TerminalEngine, Rs as VFSManager };
