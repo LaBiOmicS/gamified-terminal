@@ -20,13 +20,11 @@ jobs:
 
       - name: Instalar dependências e Build
         run: |
-          cd gamified-terminal
           npm install
           npm run build
 
       - name: Publicar no NPM
         run: |
-          cd gamified-terminal
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -133,7 +133,7 @@ import { TerminalEngine, VFSManager, QuestManager } from '@labiomics/aramas';
 ## 📂 Estrutura do Projeto
 
 ```text
-gamified-terminal/
+.
 ├── .github/              # Configurações do GitHub (workflows, templates)
 ├── public/               # Ativos estáticos públicos
 ├── src/
@@ -161,7 +161,7 @@ gamified-terminal/
 1.  **Clonar o repositório:**
     ```bash
     git clone https://github.com/LaBiOmicS/aramas.git
-    cd aramas/gamified-terminal
+    cd aramas
     ```
 2.  **Instalar dependências:**
     ```bash
