@@ -4,6 +4,7 @@ import { focaCommands } from './focaCommands';
 import { bioCommands } from './bioCommands';
 import { extendedCommands } from './extendedCommands';
 import { packageManagerCommands } from './packageManagerCommands';
+import { gitCommands } from './gitCommands';
 
 export class CommandRegistry {
   private commands: Map<string, Command> = new Map();
@@ -14,7 +15,8 @@ export class CommandRegistry {
       ...focaCommands, 
       ...bioCommands, 
       ...extendedCommands, 
-      ...packageManagerCommands
+      ...packageManagerCommands,
+      ...gitCommands
     ].forEach(cmd => {
       this.commands.set(cmd.name, cmd);
     });
@@ -61,6 +63,8 @@ export class CommandRegistry {
     this.commands.set('tema', { name: 'tema', description: 'Muda o estilo visual do terminal', execute: async () => {} });
     this.commands.set('missao', { name: 'missao', description: 'Mostra o objetivo atual', execute: async () => {} });
     this.commands.set('quest', { name: 'missao', description: 'Mostra o objetivo atual', execute: async () => {} });
+    this.commands.set('exportar', { name: 'exportar', description: 'Salva seu progresso e arquivos em um backup JSON', execute: async () => {} });
+    this.commands.set('importar', { name: 'importar', description: 'Restaura seu progresso a partir de um backup JSON', execute: async () => {} });
   }
 
   public getCommand(name: string): Command | undefined {

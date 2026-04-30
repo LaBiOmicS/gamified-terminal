@@ -55,6 +55,7 @@ const Terminal: React.FC = () => {
       fontFamily: '"Fira Code", Menlo, Monaco, "Courier New", monospace',
       fontSize: isMobile ? 12 : 14,
       allowProposedApi: true,
+      screenReaderMode: isMobile,
     });
 
     const fitAddon = new FitAddon();
@@ -84,7 +85,7 @@ const Terminal: React.FC = () => {
       }
     };
 
-    engineRef.current = new TerminalEngine(xterm, updateUI);
+    engineRef.current = new TerminalEngine(xterm, updateUI, isMobile);
     updateUI();
 
     const timer = setTimeout(safeFit, 100);
@@ -371,6 +372,49 @@ const Terminal: React.FC = () => {
           </div>
 
           <div style={{ padding: '15px', backgroundColor: '#0a0a0b', borderTop: '1px solid #333' }}>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+              <button 
+                onClick={() => engineRef.current?.triggerCommand('exportar')}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  backgroundColor: 'rgba(0, 122, 204, 0.1)',
+                  border: '1px solid rgba(0, 122, 204, 0.3)',
+                  color: '#007acc',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px'
+                }}
+              >
+                💾 SALVAR
+              </button>
+              <button 
+                onClick={() => engineRef.current?.triggerCommand('importar')}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  backgroundColor: 'rgba(13, 188, 121, 0.1)',
+                  border: '1px solid rgba(13, 188, 121, 0.3)',
+                  color: '#0dbc79',
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px'
+                }}
+              >
+                📂 CARREGAR
+              </button>
+            </div>
+
             <button 
               onClick={() => {
                 if (engineRef.current && window.confirm('Você tem certeza que deseja resetar todo o seu progresso? Isso apagará todos os arquivos criados e seu XP.')) {

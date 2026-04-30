@@ -17,13 +17,18 @@ export class TerminalEngine {
   private onStateChange?: () => void;
   private promptStyle: PromptStyle = 'bash';
   private isResetting: boolean = false;
+  private isMobile: boolean = false;
+  private lastInputTime: number = 0;
+  private lastInputData: string = '';
+  private customInputHandler: ((data: string) => Promise<void> | void) | null = null;
 
   private currentUser: string = 'dayhoff';
   private currentEnv: string = '';
 
-  constructor(terminal: Terminal, onStateChange?: () => void) {
+  constructor(terminal: Terminal, onStateChange?: () => void, isMobile: boolean = false) {
     this.terminal = terminal;
     this.onStateChange = onStateChange;
+    this.isMobile = isMobile;
     
     // Carregar do localStorage
     const savedVFS = localStorage.getItem('vfs_state');
@@ -42,6 +47,7 @@ export class TerminalEngine {
     const savedEnv = localStorage.getItem('current_env');
     if (savedEnv) this.currentEnv = savedEnv;
     
+    // Único listener de dados
     this.terminal.onData(e => this.handleData(e));
     
     // Mensagem de Boas-vindas (MOTD) dinâmica para garantir alinhamento perfeito
@@ -102,6 +108,7 @@ export class TerminalEngine {
     this.isResetting = true;
     this.questManager.reset();
     localStorage.clear();
+    localStorage.removeItem('git_state');
     window.location.reload();
   }
 
@@ -130,10 +137,28 @@ export class TerminalEngine {
   }
 
   private async handleData(data: string) {
+    // Debounce para mobile (evita duplicação de caracteres em alguns teclados Android)
+    if (this.isMobile) {
+      const now = Date.now();
+      if (data === this.lastInputData && (now - this.lastInputTime) < 50) {
+        return;
+      }
+      this.lastInputData = data;
+      this.lastInputTime = now;
+    }
+
+    // Se houver um handler customizado (ex: confirmação de reset), desvia o input
+    if (this.customInputHandler) {
+      await this.customInputHandler(data);
+      return;
+    }
+
     switch (data) {
       case '\r': // Enter
+      case '\n':
         await this.handleEnter();
         break;
+      case '\b':
       case '\u007F': // Backspace
         this.handleBackspace();
         break;
@@ -144,7 +169,8 @@ export class TerminalEngine {
         this.handleHistory(1);
         break;
       default:
-        if (data >= ' ' && data <= '~') {
+        // Permitir caracteres imprimíveis, incluindo acentuação (UTF-8)
+        if (data >= ' ' || (data.length === 1 && data.charCodeAt(0) > 127)) {
           this.currentLine += data;
           this.terminal.write(data);
         }
@@ -341,21 +367,111 @@ export class TerminalEngine {
       this.terminal.write('\x1b[1;31m⚠ PERIGO: Esta ação apagará permanentemente todo o seu progresso, XP e arquivos.\x1b[0m\r\n');
       this.terminal.write('Confirmar reinicialização do sistema? (s/n): ');
       
-      const handleReset = async (data: string) => {
+      this.customInputHandler = async (data: string) => {
         const input = data.toLowerCase();
         if (input === 's') {
+          this.customInputHandler = null;
           await this.resetSystem();
-        } else {
+        } else if (input === 'n' || data === '\r' || data === '\n') {
+          this.customInputHandler = null;
           this.terminal.write('\r\n\x1b[1;32mOperação cancelada.\x1b[0m\r\n');
           this.printPrompt();
         }
-        this.terminal.onData(e => this.handleData(e));
+      };
+      return;
+    }
+
+    if (cmdName === 'exportar') {
+      this.terminal.write('\r\n\x1b[1;34mGerando backup do progresso...\x1b[0m\r\n');
+      
+      const backupData: Record<string, any> = {};
+      const keysToExport = [
+        'vfs_state', 
+        'quest_manager_state', 
+        'terminal_envs', 
+        'current_env', 
+        'prompt_style', 
+        'current_user',
+        'git_state'
+      ];
+
+      // Pegar chaves fixas
+      keysToExport.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value) backupData[key] = value;
+      });
+
+      // Pegar chaves dinâmicas de pacotes (pkgs_*)
+      const envs = JSON.parse(localStorage.getItem('terminal_envs') || '["base"]');
+      envs.forEach((env: string) => {
+        const pkgKey = `pkgs_${env}`;
+        const pkgValue = localStorage.getItem(pkgKey);
+        if (pkgValue) backupData[pkgKey] = pkgValue;
+      });
+
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `aramas_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      this.terminal.write('\x1b[1;32m✅ Backup exportado com sucesso!\x1b[0m\r\n');
+      return;
+    }
+
+    if (cmdName === 'importar') {
+      this.terminal.write('\r\n\x1b[1;33mSelecione o arquivo de backup (.json) para restaurar.\x1b[0m\r\n');
+      
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event: any) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            
+            // Validar se é um backup do ARAMAS (checar chaves essenciais)
+            if (!data.vfs_state || !data.quest_manager_state) {
+              throw new Error('Arquivo de backup inválido ou corrompido.');
+            }
+
+            // Confirmar restauração
+            this.terminal.write('\x1b[1;31m⚠ ATENÇÃO: Restaurar um backup irá sobrescrever todo o seu progresso atual.\x1b[0m\r\n');
+            this.terminal.write('Confirmar restauração? (s/n): ');
+
+            this.customInputHandler = (choice: string) => {
+              if (choice.toLowerCase() === 's') {
+                localStorage.clear();
+                Object.keys(data).forEach(key => {
+                  localStorage.setItem(key, data[key]);
+                });
+                this.terminal.write('\r\n\x1b[1;32mRestaurando sistema...\x1b[0m\r\n');
+                window.location.reload();
+              } else {
+                this.terminal.write('\r\n\x1b[1;34mOperação cancelada.\x1b[0m\r\n');
+                this.printPrompt();
+              }
+              this.customInputHandler = null;
+            };
+
+          } catch (err) {
+            this.terminal.write(`\r\n\x1b[1;31mErro ao importar: ${err}\x1b[0m\r\n`);
+            this.printPrompt();
+          }
+        };
+        reader.readAsText(file);
       };
 
-      const sub = this.terminal.onData(e => {
-        sub.dispose();
-        handleReset(e);
-      });
+      input.click();
       return;
     }
 
