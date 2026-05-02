@@ -5,6 +5,9 @@ import { bioCommands } from './bioCommands';
 import { extendedCommands } from './extendedCommands';
 import { packageManagerCommands } from './packageManagerCommands';
 import { gitCommands } from './gitCommands';
+import { sysadminCommands } from './sysadminCommands';
+import { networkCommands } from './networkCommands';
+import { devopsCommands } from './devopsCommands';
 
 export class CommandRegistry {
   private commands: Map<string, Command> = new Map();
@@ -16,7 +19,10 @@ export class CommandRegistry {
       ...bioCommands, 
       ...extendedCommands, 
       ...packageManagerCommands,
-      ...gitCommands
+      ...gitCommands,
+      ...sysadminCommands,
+      ...networkCommands,
+      ...devopsCommands
     ].forEach(cmd => {
       this.commands.set(cmd.name, cmd);
     });

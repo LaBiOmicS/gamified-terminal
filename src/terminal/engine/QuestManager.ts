@@ -1,6 +1,13 @@
 import { VFSManager } from '../vfs/VFSManager';
 
-export type QuestCategory = 'Sistemas Operacionais' | 'Manipulação de Dados' | 'Computação Científica' | 'Versionamento';
+export type QuestCategory = 
+  | 'Sistemas Operacionais' 
+  | 'Manipulação de Dados' 
+  | 'Computação Científica' 
+  | 'Versionamento'
+  | 'Automação & Scripting'
+  | 'Redes e Segurança'
+  | 'DevOps e Infraestrutura';
 
 export interface Stats {
   sudoCount: number;
@@ -38,7 +45,10 @@ export const RANKS: Rank[] = [
   { name: 'Intermediário(a)', minXp: 3000 },
   { name: 'Avançado(a)', minXp: 7000 },
   { name: 'Especialista', minXp: 15000 },
-  { name: 'Mestre da Bioinformática', minXp: 30000 }
+  { name: 'Mestre da Bioinformática', minXp: 30000 },
+  { name: 'Analista de Sistemas Pleno', minXp: 50000 },
+  { name: 'Engenheiro(a) DevOps', minXp: 80000 },
+  { name: 'Arquiteto(a) de Infraestrutura', minXp: 120000 }
 ];
 
 export const quests: Quest[] = [
@@ -645,7 +655,211 @@ export const quests: Quest[] = [
     xp: 400,
     checkCondition: (_, cmd) => cmd === 'squeue',
     completionMessage: 'Status do cluster verificado. Seu treinamento básico está completo!',
-  }
+  },
+
+  // --- MÓDULO 5: AUTOMAÇÃO & SCRIPTING ---
+  {
+    id: 'script-1',
+    category: 'Automação & Scripting',
+    title: 'O Primeiro Script',
+    description: 'Crie um arquivo chamado \'ola.sh\' que contenha o shebang padrão do bash (#!/bin/bash).',
+    hint: 'Use \'echo "#!/bin/bash" > ola.sh\'. Scripts Linux geralmente começam com o shebang.',
+    xp: 500,
+    checkCondition: (vfs) => {
+      const node = vfs.getNode('/home/dayhoff/ola.sh');
+      return node !== null && node.type === 'file' && node.content.includes('#!/bin/bash');
+    },
+    completionMessage: 'Script criado! O shebang indica ao sistema qual interpretador usar.',
+  },
+  {
+    id: 'script-2',
+    category: 'Automação & Scripting',
+    title: 'Variáveis de Ambiente',
+    description: 'Defina uma variável de ambiente chamada PROJETO com o valor \'genomica\' e verifique-a.',
+    hint: 'Use \'export PROJETO=genomica\'. Depois você pode ver com \'env\'.',
+    xp: 400,
+    checkCondition: (_, cmd, line) => cmd === 'export' && line.includes('PROJETO=genomica'),
+    completionMessage: 'Variável exportada. Elas são essenciais para configurar fluxos de trabalho.',
+  },
+  {
+    id: 'script-3',
+    category: 'Automação & Scripting',
+    title: 'Execução de Scripts',
+    description: 'Dê permissão de execução para o seu script \'ola.sh\' e execute-o simulando o comando bash.',
+    hint: 'Use \'chmod +x ola.sh\' e depois \'bash ola.sh\'.',
+    xp: 500,
+    checkCondition: (_, cmd, line) => cmd === 'bash' && line.includes('ola.sh'),
+    completionMessage: 'Script executado! Você agora sabe como rodar automações.',
+  },
+  {
+    id: 'script-4',
+    category: 'Automação & Scripting',
+    title: 'Loops no Terminal',
+    description: 'Use um loop FOR diretamente no terminal para criar 3 arquivos: amostra_1.txt, amostra_2.txt e amostra_3.txt.',
+    hint: 'Exemplo: \'for i in 1 2 3; do touch amostra_$i.txt; done\'.',
+    xp: 800,
+    checkCondition: (vfs) => 
+      vfs.getNode('/home/dayhoff/amostra_1.txt') !== null && 
+      vfs.getNode('/home/dayhoff/amostra_2.txt') !== null && 
+      vfs.getNode('/home/dayhoff/amostra_3.txt') !== null,
+    completionMessage: 'Loop concluído! Automação em linha de comando economiza muito tempo.',
+  },
+  {
+    id: 'script-5',
+    category: 'Automação & Scripting',
+    title: 'Agendamento Crontab',
+    description: 'Simule a visualização das suas tarefas agendadas no sistema.',
+    hint: 'Use o comando \'crontab -l\'. O cron é o agendador padrão do Linux.',
+    xp: 400,
+    checkCondition: (_, cmd) => cmd === 'crontab',
+    completionMessage: 'Agendamentos verificados. Essencial para backups e limpezas automáticas.',
+  },
+
+  // --- MÓDULO 6: REDES E SEGURANÇA ---
+  {
+    id: 'net-1',
+    category: 'Redes e Segurança',
+    title: 'Teste de Conectividade',
+    description: 'Verifique se o servidor de banco de dados genômico (simulado como google.com) está respondendo.',
+    hint: 'Use \'ping -c 4 google.com\'. O ping testa a latência e conectividade.',
+    xp: 400,
+    checkCondition: (_, cmd) => cmd === 'ping',
+    completionMessage: 'Conexão confirmada. O servidor está ativo e acessível.',
+  },
+  {
+    id: 'net-2',
+    category: 'Redes e Segurança',
+    title: 'Chaves de Segurança',
+    description: 'Gere um par de chaves SSH (pública/privada) para autenticação sem senha em servidores remotos.',
+    hint: 'Use \'ssh-keygen\'. Pressione enter para as opções padrão.',
+    xp: 600,
+    checkCondition: (_, cmd) => cmd === 'ssh-keygen',
+    completionMessage: 'Chaves geradas! A segurança baseada em chaves é o padrão profissional.',
+  },
+  {
+    id: 'net-3',
+    category: 'Redes e Segurança',
+    title: 'Acesso Remoto',
+    description: 'Simule um acesso remoto via SSH ao servidor de processamento \'hpc-cluster\'.',
+    hint: 'Use \'ssh user@hpc-cluster\'.',
+    xp: 500,
+    checkCondition: (_, cmd) => cmd === 'ssh',
+    completionMessage: 'Login remoto efetuado. Você agora pode gerenciar máquinas à distância.',
+  },
+  {
+    id: 'net-4',
+    category: 'Redes e Segurança',
+    title: 'Donos e Grupos',
+    description: 'Mude o dono do arquivo \'projeto.txt\' para o usuário \'root\' (você precisará de privilégios).',
+    hint: 'Use \'sudo chown root projeto.txt\'.',
+    xp: 600,
+    checkCondition: (_, cmd, line) => line.includes('chown') && line.includes('root'),
+    completionMessage: 'Propriedade alterada. O controle de acesso é vital em sistemas multiusuário.',
+  },
+  {
+    id: 'net-5',
+    category: 'Redes e Segurança',
+    title: 'Transferência Segura',
+    description: 'Simule o envio de um arquivo para um servidor remoto usando SCP.',
+    hint: 'Use \'scp projeto.txt user@remote:/tmp\'.',
+    xp: 500,
+    checkCondition: (_, cmd) => cmd === 'scp',
+    completionMessage: 'Arquivo transferido com segurança via túnel criptografado.',
+  },
+
+  // --- MÓDULO 7: PROCESSAMENTO AVANÇADO DE DADOS ---
+  {
+    id: 'data-adv-1',
+    category: 'Manipulação de Dados',
+    title: 'Monitoramento de Logs',
+    description: 'Acompanhe as últimas linhas de um arquivo de log que está sendo atualizado.',
+    hint: 'Use \'tail -f access.log\'. (Nota: no simulador, use Ctrl+C para parar ou apenas execute o comando).',
+    xp: 400,
+    checkCondition: (_, cmd) => cmd === 'tail',
+    completionMessage: 'Monitoramento iniciado. O comando tail -f é essencial para debug em tempo real.',
+  },
+  {
+    id: 'data-adv-2',
+    category: 'Manipulação de Dados',
+    title: 'Mestre do JSON com jq',
+    description: 'Filtre um arquivo JSON para extrair apenas o campo "status".',
+    hint: 'Use \'jq ".status" config.json\'. O jq é o padrão para processar JSON no terminal.',
+    xp: 600,
+    checkCondition: (_, cmd) => cmd === 'jq',
+    completionMessage: 'JSON processado! Você domina a manipulação de APIs via terminal.',
+  },
+  {
+    id: 'data-adv-3',
+    category: 'Manipulação de Dados',
+    title: 'Regex com Sed',
+    description: 'Use o sed para remover todos os números de um arquivo de texto.',
+    hint: 'Use \'sed "s/[0-9]//g" dados.txt\'. Expressões regulares são seu superpoder.',
+    xp: 700,
+    checkCondition: (_, cmd, line) => cmd === 'sed' && line.includes('[0-9]'),
+    completionMessage: 'Filtro por regex concluído. Seus dados estão limpos.',
+  },
+  {
+    id: 'data-adv-4',
+    category: 'Manipulação de Dados',
+    title: 'Estatísticas com Awk',
+    description: 'Use o awk para somar os valores da segunda coluna de um arquivo CSV (separado por vírgula).',
+    hint: 'Use \'awk -F "," "{sum += $2} END {print sum}" tabela.csv\'.',
+    xp: 800,
+    checkCondition: (_, cmd, line) => cmd === 'awk' && line.includes('sum'),
+    completionMessage: 'Cálculo efetuado! Awk permite realizar análises complexas sem scripts externos.',
+  },
+
+  // --- MÓDULO 8: DEVOPS E INFRAESTRUTURA ---
+  {
+    id: 'devops-1',
+    category: 'DevOps e Infraestrutura',
+    title: 'Construindo Imagens',
+    description: 'Crie uma imagem de container Docker baseada no seu Dockerfile local.',
+    hint: 'Use \'docker build -t minha-app:v1 .\'.',
+    xp: 1000,
+    checkCondition: (_, cmd, line) => cmd === 'docker' && line.includes('build'),
+    completionMessage: 'Imagem construída! Containers são a base da infraestrutura moderna.',
+  },
+  {
+    id: 'devops-2',
+    category: 'DevOps e Infraestrutura',
+    title: 'Subindo Serviços',
+    description: 'Execute seu container em segundo plano (detached mode).',
+    hint: 'Use \'docker run -d minha-app:v1\'.',
+    xp: 800,
+    checkCondition: (_, cmd, line) => cmd === 'docker' && line.includes('-d'),
+    completionMessage: 'Container rodando no background. O serviço está no ar.',
+  },
+  {
+    id: 'devops-3',
+    category: 'DevOps e Infraestrutura',
+    title: 'Logs do Sistema',
+    description: 'Verifique os logs do sistema para diagnosticar possíveis erros de boot ou serviços.',
+    hint: 'Use \'journalctl -u docker.service\'.',
+    xp: 600,
+    checkCondition: (_, cmd) => cmd === 'journalctl',
+    completionMessage: 'Logs analisados. O journalctl centraliza as mensagens do kernel e serviços.',
+  },
+  {
+    id: 'devops-4',
+    category: 'DevOps e Infraestrutura',
+    title: 'Pipeline CI/CD',
+    description: 'Simule a validação de um arquivo de configuração do GitLab CI.',
+    hint: 'Use \'gitlab-runner verify\'.',
+    xp: 700,
+    checkCondition: (_, cmd) => cmd === 'gitlab-runner' || cmd === 'gh',
+    completionMessage: 'Pipeline validado. Automação de entrega é o coração do DevOps.',
+  },
+  {
+    id: 'devops-5',
+    category: 'DevOps e Infraestrutura',
+    title: 'Infra como Código',
+    description: 'Simule o planejamento de uma infraestrutura usando Terraform.',
+    hint: 'Use \'terraform plan\'.',
+    xp: 1200,
+    checkCondition: (_, cmd) => cmd === 'terraform',
+    completionMessage: 'Plano gerado! Você atingiu o nível máximo de automação de infraestrutura. Parabéns, você é um Arquiteto!',
+  },
 ];
 
 export const achievements: Achievement[] = [

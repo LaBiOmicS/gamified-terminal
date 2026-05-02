@@ -127,7 +127,7 @@ const LandingPage: React.FC = () => {
         <div className="container">
           <div className="footer-content">
             <div className="footer-logo">
-              <strong>ARAMAS</strong> | v1.1.1
+              <strong>ARAMAS</strong> | v1.2.0
             </div>
             <div className="footer-credits">
               Coordenado por <strong>Prof. Dr. Fabiano B. Menegidio</strong><br/>

@@ -1,4 +1,4 @@
-# ARAMAS v1.1.1
+# ARAMAS v1.2.0
 ### Ambiente Remoto para o Aprendizado e Manipulação de Arquivos e Sistemas
 
 <p align="center">
@@ -56,8 +56,8 @@ O pacote oficial está disponível em: [https://www.npmjs.com/package/@labiomics
 ## 🧬 Principais Funcionalidades
 
 ### 🎮 Gamificação Ativa
-- **Sistema de XP e Ranks:** Evolua de *Novato(a)* até *Mestre da Bioinformática*.
-- **Missões Estruturadas:** 50+ missões divididas em 3 módulos de complexidade crescente.
+- **Sistema de XP e Ranks:** Evolua de *Novato(a)* até *Arquiteto(a) de Infraestrutura*.
+- **Missões Estruturadas:** 75+ missões divididas em 6 módulos de complexidade crescente.
 - **Conquistas:** Desbloqueie insígnias como "Mestre dos Pipes" e "Administrador(a)".
 - **Persistência Local:** Seu progresso e arquivos são salvos automaticamente no navegador.
 
@@ -86,6 +86,9 @@ Modern bioinformatics relies heavily on command-line proficiency. However, the i
 1.  **Sistemas Operacionais:** Navegação, manipulação de arquivos, permissões e administração básica.
 2.  **Manipulação de Dados:** Filtros, fluxos de texto, ordenação e automação com xargs.
 3.  **Computação Científica:** Ferramentas de Bioinfo, automação de pipelines e computação em cluster (HPC).
+4.  **Automação & Scripting:** Desenvolvimento de scripts Shell, variáveis de ambiente e automação avançada.
+5.  **Redes e Segurança:** Conectividade, SSH, chaves criptográficas e gestão de identidades.
+6.  **DevOps e Infraestrutura:** Containers Docker, logs do sistema e Infraestrutura como Código (IaC).
 
 ---
 
